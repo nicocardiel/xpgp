@@ -66,7 +66,7 @@ C------------------------------------------------------------------------------
      +   (INDEX(INFILE,'?').NE.0))THEN
           L1=TRUEBEG(INFILE)
           L2=TRUELEN(INFILE)
-          ISYSTEM=REDSYSTEM('ls '//INFILE(L1:L2)//'\0')
+          ISYSTEM=REDSYSTEM('ls '//INFILE(L1:L2))
 	  GOTO 5
 	END IF
 

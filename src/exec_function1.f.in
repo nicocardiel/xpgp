@@ -108,7 +108,7 @@ C creamos el fichero con todos los datos de los buffers
 	WRITE(*,101) 'INFO: initial buffer data were saved'
 C------------------------------------------------------------------------------
 C creamos el fichero con la funcion
-	OPEN(10,FILE='funct_xpgp.f',STATUS='UNKNOWN',
+	OPEN(10,FILE='/tmp/funct_xpgp.f',STATUS='UNKNOWN',
      +   FORM='FORMATTED')
 	WRITE(10,101) '       PROGRAM FUNCT_NCLPLOT'
 	WRITE(10,101) '       IMPLICIT NONE'
@@ -308,7 +308,7 @@ C..............................................................................
 	CLOSE(10)
 C------------------------------------------------------------------------------
 C compilamos el fichero con la funcion
-	ISYSTEM=REDSYSTEM('@FC@ -o /tmp/funct_xpgp funct_xpgp.f\0')
+	ISYSTEM=REDSYSTEM('@FC@ -o /tmp/funct_xpgp /tmp/funct_xpgp.f')
 	IF((ISYSTEM.EQ.127.OR.ISYSTEM.EQ.-1))THEN
 	  WRITE(*,101) 'ERROR: while calling system function.'
 	  WRITE(*,100) 'Press <CR> to continue...'
@@ -323,7 +323,7 @@ C compilamos el fichero con la funcion
 	END IF
 C------------------------------------------------------------------------------
 C ejecutamos el fichero con la funcion
-	ISYSTEM=REDSYSTEM('/tmp/funct_xpgp\0')
+	ISYSTEM=REDSYSTEM('/tmp/funct_xpgp')
 	IF((ISYSTEM.EQ.127.OR.ISYSTEM.EQ.-1))THEN
 	  WRITE(*,101) 'ERROR: while calling executing function.'
 	  WRITE(*,100) 'Press <CR> to continue...'
@@ -350,7 +350,7 @@ C leemos el fichero con todos los datos de los buffers
 	WRITE(*,101) 'INFO: buffer data were updated'
 C------------------------------------------------------------------------------
 C borramos el fichero con los datos de los buffers
-90	ISYSTEM=REDSYSTEM('rm -f /tmp/allbuffers_xpgp.dat\0')
+90	ISYSTEM=REDSYSTEM('rm -f /tmp/allbuffers_xpgp.dat')
 	IF((ISYSTEM.EQ.127.OR.ISYSTEM.EQ.-1))THEN
 	  WRITE(*,101) 'ERROR: while removing allbuffers_xpgp.dat.'
 	  WRITE(*,100) 'Press <CR> to continue...'
@@ -364,7 +364,7 @@ C borramos el fichero con los datos de los buffers
 	END IF
 C------------------------------------------------------------------------------
 C borramos el fichero fortran y su ejecutable
-	ISYSTEM=REDSYSTEM('rm -f /tmp/funct_xpgp.f /tmp/funct_xpgp\0')
+	ISYSTEM=REDSYSTEM('rm -f /tmp/funct_xpgp.f /tmp/funct_xpgp')
 	IF((ISYSTEM.EQ.127.OR.ISYSTEM.EQ.-1))THEN
 	  WRITE(*,101) 'ERROR: while removing funct_xpgp*'
 	  WRITE(*,100) 'Press <CR> to continue...'

@@ -126,7 +126,7 @@ C Indicamos si usamos un fichero log ya existente
 	      L1=TRUEBEG(BATCHFILE)
 	      L2=TRUELEN(BATCHFILE)
 	      ISYSTEM=REDSYSTEM('ls '//BATCHFILE(L1:L2)//
-     +         ' | grep -v xpgp.log\0')
+     +         ' | grep -v xpgp.log')
 	    ELSE
 	      INQUIRE(FILE=BATCHFILE,EXIST=LOGFILE)
 	      IF(.NOT.LOGFILE)THEN
@@ -1361,8 +1361,8 @@ C
 	      END IF
 C
 	      WRITE(*,100) 'Select current symbol number...'
-	      CALL BUTTON(17, '\1',0)
-	      CALL BUTTON(18, '\2',0)
+	      CALL BUTTON(17, '1',0)
+	      CALL BUTTON(18, '\\2',0)
 	      CALL BUTTON(19, '\3',0)
 	      CALL BUTTON(20, '\4',0)
 	      CALL BUTTON(21, '\5',0)
@@ -2348,9 +2348,9 @@ C..............................................................................
 	          END IF
 	        END DO
 	        ISYSTEM=REDSYSTEM('mv -f xpgp.log '//
-     +           FILELOG(TRUEBEG(FILELOG):TRUELEN(FILELOG))//'\0')
+     +           FILELOG(TRUEBEG(FILELOG):TRUELEN(FILELOG)))
 	      ELSE
-	        ISYSTEM=REDSYSTEM('rm -f xpgp.log\0')
+	        ISYSTEM=REDSYSTEM('rm -f xpgp.log')
 	      END IF
 	      LEXIT=.TRUE.
 	    ELSE
