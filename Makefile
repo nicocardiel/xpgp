@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Version 3-August-2000
+# Version 24-August-2004
 #------------------------------------------------------------------------------
 # To install xpgp properly, you must follow these three steps:
 # make include
@@ -8,11 +8,16 @@
 #------------------------------------------------------------------------------
 # libraries:
 PGPLOTDIR = /usr/local/pgplot
-BUTLIB  = /usr/local/reduceme/button/libbutton.a
-X11DIR  = /usr/X11R6/lib
+X11DIR  = /usr/lib64
 NSIMUL  = 100
+NDATAMAX= 100000
 # macro definitions
-FSOURCE = cextrae.f \
+FSOURCE = button.f buttqbr.f buttqcf.f buttqch.f buttqex.f \
+          buttqit.f buttqpr.f buttqxb.f buttqyb.f buttqytext.f buttsbr.f \
+          buttscf.f buttsch.f buttsex.f buttsit.f buttspr.f buttsxb.f \
+          buttsyb.f buttsytext.f ifbutton.f rpgband.f rpgbegin.f rpgbegok.f \
+          rpgenv.f rpgeras.f rpgerasb.f rpgerasw.f \
+          cextrae.f \
           chupper.f \
           copydata.f \
           downhill.f \
@@ -57,7 +62,12 @@ FSOURCE = cextrae.f \
           updateplot.f \
           xpgp.f \
           yfunkd_linregexy.f
-FOBJECT = cextrae.o \
+FOBJECT = button.o buttqbr.o buttqcf.o buttqch.o buttqex.o \
+          buttqit.o buttqpr.o buttqxb.o buttqyb.o buttqytext.o buttsbr.o \
+          buttscf.o buttsch.o buttsex.o buttsit.o buttspr.o buttsxb.o \
+          buttsyb.o buttsytext.o ifbutton.o rpgband.o rpgbegin.o rpgbegok.o \
+          rpgenv.o rpgeras.o rpgerasb.o rpgerasw.o \
+          cextrae.o \
           chupper.o \
           copydata.o \
           downhill.o \
@@ -108,11 +118,11 @@ COBJECT = ranred_.o \
           redsystem_.o
 # Default rule to create program
 xpgp:  $(FOBJECT) $(COBJECT)
-	g77 -o $@ $(FOBJECT) $(COBJECT) $(BUTLIB) -L$(PGPLOTDIR) -L$(X11DIR) -lpgplot -lX11
+	g77 -o $@ $(FOBJECT) $(COBJECT) -L$(PGPLOTDIR) -L$(X11DIR) -lpgplot -lX11
 # Target to clean object modules
 clean:    $(FOBJECT) $(COBJECT)
 	rm -f $(FOBJECT) $(COBJECT)
-	rm -f xpgpdir.inc nsimul.inc
+	rm -f xpgpdir.inc nsimul.inc ndatamax.inc
 # Target to touch source modules
 touch:
 	touch $(FSOURCE) $(CSOURCE)
@@ -124,6 +134,9 @@ include:
 	rm -f nsimul.inc
 	echo "        INTEGER NSIMULMAX" > nsimul.inc
 	echo "        PARAMETER(NSIMULMAX=$(NSIMUL))" >> nsimul.inc
+	rm -f ndatamax.inc
+	echo "        INTEGER NDATAMAX" > ndatamax.inc
+	echo "        PARAMETER(NDATAMAX=$(NDATAMAX))" >> ndatamax.inc
 	touch $(FSOURCE) $(CSOURCE)
 # second level dependencies
 .f.o: $(FSOURCE)

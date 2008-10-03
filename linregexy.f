@@ -39,8 +39,7 @@ C routine parameters
 	DOUBLE PRECISION A,B
 	DOUBLE PRECISION VARA,VARB
 C parametros
-	INTEGER NDATAMAX
-	PARAMETER (NDATAMAX=10000) !numero maximo de punto que pueden ajustarse
+        INCLUDE 'ndatamax.inc'
 C funciones externas
 	DOUBLE PRECISION YFUNKD_LINREGEXY
 	EXTERNAL YFUNKD_LINREGEXY

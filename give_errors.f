@@ -10,8 +10,7 @@ C es asi, las variables LERRXNULL y LERRYNULL retornan .TRUE.
 C
 	INTEGER NBUFFMAX                 !numero de buffers de datos diferentes
 	PARAMETER (NBUFFMAX=8)
-	INTEGER NDATAMAX
-	PARAMETER (NDATAMAX=10000)       !numero maximo de datos en cada buffer
+        INCLUDE 'ndatamax.inc'
 C
 	INTEGER I
 	INTEGER NDATABUFF(NBUFFMAX)

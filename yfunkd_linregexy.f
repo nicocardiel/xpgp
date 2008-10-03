@@ -6,8 +6,7 @@ C considerando la existencia de errores en las dos variables.
 	IMPLICIT NONE
 	DOUBLE PRECISION A(2)
 C parametros
-	INTEGER NDATAMAX
-	PARAMETER (NDATAMAX=10000) !numero maximo de punto que pueden ajustarse
+        INCLUDE 'ndatamax.inc'
 C variables globales a la funcion y transmitidas mediante COMMONS
 	INTEGER N
 	DOUBLE PRECISION X(NDATAMAX),Y(NDATAMAX)

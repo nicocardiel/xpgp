@@ -7,8 +7,7 @@ C
 C
         INTEGER NBUFFMAX                 !numero de buffers de datos diferentes
         PARAMETER (NBUFFMAX=8)
-        INTEGER NDATAMAX                 !numero maximo de datos en cada buffer
-        PARAMETER (NDATAMAX=10000)
+        INCLUDE 'ndatamax.inc'
 C
 	INTEGER TRUEBEG,TRUELEN
 C

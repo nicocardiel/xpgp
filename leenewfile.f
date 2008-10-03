@@ -11,8 +11,7 @@ C IMODE=2: se leen X,errX,Y,errY,name
 C
 	INTEGER NBUFFMAX                 !numero de buffers de datos diferentes
 	PARAMETER (NBUFFMAX=8)
-	INTEGER NDATAMAX
-	PARAMETER (NDATAMAX=10000)       !numero maximo de datos en cada buffer
+        INCLUDE 'ndatamax.inc'
 C
 	INTEGER READI_B
 	CHARACTER*255 READC_B

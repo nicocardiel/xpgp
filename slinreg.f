@@ -29,8 +29,7 @@ C
 C
 	INTEGER NBUFFMAX                 !numero de buffers de datos diferentes
 	PARAMETER (NBUFFMAX=8)
-	INTEGER NDATAMAX
-	PARAMETER (NDATAMAX=10000)       !numero maximo de datos en cada buffer
+        INCLUDE 'ndatamax.inc'
 	DOUBLE PRECISION PI
 	PARAMETER (  PI=3.141592653589793D0) !pi
 	DOUBLE PRECISION SQR2

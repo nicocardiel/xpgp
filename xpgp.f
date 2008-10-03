@@ -16,8 +16,7 @@ C
 C
 	INTEGER NBUFFMAX                 !numero de buffers de datos diferentes
 	PARAMETER (NBUFFMAX=8)
-	INTEGER NDATAMAX                 !numero maximo de datos en cada buffer
-	PARAMETER (NDATAMAX=10000)
+        INCLUDE 'ndatamax.inc'
 C
 	INTEGER REDSYSTEM
 	EXTERNAL REDSYSTEM
@@ -116,7 +115,7 @@ C Abrimos fichero log de esta sesion
 C------------------------------------------------------------------------------
 C------------------------------------------------------------------------------
 C Indicamos si usamos un fichero log ya existente
-	WRITE(*,100) 'Previous log file (<CR>=none, wildcars allowed)? '
+	WRITE(*,100)'Previous log file, <CR>=none (wildcards allowed)? '
 	READ(*,101) BATCHFILE
 	LBATCH=(TRUELEN(BATCHFILE).GT.0)
 	IF(LBATCH)THEN
@@ -139,7 +138,7 @@ C Indicamos si usamos un fichero log ya existente
 	    END IF
 	    IF(.NOT.LOGFILE)THEN
 	      WRITE(*,100) 'Previous log file '//
-     >         '(<CR>=none, wildcars allowed)? '
+     >         '(<CR>=none, wildcards allowed)? '
 	      READ(*,101) BATCHFILE
 	    END IF
 	  END DO

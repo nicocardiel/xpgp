@@ -8,8 +8,7 @@ C ISTATUS retorna 0 si falla algo, y 1 si funciona bien.
 C
 	INTEGER NBUFFMAX                 !numero de buffers de datos diferentes
 	PARAMETER (NBUFFMAX=8)
-	INTEGER NDATAMAX
-	PARAMETER (NDATAMAX=10000)       !numero maximo de datos en cada buffer
+        INCLUDE 'ndatamax.inc'
 C
 	EXTERNAL REDSYSTEM
 	INTEGER REDSYSTEM

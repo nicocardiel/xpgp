@@ -7,8 +7,7 @@ C Gorgas).
      >   COVAR)
 	IMPLICIT NONE
 C
-        INTEGER NDATAMAX                 !numero maximo de datos en cada buffer
-        PARAMETER (NDATAMAX=10000)
+        INCLUDE 'ndatamax.inc'
         INTEGER NDEGMAX         !grado maximo del polinomio que puede ajustarse
         PARAMETER (NDEGMAX=16)
 C
