@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Version 03-October-2007
+# Version 23-September-2008
 #------------------------------------------------------------------------------
 # To install xpgp properly, you must follow these three steps:
 # make include
@@ -9,6 +9,7 @@
 # libraries:
 PGPLOTDIR = /usr/local/pgplot
 X11DIR  = /usr/lib64
+FIODIR  = /usr/local/cfitsio
 NSIMUL  = 100
 NDATAMAX= 100000
 # macro definitions
@@ -31,6 +32,7 @@ FSOURCE = button.f buttqbr.f buttqcf.f buttqch.f buttqex.f \
           fitpol.f \
           fitpoley.f \
           fitpoleyb.f \
+          fits_printerror.f \
           fmean0.f \
           give_errors.f \
           give_statistics.f \
@@ -65,62 +67,10 @@ FSOURCE = button.f buttqbr.f buttqcf.f buttqch.f buttqex.f \
           updateplot.f \
           xpgp.f \
           yfunkd_linregexy.f
-FOBJECT = button.o buttqbr.o buttqcf.o buttqch.o buttqex.o \
-          buttqit.o buttqpr.o buttqxb.o buttqyb.o buttqytext.o buttsbr.o \
-          buttscf.o buttsch.o buttsex.o buttsit.o buttspr.o buttsxb.o \
-          buttsyb.o buttsytext.o ifbutton.o rpgband.o rpgbegin.o rpgbegok.o \
-          rpgenv.o rpgeras.o rpgerasb.o rpgerasw.o \
-          cextrae.o \
-          chupper.o \
-          cleantab.o \
-          copydata.o \
-          downhill.o \
-          downhilld.o \
-          editor.o \
-          exec_function1.o \
-          exec_function2.o \
-          fextrae.o \
-          find_nearest.o \
-          fitpol.o \
-          fitpoley.o \
-          fitpoleyb.o \
-          fmean0.o \
-          give_errors.o \
-          give_statistics.o \
-          histogram.o \
-          iofunctions.o \
-          ks_func.o \
-          ksone.o \
-          labels.o \
-          leenewfile.o \
-          linreg.o \
-          linregexy.o \
-          linregey.o \
-          ludcmp.o \
-          lusolv.o \
-          onlyone.o \
-          ordena1f.o \
-          ordena1f1i.o \
-          plot_settings.o \
-          probks.o \
-          ranred.o \
-          sfitpol.o \
-          show_buffers.o \
-          show_fitpol.o \
-          slinreg.o \
-          spearman.o \
-          statistic.o \
-          systemfunction.o \
-          truebeg.o \
-          truelen.o \
-          updatekey.o \
-	  updatelimits.o \
-          updateplot.o \
-          xpgp.o \
-          yfunkd_linregexy.o
+FOBJECT = $(FSOURCE:.f=.o)
 # Default rule to create program
 xpgp:  $(FOBJECT)
-	gfortran -Wall -o $@ $(FOBJECT) -L$(PGPLOTDIR) -L$(X11DIR) -lpgplot -lX11
+	gfortran -Wall -o $@ $(FOBJECT) -L$(PGPLOTDIR) -L$(FIODIR) -L$(X11DIR) -lpgplot -lcfitsio -lX11
 # Target to clean object modules
 clean:    $(FOBJECT)
 	rm -f $(FOBJECT)

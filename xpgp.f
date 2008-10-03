@@ -372,7 +372,6 @@ C
               IMODE=2
               CALL LEENEWFILE(NB_,IMODE,ISTATUS)
               IF(ISTATUS.NE.0)THEN
-                DATAKEY(NB_)=INFILE(1:50)
                 LDEFBUFF(NB_)=.TRUE.
                 LUSEBUFF(NB_)=.TRUE.
                 IF(.NOT.LBUFFER)THEN
