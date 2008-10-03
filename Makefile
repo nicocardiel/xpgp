@@ -7,6 +7,7 @@
 # make clean
 #------------------------------------------------------------------------------
 # libraries:
+VERSION = 04.6
 PGPLOTDIR = /usr/local/pgplot
 X11DIR  = /usr/lib64
 FIODIR  = /usr/local/cfitsio
@@ -22,11 +23,13 @@ FSOURCE = button.f buttqbr.f buttqcf.f buttqch.f buttqex.f \
           chupper.f \
           cleantab.f \
           copydata.f \
+          combpf.f \
           downhill.f \
           downhilld.f \
           editor.f \
           exec_function1.f \
           exec_function2.f \
+          factorialpf.f \
           fextrae.f \
           find_nearest.f \
           fitpol.f \
@@ -34,9 +37,11 @@ FSOURCE = button.f buttqbr.f buttqcf.f buttqch.f buttqex.f \
           fitpoleyb.f \
           fits_printerror.f \
           fmean0.f \
+          fpoly.f \
           give_errors.f \
           give_statistics.f \
           histogram.f \
+          indexr.f \
           iofunctions.f \
           ks_func.f \
           ksone.f \
@@ -50,9 +55,13 @@ FSOURCE = button.f buttqbr.f buttqcf.f buttqch.f buttqex.f \
           onlyone.f \
           ordena1f.f \
           ordena1f1i.f \
+          otherfit.f \
           plot_settings.f \
+          polfit.f \
           probks.f \
+          pseudofit.f \
           ranred.f \
+          read_nb.f \
           sfitpol.f \
           show_buffers.f \
           show_fitpol.f \
@@ -62,6 +71,7 @@ FSOURCE = button.f buttqbr.f buttqcf.f buttqch.f buttqex.f \
           systemfunction.f \
           truebeg.f \
           truelen.f \
+          tolog77.f \
           updatekey.f \
 	  updatelimits.f \
           updateplot.f \
@@ -89,6 +99,9 @@ include:
 	rm -f ndatamax.inc
 	echo "        INTEGER NDATAMAX" > ndatamax.inc
 	echo "        PARAMETER(NDATAMAX=$(NDATAMAX))" >> ndatamax.inc
+	rm -f version.inc
+	echo "        CHARACTER*4 VERSION" > version.inc
+	echo "        PARAMETER(VERSION='$(VERSION)')" >> version.inc
 	touch $(FSOURCE)
 # second level dependencies
 .f.o: $(FSOURCE)

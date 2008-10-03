@@ -7,28 +7,52 @@ C IMODE=1 abre el fichero con etiquetas
         INTEGER IMODE
 C
         INTEGER TRUEBEG,TRUELEN
+        INTEGER INDEXR
 C
-        INTEGER L1,L2
+        INTEGER L1,L2,LL2
         INTEGER NEXT
         INTEGER NCOLOR,NFONT,OLDCI,OLDCF
+        INTEGER LINESTYLE,LINEWIDTH,OLDLS,OLDLW
         REAL X,Y,ANGLE,FJUST,SIZE,OLDCH
+        REAL X1,Y1,X2,Y2
         CHARACTER*255 FILELABELS,CADENA,ETIQUETA
         LOGICAL LBATCH
         LOGICAL LOGFILE
         LOGICAL LLABELS
+        LOGICAL LOOP
 C
         COMMON/BLKLABELS1/LLABELS
         COMMON/BLKLABELS2/FILELABELS
         COMMON/BLKLBATCH/LBATCH
 C------------------------------------------------------------------------------
         IF(IMODE.EQ.0)THEN
-          WRITE(*,100) 'File must contain: '
+          WRITE(*,101) 'The file must contain any of the following: '
+          WRITE(*,101)
+          WRITE(*,101) '(1) Comment lines (starting by #)'
+          WRITE(*,101) '# this is a comment'
+          WRITE(*,101)
+          WRITE(*,101) '(2) A connected segment'
+          WRITE(*,101) 'Connect: X1 Y1 X2 Y2 LineType LineWidth COLOR'
+          WRITE(*,101)
+          WRITE(*,101) '(3) An arbitrary string'
           WRITE(*,101) 'X Y ANGLE FJUST SIZE FONT COLOR LABEL'
+          WRITE(*,101)
           LOGFILE=.FALSE.
           DO WHILE(.NOT.LOGFILE)
             WRITE(*,100) 'File name (<CR>=none) ? '
             IF(LBATCH)THEN
-              READ(78,101) FILELABELS
+              LOOP=.TRUE.
+              DO WHILE(LOOP)
+                READ(78,101) FILELABELS
+                IF(FILELABELS(1:1).NE.'#')THEN
+                  LL2=INDEXR(FILELABELS,'#')
+                  IF(LL2.GT.1)THEN
+                    FILELABELS=FILELABELS(1:LL2-1)
+                    WRITE(*,101) FILELABELS(1:TRUELEN(FILELABELS))
+                    LOOP=.FALSE.
+                  END IF
+                END IF
+              END DO
             ELSE
               READ(*,101) FILELABELS
               IF(TRUELEN(FILELABELS).EQ.0)THEN
@@ -47,7 +71,8 @@ C------------------------------------------------------------------------------
               END IF
             END IF
           END DO
-          WRITE(77,101) FILELABELS(1:TRUELEN(FILELABELS))
+          CALL TOLOG77_STRING(FILELABELS(1:TRUELEN(FILELABELS)),
+     +     'File name with labels')
           LLABELS=.TRUE.
           RETURN
         END IF
@@ -55,72 +80,124 @@ C
         OPEN(15,FILE=FILELABELS,STATUS='OLD',FORM='FORMATTED',ERR=904)
 C
 10      READ(15,101,END=900) CADENA
-        IF(TRUELEN(CADENA).EQ.0) GOTO 901
-        L1=TRUEBEG(CADENA)
-        L2=TRUELEN(CADENA)
+        IF(TRUELEN(CADENA).EQ.0) GOTO 10 !linea en blanco
+        IF(CADENA(1:1).EQ.'#') GOTO 10   !comentario
+        IF(CADENA(1:1).EQ.'C')THEN !.............................connected line
+          L1=TRUEBEG(CADENA(2:))+1 !ojo, el +1 es importante
+          L2=TRUELEN(CADENA)
 C
-        NEXT=INDEX(CADENA(L1:L2),' ')
-        IF(NEXT.EQ.0) GOTO 902
-        READ(CADENA(L1:L1+NEXT-2),*,ERR=903) X
-        L1=L1+NEXT
-        L1=L1+TRUEBEG(CADENA(L1:L2))-1
+          NEXT=INDEX(CADENA(L1:L2),' ')
+          IF(NEXT.EQ.0) GOTO 902
+          READ(CADENA(L1:L1+NEXT-2),*,ERR=903) X1
+          L1=L1+NEXT
+          L1=L1+TRUEBEG(CADENA(L1:L2))-1
 C
-        NEXT=INDEX(CADENA(L1:L2),' ')
-        IF(NEXT.EQ.0) GOTO 902
-        READ(CADENA(L1:L1+NEXT-2),*,ERR=903) Y
-        L1=L1+NEXT
-        L1=L1+TRUEBEG(CADENA(L1:L2))-1
+          NEXT=INDEX(CADENA(L1:L2),' ')
+          IF(NEXT.EQ.0) GOTO 902
+          READ(CADENA(L1:L1+NEXT-2),*,ERR=903) Y1
+          L1=L1+NEXT
+          L1=L1+TRUEBEG(CADENA(L1:L2))-1
 C
-        NEXT=INDEX(CADENA(L1:L2),' ')
-        IF(NEXT.EQ.0) GOTO 902
-        READ(CADENA(L1:L1+NEXT-2),*,ERR=903) ANGLE
-        L1=L1+NEXT
-        L1=L1+TRUEBEG(CADENA(L1:L2))-1
+          NEXT=INDEX(CADENA(L1:L2),' ')
+          IF(NEXT.EQ.0) GOTO 902
+          READ(CADENA(L1:L1+NEXT-2),*,ERR=903) X2
+          L1=L1+NEXT
+          L1=L1+TRUEBEG(CADENA(L1:L2))-1
 C
-        NEXT=INDEX(CADENA(L1:L2),' ')
-        IF(NEXT.EQ.0) GOTO 902
-        READ(CADENA(L1:L1+NEXT-2),*,ERR=903) FJUST
-        L1=L1+NEXT
-        L1=L1+TRUEBEG(CADENA(L1:L2))-1
+          NEXT=INDEX(CADENA(L1:L2),' ')
+          IF(NEXT.EQ.0) GOTO 902
+          READ(CADENA(L1:L1+NEXT-2),*,ERR=903) Y2
+          L1=L1+NEXT
+          L1=L1+TRUEBEG(CADENA(L1:L2))-1
 C
-        NEXT=INDEX(CADENA(L1:L2),' ')
-        IF(NEXT.EQ.0) GOTO 902
-        READ(CADENA(L1:L1+NEXT-2),*,ERR=903) SIZE
-        L1=L1+NEXT
-        L1=L1+TRUEBEG(CADENA(L1:L2))-1
+          NEXT=INDEX(CADENA(L1:L2),' ')
+          IF(NEXT.EQ.0) GOTO 902
+          READ(CADENA(L1:L1+NEXT-2),*,ERR=903) LINESTYLE
+          L1=L1+NEXT
+          L1=L1+TRUEBEG(CADENA(L1:L2))-1
 C
-        NEXT=INDEX(CADENA(L1:L2),' ')
-        IF(NEXT.EQ.0) GOTO 902
-        READ(CADENA(L1:L1+NEXT-2),*,ERR=903) NFONT
-        L1=L1+NEXT
-        L1=L1+TRUEBEG(CADENA(L1:L2))-1
+          NEXT=INDEX(CADENA(L1:L2),' ')
+          IF(NEXT.EQ.0) GOTO 902
+          READ(CADENA(L1:L1+NEXT-2),*,ERR=903) LINEWIDTH
+          L1=L1+NEXT
+          L1=L1+TRUEBEG(CADENA(L1:L2))-1
 C
-        NEXT=INDEX(CADENA(L1:L2),' ')
-        IF(NEXT.EQ.0) GOTO 902
-        READ(CADENA(L1:L1+NEXT-2),*,ERR=903) NCOLOR
-        L1=L1+NEXT
-        L1=L1+TRUEBEG(CADENA(L1:L2))-1
+          READ(CADENA(L1:L2),*,ERR=903) NCOLOR
 C
-        ETIQUETA=CADENA(L1:L2)
+          CALL PGQCI(OLDCI)
+          CALL PGQLS(OLDLS)
+          CALL PGQLW(OLDLW)
+          CALL PGSCI(NCOLOR)
+          CALL PGSLS(LINESTYLE)
+          CALL PGSLW(LINEWIDTH)
+          CALL PGMOVE(X1,Y1)
+          CALL PGDRAW(X2,Y2)
+          CALL PGSCI(OLDCI)
+          CALL PGSLS(OLDLS)
+          CALL PGSLW(OLDLW)
+        ELSE !............................................una cadena arbitraria
+          L1=TRUEBEG(CADENA)
+          L2=TRUELEN(CADENA)
 C
-        CALL PGQCF(OLDCF)
-        CALL PGQCI(OLDCI)
-        CALL PGQCH(OLDCH)
-        CALL PGSCF(NFONT)
-        CALL PGSCI(NCOLOR)
-        CALL PGSCH(SIZE)
-        CALL PGPTXT(X,Y,ANGLE,FJUST,ETIQUETA)
-        CALL PGSCF(OLDCF)
-        CALL PGSCI(OLDCI)
-        CALL PGSCH(OLDCH)
+          NEXT=INDEX(CADENA(L1:L2),' ')
+          IF(NEXT.EQ.0) GOTO 902
+          READ(CADENA(L1:L1+NEXT-2),*,ERR=903) X
+          L1=L1+NEXT
+          L1=L1+TRUEBEG(CADENA(L1:L2))-1
+C
+          NEXT=INDEX(CADENA(L1:L2),' ')
+          IF(NEXT.EQ.0) GOTO 902
+          READ(CADENA(L1:L1+NEXT-2),*,ERR=903) Y
+          L1=L1+NEXT
+          L1=L1+TRUEBEG(CADENA(L1:L2))-1
+C
+          NEXT=INDEX(CADENA(L1:L2),' ')
+          IF(NEXT.EQ.0) GOTO 902
+          READ(CADENA(L1:L1+NEXT-2),*,ERR=903) ANGLE
+          L1=L1+NEXT
+          L1=L1+TRUEBEG(CADENA(L1:L2))-1
+C
+          NEXT=INDEX(CADENA(L1:L2),' ')
+          IF(NEXT.EQ.0) GOTO 902
+          READ(CADENA(L1:L1+NEXT-2),*,ERR=903) FJUST
+          L1=L1+NEXT
+          L1=L1+TRUEBEG(CADENA(L1:L2))-1
+C
+          NEXT=INDEX(CADENA(L1:L2),' ')
+          IF(NEXT.EQ.0) GOTO 902
+          READ(CADENA(L1:L1+NEXT-2),*,ERR=903) SIZE
+          L1=L1+NEXT
+          L1=L1+TRUEBEG(CADENA(L1:L2))-1
+C
+          NEXT=INDEX(CADENA(L1:L2),' ')
+          IF(NEXT.EQ.0) GOTO 902
+          READ(CADENA(L1:L1+NEXT-2),*,ERR=903) NFONT
+          L1=L1+NEXT
+          L1=L1+TRUEBEG(CADENA(L1:L2))-1
+C
+          NEXT=INDEX(CADENA(L1:L2),' ')
+          IF(NEXT.EQ.0) GOTO 902
+          READ(CADENA(L1:L1+NEXT-2),*,ERR=903) NCOLOR
+          L1=L1+NEXT
+          L1=L1+TRUEBEG(CADENA(L1:L2))-1
+C
+          ETIQUETA=CADENA(L1:L2)
+C
+          CALL PGQCF(OLDCF)
+          CALL PGQCI(OLDCI)
+          CALL PGQCH(OLDCH)
+          CALL PGSCF(NFONT)
+          CALL PGSCI(NCOLOR)
+          CALL PGSCH(SIZE)
+          CALL PGPTXT(X,Y,ANGLE,FJUST,ETIQUETA)
+          CALL PGSCF(OLDCF)
+          CALL PGSCI(OLDCI)
+          CALL PGSCH(OLDCH)
+        END IF
 C
         GOTO 10
-
+C------------------------------------------------------------------------------
 900     CLOSE(15)
-        RETURN
-C..............................................................................
-901     WRITE(*,101) 'ERROR: file contains empty lines'
-        CLOSE(15)
         RETURN
 C..............................................................................
 902     WRITE(*,101) 'ERROR: unexpected end of line.'

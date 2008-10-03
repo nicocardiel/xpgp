@@ -41,7 +41,8 @@ C------------------------------------------------------------------------------
         ISTATUS=0                          !salvo que se demuestre lo contrario
         WRITE(*,100) 'Function'
         CFUNCTION=READC_B('@','@')
-        WRITE(77,101) CFUNCTION(1:TRUELEN(CFUNCTION))
+        CALL TOLOG77_STRING(CFUNCTION(1:TRUELEN(CFUNCTION)),
+     +   'Function')
 C------------------------------------------------------------------------------
         L2=INDEX(CFUNCTION,'=')
         IF(L2.LE.2)THEN

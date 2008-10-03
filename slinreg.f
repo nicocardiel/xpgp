@@ -499,7 +499,7 @@ C dibujamos los ajustes
           WRITE(*,*)
           WRITE(*,100) 'No. of linear fit to be plotted (0=none)'
           NPLOT=READILIM_B('0',0,6)
-          WRITE(77,*) NPLOT
+          WRITE(77,111) NPLOT,'# No. of linear fit (1...6, 0=none)'
           IF(NPLOT.NE.0)THEN
             IF(NPLOT.EQ.1)THEN
               WRITE(*,101) '<1> OLS(Y|X)'
@@ -546,7 +546,7 @@ C dibujamos los ajustes
               WRITE(*,100) 'Which one (a/b/c/d) '
               CWHICH(1:1)=READC_B('a','abcd')
             END IF
-            WRITE(77,101) CWHICH
+            WRITE(77,112) CWHICH,'# type of fit (a/b/c/d(e/f))'
             IF(LANYPLOT)THEN
               CALL PGSLS(2)
               CALL PGSCI(1)
@@ -597,11 +597,11 @@ C si se desea, podemos almacenar los ajustes en buffers
         DO WHILE(NB.NE.0)
           WRITE(*,100) 'Buffer # to store fit.......... (0=none)'
           NB=READILIM_B('0',0,NBUFFMAX)
-          WRITE(77,*) NB
+          WRITE(77,111) NB,'# Buffer number to store fit'
           IF(NB.NE.0)THEN
             WRITE(*,100) 'No. of linear fit'
             NPLOT=READILIM_B('@',1,6)
-            WRITE(77,*) NPLOT
+            WRITE(77,111) NPLOT,'# No. of linear fit'
             IF((NPLOT.EQ.1).OR.(NPLOT.EQ.4))THEN
               WRITE(*,100) 'Which one (a/b/c/d/e/f) '
               CWHICH(1:1)=READC_B('a','abcdef')
@@ -609,16 +609,16 @@ C si se desea, podemos almacenar los ajustes en buffers
               WRITE(*,100) 'Which one (a/b/c/d) '
               CWHICH(1:1)=READC_B('a','abcd')
             END IF
-            WRITE(77,101) CWHICH
+            WRITE(77,112) CWHICH,'# type of fit (a/b/c/d(e/f))'
             WRITE(*,100) 'Xmin '
             XMINF=READF_B(CXMINF)
-            WRITE(77,*) XMINF
+            WRITE(77,*) XMINF,'# Xmin'
             WRITE(*,100) 'Xmax '
             XMAXF=READF_B(CXMAXF)
-            WRITE(77,*) XMAXF
+            WRITE(77,*) XMAXF,'# Xmax'
             WRITE(*,100) 'No. of points'
             NDATA=READILIM_B('1000',2,NDATAMAX)
-            WRITE(77,*) NDATA
+            WRITE(77,111) NDATA,'# No. of points'
             DO I=1,NDATA
               X0=XMINF+(XMAXF-XMINF)*REAL(I-1)/REAL(NDATA-1)
               IF(CWHICH.EQ.'a')THEN
@@ -659,7 +659,7 @@ C si se desea, podemos almacenar los ajustes en buffers
             DATAKEY(NB)=DATAKEY_
             L1=TRUEBEG(DATAKEY(NB))
             L2=TRUELEN(DATAKEY(NB))
-            WRITE(77,101) DATAKEY(NB)(L1:L2)
+            CALL TOLOG77_STRING(DATAKEY(NB)(L1:L2),'Key label')
           END IF
         END DO
 C------------------------------------------------------------------------------
@@ -668,11 +668,11 @@ C si se desea podemos tambien almacenar los residuos en otro buffer
         DO WHILE(NB.NE.0)
           WRITE(*,100) 'Buffer # to store residuals.... (0=none)'
           NB=READILIM_B('0',0,NBUFFMAX)
-          WRITE(77,*) NB
+          WRITE(77,111) NB,'# Buffer number to store residuals (0=none)'
           IF(NB.NE.0)THEN
             WRITE(*,100) 'No. of linear fit'
             NPLOT=READILIM_B('@',1,6)
-            WRITE(77,*) NPLOT
+            WRITE(77,111) NPLOT,'# No. of linear fit'
             IF((NPLOT.EQ.1).OR.(NPLOT.EQ.4))THEN
               WRITE(*,100) 'Which one (a/b/c/d/e/f) '
               CWHICH(1:1)=READC_B('a','abcdef')
@@ -680,7 +680,7 @@ C si se desea podemos tambien almacenar los residuos en otro buffer
               WRITE(*,100) 'Which one (a/b/c/d) '
               CWHICH(1:1)=READC_B('a','abcd')
             END IF
-            WRITE(77,101) CWHICH
+            WRITE(77,112) CWHICH,'# type of fit (a/b/c/d(e/f))'
             NDATABUFF(NB)=NDATABUFF(NB0)
             DO I=1,NDATABUFF(NB)
               X0=XDATA(I,NB0)
@@ -721,10 +721,12 @@ C si se desea podemos tambien almacenar los residuos en otro buffer
             DATAKEY(NB)=DATAKEY_
             L1=TRUEBEG(DATAKEY(NB))
             L2=TRUELEN(DATAKEY(NB))
-            WRITE(77,101) DATAKEY(NB)(L1:L2)
+            CALL TOLOG77_STRING(DATAKEY(NB)(L1:L2),'Key label')
           END IF
         END DO
 C------------------------------------------------------------------------------
 100     FORMAT(A,$)
 101     FORMAT(A)
+111     FORMAT(I12,1X,A)
+112     FORMAT(11X,A1,1X,A)
         END

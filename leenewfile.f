@@ -34,6 +34,7 @@ C
         INTEGER FITS_ISTATUS
         INTEGER NEW_HDU,HDUTYPE
         INTEGER NAXIS_(0:2),FITS_NFOUND,FITS_FIRSTPIX
+        INTEGER IXAXIS
         REAL XDATA(NDATAMAX,NBUFFMAX),EXDATA(NDATAMAX,NBUFFMAX)
         REAL YDATA(NDATAMAX,NBUFFMAX),EYDATA(NDATAMAX,NBUFFMAX)
         REAL FEXTRAE
@@ -44,7 +45,6 @@ C
         REAL SP(NDATAMAX)
         REAL SPSUM(NDATAMAX)
         REAL CRPIX1,CRVAL1,CDELT1
-        CHARACTER*1 CXAXIS
         CHARACTER*12 REDUCEME_ID
         CHARACTER*20 XYNAME(NDATAMAX,NBUFFMAX)  !OJO: tama~no igual que CEXTRAE
         CHARACTER*20 CEXTRAE                    !funcion para extraer la cadena
@@ -84,7 +84,7 @@ C------------------------------------------------------------------------------
         ELSE
           INFILE=READC_B(INFILE,'@')
         END IF
-        WRITE(77,101) INFILE(1:TRUELEN(INFILE))
+        CALL TOLOG77_STRING(INFILE(1:TRUELEN(INFILE)),'Input file name')
         IF((INDEX(INFILE,'*').NE.0).OR.
      +   (INDEX(INFILE,'?').NE.0))THEN
           L1=TRUEBEG(INFILE)
@@ -160,8 +160,8 @@ C Miramos si tiene formato REDUCEME
             END IF
             !se pide escale en el eje X
             WRITE(*,100) 'X-axis: 1=pixel, 2=wavelength '
-            CXAXIS(1:1)=READC_B('1','12')
-            WRITE(77,101) CXAXIS
+            IXAXIS=READILIM_B('1',1,2)
+            WRITE(77,111) IXAXIS,'# X-axis: 1=pixel, 2=wavelength'
             !se pide el numero de scan a leer
             IF(REDUCEME_NSCAN.EQ.1)THEN
               NS1=1
@@ -171,11 +171,11 @@ C Miramos si tiene formato REDUCEME
               WRITE(*,101) '* Define the scan region to be averaged:'
               WRITE(*,100) 'First scan to be read'
               NS1=READILIM_B('@',1,REDUCEME_NSCAN)
-              WRITE(77,*) NS1
+              WRITE(77,111) NS1,'# First scan to be read'
               WRITE(*,100) 'Last  scan to be read'
               WRITE(CDUMMY,*) NS1
               NS2=READILIM_B(CDUMMY,NS1,REDUCEME_NSCAN)
-              WRITE(77,*) NS2
+              WRITE(77,111) NS2,'# Last scan to be read'
             END IF
             !data
             IF(NS1.GT.1)THEN
@@ -192,15 +192,15 @@ C Miramos si tiene formato REDUCEME
                 SPSUM(J)=SPSUM(J)+SP(J)
               END DO
             END DO
+            CLOSE(10)
             IF(NS2.GT.NS1)THEN !normalizamos
               DO J=1,REDUCEME_NCHAN
                 SPSUM(J)=SPSUM(J)/REAL(NS2-NS1+1)
               END DO
             END IF
-            CLOSE(10)
             !introducimos datos en el buffer
             DO J=1,REDUCEME_NCHAN
-              IF(CXAXIS.EQ.'1')THEN
+              IF(IXAXIS.EQ.1)THEN
                 XDATA(J,NB)=REAL(J)
               ELSE
                 XDATA(J,NB)=REDUCEME_STWV+REAL(J-1)*REDUCEME_DISP
@@ -211,6 +211,8 @@ C Miramos si tiene formato REDUCEME
               XYNAME(I,NB)=' '
             END DO
             NDATABUFF(NB)=REDUCEME_NCHAN
+            LXERR(NB)=.FALSE.
+            LYERR(NB)=.FALSE.
             ISTATUS=1
             WRITE(*,101) 'File read and closed!'
             !update limits
@@ -227,7 +229,11 @@ C Miramos si tiene formato REDUCEME
               DATAKEY(NB)=INFILE(1:L1)//'['//CDUMMY(1:L0)//']'
             END IF
             RETURN
+          ELSE
+            CLOSE(10)
           END IF
+        ELSE
+          CLOSE(10)
         END IF
 C------------------------------------------------------------------------------
 C Miramos si tiene formato FITS
@@ -237,8 +243,8 @@ C Miramos si tiene formato FITS
      +   FITS_ISTATUS)
         !si no es FITS, cerramos el fichero y no hacemos nada
         IF(FITS_ISTATUS.NE.0)THEN
-          CALL FITS_PRINTERROR(FITS_ISTATUS)
-          FITS_ISTATUS=0
+!         CALL FITS_PRINTERROR(FITS_ISTATUS)
+!         FITS_ISTATUS=0
           CALL FTCLOS(10,FITS_ISTATUS)
         ELSE
           !es una imagen FITS; miramos si tiene extensiones
@@ -253,7 +259,7 @@ C Miramos si tiene formato FITS
             WRITE(*,101) '=> This file contains extensions'
             WRITE(*,100) 'Extension number to be read (1=primary) '
             NEW_HDU=READI_B('1')
-            WRITE(77,*) NEW_HDU
+            WRITE(77,111) NEW_HDU,'# Extension number to be read'
             CALL FTMAHD(10,NEW_HDU,HDUTYPE,FITS_ISTATUS)
           END IF
           !leemos BITPIX
@@ -285,7 +291,6 @@ C Miramos si tiene formato FITS
             CALL FTCLOS(10,FITS_ISTATUS)
             WRITE(*,100) '>>> NDATAMAX: '
             WRITE(*,*) NDATAMAX
-            CALL FTCLOS(10,FITS_ISTATUS)
             WRITE(*,101) 'ERROR: NAXIS1.GT.NDATAMAX'
             WRITE(*,100) 'Press <CR> to continue...'
             IF(LBATCH)THEN
@@ -356,8 +361,8 @@ C Miramos si tiene formato FITS
           END IF
           !se pide escale en el eje X
           WRITE(*,100) 'X-axis: 1=pixel, 2=wavelength '
-          CXAXIS(1:1)=READC_B('1','12')
-          WRITE(77,101) CXAXIS
+          IXAXIS=READILIM_B('1',1,2)
+          WRITE(77,111) IXAXIS,'# X-axis: 1=pixel, 2=wavelength'
           !se pide el numero de scan a leer
           IF(NAXIS_(2).EQ.1)THEN
             NS1=1
@@ -367,11 +372,11 @@ C Miramos si tiene formato FITS
             WRITE(*,101) '* Define the scan region to be averaged:'
             WRITE(*,100) 'First scan to be read'
             NS1=READILIM_B('@',1,NAXIS_(2))
-            WRITE(77,*) NS1
+            WRITE(77,111) NS1,'# First scan to be read'
             WRITE(*,100) 'Last  scan to be read'
             WRITE(CDUMMY,*) NS1
             NS2=READILIM_B(CDUMMY,NS1,NAXIS_(2))
-            WRITE(77,*) NS2
+            WRITE(77,111) NS2,'# Last scan to be read'
           END IF
           !data
           DO J=1,NAXIS_(1)
@@ -385,12 +390,12 @@ C Miramos si tiene formato FITS
               SPSUM(J)=SPSUM(J)+SP(J)
             END DO
           END DO
+          CALL FTCLOS(10,FITS_ISTATUS)
           IF(NS2.GT.NS1)THEN !normalizamos
             DO J=1,NAXIS_(1)
               SPSUM(J)=SPSUM(J)/REAL(NS2-NS1+1)
             END DO
           END IF
-          CALL FTCLOS(10,FITS_ISTATUS)
           !si ha habido algun error, lo mostramos
           IF(FITS_ISTATUS.GT.0)THEN
             CALL FITS_PRINTERROR(FITS_ISTATUS)
@@ -404,7 +409,7 @@ C Miramos si tiene formato FITS
           END IF
           !introducimos datos en el buffer
           DO J=1,NAXIS_(1)
-            IF(CXAXIS.EQ.'1')THEN
+            IF(IXAXIS.EQ.1)THEN
               XDATA(J,NB)=REAL(J)
             ELSE
               XDATA(J,NB)=REDUCEME_STWV+REAL(J-1)*REDUCEME_DISP
@@ -438,7 +443,7 @@ C------------------------------------------------------------------------------
         WRITE(*,100) 'No. of initial rows to be skipped...'
         NSKIP=READI_B('0')
         IF(NSKIP.LT.0) NSKIP=0
-        WRITE(77,*) NSKIP
+        WRITE(77,111) NSKIP,'# No. of initial rows to be skipped'
         IF(NSKIP.GT.0)THEN
           DO I=1,NSKIP
             READ(10,*,END=901)
@@ -446,7 +451,7 @@ C------------------------------------------------------------------------------
         END IF
         WRITE(*,100) 'No. of rows to be read (0=ALL)......'
         NDATA=READI_B('0')
-        WRITE(77,*) NDATA
+        WRITE(77,111) NDATA,'# No. of rows to be read (0=ALL)'
         IF(NSKIP+NDATA.GT.NDATAMAX)THEN
           WRITE(*,101) 'ERROR: this number of data is too large.'
           WRITE(*,101) 'You must modify the parameter NDATAMAX.'
@@ -463,10 +468,10 @@ C..............................................................................
           LXERR(NB)=.FALSE.
           WRITE(*,100) 'Column No. for Y data.......................'
           NY=READI_B('@')
-          WRITE(77,*) NY
+          WRITE(77,111) NY,'# Column No. for Y data'
           WRITE(*,100) 'Column No. for err(Y) data (0=NONE, -N) '
           NEY=READI_B('0')
-          WRITE(77,*) NEY
+          WRITE(77,111) NEY,'# Column No. for err(Y) data (0=none, -N)'
           IF(NEY.LT.0)THEN
             NEY=-NEY
             LNEXTROW=.TRUE.
@@ -478,10 +483,10 @@ C..............................................................................
         ELSEIF(IMODE.EQ.2)THEN
           WRITE(*,100) 'Column No. for X data.......................'
           NX=READI_B('@')
-          WRITE(77,*) NX
+          WRITE(77,111) NX,'# Column No. for X data'
           WRITE(*,100) 'Column No. for err(X) data (0=NONE, -N) '
           NEX=READI_B('0')
-          WRITE(77,*) NEX
+          WRITE(77,111) NEX,'# Column No. for err(Y) data (0=none, -N)'
           IF(NEX.LT.0)THEN
             NEX=-NEX
             LNEXTROW=.TRUE.
@@ -491,10 +496,10 @@ C..............................................................................
           LXERR(NB)=(NEX.GT.0)
           WRITE(*,100) 'Column No. for Y data.......................'
           NY=READI_B('@')
-          WRITE(77,*) NY
+          WRITE(77,111) NY,'# Column No. for Y data'
           WRITE(*,100) 'Column No. for err(Y) data (0=NONE, -N) '
           NEY=READI_B('0')
-          WRITE(77,*) NEY
+          WRITE(77,111) NEY,'# Column No. for err(Y) data (0=none, -N)'
           IF(NEY.NE.0)THEN
             LYERR(NB)=.TRUE.
             IF(LNEXTROW)THEN
@@ -533,7 +538,7 @@ C..............................................................................
           END IF
           WRITE(*,100) 'Column No. for names (0=NONE)...........'
           NNAME=READI_B('0')
-          WRITE(77,*) NNAME
+          WRITE(77,111) NNAME,'# Column No. for names (0=none)'
           LXYNAME(NB)=(NNAME.GT.0)
         END IF
 C------------------------------------------------------------------------------
@@ -725,4 +730,5 @@ C..............................................................................
 C------------------------------------------------------------------------------
 100     FORMAT(A,$)
 101     FORMAT(A)
+111     FORMAT(I12,1X,A)
         END

@@ -23,9 +23,11 @@ C
         CHARACTER*1 CH
         CHARACTER*20 XYNAME(NDATAMAX,NBUFFMAX),XYNAME_
         CHARACTER*50 CDUMMY
+        CHARACTER*255 CLINEA
         LOGICAL LDEFBUFF(NBUFFMAX),LUSEBUFF(NBUFFMAX)
         LOGICAL LXYNAME(NBUFFMAX)
         LOGICAL LBATCH
+        LOGICAL LOOP
 C
         COMMON/BLKNDATABUFF/NDATABUFF
         COMMON/BLKXYDATA/XDATA,YDATA
@@ -39,11 +41,16 @@ C------------------------------------------------------------------------------
           WRITE(*,*)
           WRITE(*,100) 'Select point with the mouse...'
           IF(LBATCH)THEN
-            READ(78,*) XC,YC
+            LOOP=.TRUE.
+            DO WHILE(LOOP)
+              READ(78,101) CLINEA
+              IF(CLINEA(1:1).NE.'#') LOOP=.FALSE.
+            END DO
+            READ(CLINEA,*) XC,YC
           ELSE
             CALL RPGBAND(0,0,0.,0.,XC,YC,CH)
           END IF
-          WRITE(77,*) XC,YC
+          WRITE(77,*) XC,YC,'# point selected with the mouse'
           IMIN=1
           DMIN=(XDATA(1,NB0)-XC)**2+(YDATA(1,NB0)-YC)**2
           IF(NDATABUFF(NB0).GT.1)THEN
@@ -72,24 +79,24 @@ C------------------------------------------------------------------------------
           WRITE(CDUMMY,*) XDATA(IMIN,NB0)
           WRITE(*,100) 'New  X value '
           XDATA(IMIN,NB0)=READF_B(CDUMMY)
-          WRITE(77,*) XDATA(IMIN,NB0)
+          WRITE(77,*) XDATA(IMIN,NB0),'# New X value'
           WRITE(CDUMMY,*) EXDATA(IMIN,NB0)
           WRITE(*,100) 'New EX value '
           EXDATA(IMIN,NB0)=READF_B(CDUMMY)
-          WRITE(77,*) EXDATA(IMIN,NB0)
+          WRITE(77,*) EXDATA(IMIN,NB0),'# New EX value'
           WRITE(CDUMMY,*) YDATA(IMIN,NB0)
           WRITE(*,100) 'New  Y value '
           YDATA(IMIN,NB0)=READF_B(CDUMMY)
-          WRITE(77,*) YDATA(IMIN,NB0)
+          WRITE(77,*) YDATA(IMIN,NB0),'# New Y value'
           WRITE(CDUMMY,*) EYDATA(IMIN,NB0)
           WRITE(*,100) 'New EY value '
           EYDATA(IMIN,NB0)=READF_B(CDUMMY)
-          WRITE(77,*) EYDATA(IMIN,NB0)
+          WRITE(77,*) EYDATA(IMIN,NB0),'# New EY value'
           IF(LXYNAME(NB0))THEN
             WRITE(*,100) 'New NAME value '
             XYNAME_(1:20)=READC_B(XYNAME(IMIN,NB0),'@')
             XYNAME(IMIN,NB0)=XYNAME_
-            WRITE(77,101) XYNAME(IMIN,NB0)
+            CALL TOLOG77_STRING(XYNAME(IMIN,NB0),'New NAME value')
           END IF
 C------------------------------------------------------------------------------
         ELSEIF(IMODE.EQ.30)THEN                                 !remove 1 point
@@ -114,19 +121,29 @@ C------------------------------------------------------------------------------
           WRITE(*,*)
           WRITE(*,100) 'Select rectangle with the mouse...'
           IF(LBATCH)THEN
-            READ(78,*) XC,YC
+            LOOP=.TRUE.
+            DO WHILE(LOOP)
+              READ(78,101) CLINEA
+              IF(CLINEA(1:1).NE.'#') LOOP=.FALSE.
+            END DO
+            READ(CLINEA,*) XC,YC
           ELSE
             CALL RPGBAND(0,0,0.,0.,XC,YC,CH)
           END IF
-          WRITE(77,*) XC,YC
+          WRITE(77,*) XC,YC,'# first corner'
           CALL PGSCI(4)
           WRITE(*,100) 'click again...'
           IF(LBATCH)THEN
-            READ(78,*) XC0,YC0
+            LOOP=.TRUE.
+            DO WHILE(LOOP)
+              READ(78,101) CLINEA
+              IF(CLINEA(1:1).NE.'#') LOOP=.FALSE.
+            END DO
+            READ(CLINEA,*) XC0,YC0
           ELSE
             CALL RPGBAND(2,0,XC,YC,XC0,YC0,CH)
           END IF
-          WRITE(77,*) XC0,YC0
+          WRITE(77,*) XC0,YC0,'# second corner'
           WRITE(*,101) 'OK!'
           CALL PGSCI(0)
           IF(XC0.LT.XC)THEN
@@ -161,7 +178,9 @@ C------------------------------------------------------------------------------
           END IF
 C------------------------------------------------------------------------------
         END IF
-C
+C------------------------------------------------------------------------------
+        CALL UPDATELIMITS(NB0)
+C------------------------------------------------------------------------------
 100     FORMAT(A,$)
 101     FORMAT(A)
         END

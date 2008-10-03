@@ -57,13 +57,16 @@ C------------------------------------------------------------------------------
         ISTATUS=0                          !salvo que se demuestre lo contrario
         WRITE(*,100) 'Function:  y='
         CFUNCTIONY=READC_B('@','@')
-        WRITE(77,101) CFUNCTIONY(1:TRUELEN(CFUNCTIONY))
+        CALL TOLOG77_STRING(CFUNCTIONY(1:TRUELEN(CFUNCTIONY)),
+     +   'Function: y=?')
         WRITE(*,100) 'Function: ex='
         CFUNCTIONEX=READC_B('@','@')
-        WRITE(77,101) CFUNCTIONEX(1:TRUELEN(CFUNCTIONEX))
+        CALL TOLOG77_STRING(CFUNCTIONEX(1:TRUELEN(CFUNCTIONEX)),
+     +   'Function: ex=?')
         WRITE(*,100) 'Function: ey='
         CFUNCTIONEY=READC_B('@','@')
-        WRITE(77,101) CFUNCTIONEY(1:TRUELEN(CFUNCTIONEY))
+        CALL TOLOG77_STRING(CFUNCTIONEY(1:TRUELEN(CFUNCTIONEY)),
+     +   'Function: ey=?')
 C------------------------------------------------------------------------------
         IF(LBUFFER)THEN
           XMIN0=(1.+REAL(IEXPAND)/100.)*XMIN+REAL(IEXPAND)/100.*XMAX
@@ -77,7 +80,7 @@ C------------------------------------------------------------------------------
           END IF
           WRITE(*,100) 'Xmin '
           XMINF=READF_B(CXMINF)
-          WRITE(77,*) XMINF
+          WRITE(77,*) XMINF,'# Xmin'
           IF(XMAX.GT.XMAX0)THEN
             WRITE(CXMAXF,*) XMAX0
           ELSE
@@ -85,18 +88,18 @@ C------------------------------------------------------------------------------
           END IF
           WRITE(*,100) 'Xmax '
           XMAXF=READF_B(CXMAXF)
-          WRITE(77,*) XMAXF
+          WRITE(77,*) XMAXF,'# Xmax'
         ELSE
           WRITE(*,100) 'Xmin'
           XMINF=READF_B('@')
-          WRITE(77,*) XMINF
+          WRITE(77,*) XMINF,'# Xmin'
           WRITE(*,100) 'Xmax'
           XMAXF=READF_B('@')
-          WRITE(77,*) XMAXF
+          WRITE(77,*) XMAXF,'# Xmax'
         END IF
         WRITE(*,100) 'No. of points '
         NF=READILIM_B('1000',2,NDATAMAX)
-        WRITE(77,*) NF
+        WRITE(77,111) NF,'# No. of points'
         WRITE(CNDATABUFF,*) NF
         LND1=TRUEBEG(CNDATABUFF)
         LND2=TRUELEN(CNDATABUFF)
@@ -267,4 +270,5 @@ C------------------------------------------------------------------------------
 C------------------------------------------------------------------------------
 100     FORMAT(A,$)
 101     FORMAT(A)
+111     FORMAT(I12,1X,A)
         END

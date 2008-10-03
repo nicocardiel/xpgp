@@ -122,12 +122,12 @@ C seleccionamos grado inicial del polinomio
         NB=0
         DO WHILE(NB.EQ.0)
           IF(LBATCH)THEN
-            READ(78,*) NB
+            CALL READ_NB(NB)
           ELSE
             CALL RPGBAND(0,0,0.,0.,XC,YC,CH)
             CALL IFBUTTON(XC,YC,NB)
           END IF
-          WRITE(77,*) NB
+          WRITE(77,111) NB,'# Polynomial degree (button number!)'
           NDEG=-1   !grado ficticio para controlar pulsacion de boton con grado
           DO K=1,NDEGMAX+1
             IF(NB.EQ.NBDEG(K)) NDEG=K-1
@@ -163,7 +163,8 @@ C permitimos refinar el numero de coeficientes a ajustar
             CALL RPGBAND(0,0,0.,0.,XC,YC,CH)
             CALL IFBUTTON(XC,YC,NB)
           END IF
-          WRITE(77,*) NB
+          WRITE(77,111) NB,
+     +     '# select/unselect coefficientes (button number!)'
           IF(NB.EQ.38)THEN
             NCOEF=0
             DO K=1,NDEGMAX+1
@@ -236,7 +237,7 @@ C solicitamos el valor de los coeficientes no utilizados
               WRITE(*,'(A2,I2,A2,$)') 'a(',K-1,') '
             END IF
             A(K)=READF_B('@')
-            WRITE(77,*) A(K)
+            WRITE(77,*) A(K),'# fixed coefficient'
           END IF
         END DO
 C------------------------------------------------------------------------------
@@ -276,7 +277,7 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
           WRITE(*,100) 'Fit.....(a/b/c/d/e/f/g/h, 0=none, '//
      >     '?=show options) '
           CFIT(1:1)=READC_B('0','abcdefgh0?')
-          WRITE(77,101) CFIT
+          WRITE(77,112) CFIT,'# Fit (a...h, 0=none)'
           WRITE(*,102)
 C..............................................................................
           IF(CFIT.EQ.'?')THEN
@@ -782,7 +783,7 @@ C prediccion del ajuste
                 END IF
               END IF
             END DO
-            WRITE(77,*) FALPHA
+            WRITE(77,*) FALPHA,'# alpha/2'
             IF(FALPHA.GT.0.0)THEN
               FACTOR_TSTUDENT=FTSTUDENTI(NF-NCOEF,FALPHA)
               WRITE(CDUMMY,*) NF-NCOEF
@@ -794,7 +795,7 @@ C prediccion del ajuste
               WRITE(*,*) FACTOR_TSTUDENT
               WRITE(*,100) 'X error to be added quadratically '
               ERRX0=READF_B('0.0')
-              WRITE(77,*) ERRX0
+              WRITE(77,*) ERRX0,'# X error to be added quadratically'
               DO N=1,NPLOTMAX
                 X0=DBLE(XMINF+(XMAXF-XMINF)*REAL(N-1)/REAL(NPLOTMAX-1))
                 Y0=A(NDEG+1)                                   !polinomio en X0
@@ -861,7 +862,7 @@ C futuro dato medido
                 END IF
               END IF
             END DO
-            WRITE(77,*) FALPHA
+            WRITE(77,*) FALPHA,'# alpha/2'
             IF(FALPHA.GT.0.0)THEN
               FACTOR_TSTUDENT=FTSTUDENTI(NF-NCOEF,FALPHA)
               WRITE(CDUMMY,*) NF-NCOEF
@@ -873,7 +874,7 @@ C futuro dato medido
               WRITE(*,*) FACTOR_TSTUDENT
               WRITE(*,100) 'X error to be added quadratically '
               ERRX0=READF_B('0.0')
-              WRITE(77,*) ERRX0
+              WRITE(77,*) ERRX0,'# X error to be added quadratically'
               DO N=1,NPLOTMAX
                 X0=DBLE(XMINF+(XMAXF-XMINF)*REAL(N-1)/REAL(NPLOTMAX-1))
                 Y0=A(NDEG+1)                                   !polinomio en X0
@@ -930,7 +931,7 @@ C buffers
         IF(LANYPLOT)THEN
           WRITE(*,100) 'Are you saving fit results (y/n) '
           CSAVE(1:1)=READC_B('n','yn')
-          WRITE(77,101) CSAVE
+          WRITE(77,112) CSAVE,'# save fit results'
         ELSE
           CSAVE='n'
         END IF
@@ -950,32 +951,32 @@ C
             WRITE(*,101) '(0) EXIT'
             WRITE(*,100) 'Option '
             ICSAVE=READILIM_B('0',0,7)
-            WRITE(77,*) ICSAVE
+            WRITE(77,111) ICSAVE,'# Save option (0=EXIT)'
 C
             IF((ICSAVE.EQ.1).OR.(ICSAVE.EQ.2).OR.(ICSAVE.EQ.3).OR.
      +       (ICSAVE.EQ.7))THEN
               WRITE(*,100) 'Buffer # to store new data.............'
               NB=READILIM_B('@',1,NBUFFMAX)
-              WRITE(77,*) NB
+              WRITE(77,111) NB,'# Buffer number to store new data'
             ELSEIF((ICSAVE.EQ.4).OR.(ICSAVE.EQ.5))THEN
               WRITE(*,100) '1st Buffer # to store lower limit......'
               NB1=READILIM_B('@',1,NBUFFMAX)
-              WRITE(77,*) NB1
+              WRITE(77,111) NB1,'# 1st buffer to store lower limit'
               WRITE(*,100) '2nd Buffer # to store upper limit......'
               NB2=READILIM_B('@',1,NBUFFMAX)
-              WRITE(77,*) NB2
+              WRITE(77,111) NB2,'# 2nd buffer to store upper limit'
             END IF
 C
             IF((ICSAVE.EQ.1).OR.(ICSAVE.EQ.4).OR.(ICSAVE.EQ.5))THEN
               WRITE(*,100) 'Xmin '
               XMINF=READF_B(CXMINF)
-              WRITE(77,*) XMINF
+              WRITE(77,*) XMINF,'# Xmin'
               WRITE(*,100) 'Xmax '
               XMAXF=READF_B(CXMAXF)
-              WRITE(77,*) XMAXF
+              WRITE(77,*) XMAXF,'# Xmax'
               WRITE(*,100) 'No. of points '
               NDATA=READILIM_B('1000',2,NDATAMAX)
-              WRITE(77,*) NDATA
+              WRITE(77,111) NDATA,'# No. of points'
             END IF
 C..............................................................................
             IF(ICSAVE.EQ.1)THEN                                       !last fit
@@ -1002,7 +1003,7 @@ C..............................................................................
               DATAKEY(NB)=DATAKEY_
               L1=TRUEBEG(DATAKEY(NB))
               L2=TRUELEN(DATAKEY(NB))
-              WRITE(77,101) DATAKEY(NB)(L1:L2)
+              CALL TOLOG77_STRING(DATAKEY(NB)(L1:L2),'Key label')
               CALL SHOW_BUFFERS
 C..............................................................................
             ELSEIF(ICSAVE.EQ.2)THEN                                !predictions
@@ -1029,7 +1030,7 @@ C..............................................................................
               DATAKEY(NB)=DATAKEY_
               L1=TRUEBEG(DATAKEY(NB))
               L2=TRUELEN(DATAKEY(NB))
-              WRITE(77,101) DATAKEY(NB)(L1:L2)
+              CALL TOLOG77_STRING(DATAKEY(NB)(L1:L2),'Key label')
               CALL SHOW_BUFFERS
 C..............................................................................
             ELSEIF(ICSAVE.EQ.3)THEN                                  !residuals
@@ -1056,7 +1057,7 @@ C..............................................................................
               DATAKEY(NB)=DATAKEY_
               L1=TRUEBEG(DATAKEY(NB))
               L2=TRUELEN(DATAKEY(NB))
-              WRITE(77,101) DATAKEY(NB)(L1:L2)
+              CALL TOLOG77_STRING(DATAKEY(NB)(L1:L2),'Key label')
               CALL SHOW_BUFFERS
 C..............................................................................
             ELSEIF(ICSAVE.EQ.4)THEN              !confid. level for predictions
@@ -1077,11 +1078,11 @@ C..............................................................................
                   END IF
                 END IF
               END DO
-              WRITE(77,*) FALPHA
+              WRITE(77,*) FALPHA,'# alpha/2'
               FACTOR_TSTUDENT=FTSTUDENTI(NF-NCOEF,FALPHA)
               WRITE(*,100) 'X error to be added quadratically '
               ERRX0=READF_B('0.0')
-              WRITE(77,*) ERRX0
+              WRITE(77,*) ERRX0,'# X error to be added quadratically'
               DO N=1,NDATA
                 X0=DBLE(XMINF+(XMAXF-XMINF)*REAL(N-1)/REAL(NDATA-1))
                 Y0=A(NDEG+1)                                   !polinomio en X0
@@ -1156,13 +1157,15 @@ C..............................................................................
               DATAKEY(NB1)=DATAKEY_
               L1=TRUEBEG(DATAKEY(NB1))
               L2=TRUELEN(DATAKEY(NB1))
-              WRITE(77,101) DATAKEY(NB1)(L1:L2)
+              CALL TOLOG77_STRING(DATAKEY(NB1)(L1:L2),
+     +         'Key label for 1st buffer')
               WRITE(*,100) 'Key label for second buffer '
               DATAKEY_(1:50)=READC_B('c.l. for prediction','@')
               DATAKEY(NB2)=DATAKEY_
               L1=TRUEBEG(DATAKEY(NB2))
               L2=TRUELEN(DATAKEY(NB2))
-              WRITE(77,101) DATAKEY(NB2)(L1:L2)
+              CALL TOLOG77_STRING(DATAKEY(NB2)(L1:L2),
+     +         'Key label for 2nd buffer')
               CALL SHOW_BUFFERS
 C..............................................................................
             ELSEIF(ICSAVE.EQ.5)THEN          !confid. level for new observation
@@ -1183,11 +1186,11 @@ C..............................................................................
                   END IF
                 END IF
               END DO
-              WRITE(77,*) FALPHA
+              WRITE(77,*) FALPHA,'# alpha/2'
               FACTOR_TSTUDENT=FTSTUDENTI(NF-NCOEF,FALPHA)
               WRITE(*,100) 'X error to be added quadratically '
               ERRX0=READF_B('0.0')
-              WRITE(77,*) ERRX0
+              WRITE(77,*) ERRX0,'# X error to be added quadratically'
               DO N=1,NDATA
                 X0=DBLE(XMINF+(XMAXF-XMINF)*REAL(N-1)/REAL(NDATA-1))
                 Y0=A(NDEG+1)                                   !polinomio en X0
@@ -1262,13 +1265,15 @@ C..............................................................................
               DATAKEY(NB1)=DATAKEY_
               L1=TRUEBEG(DATAKEY(NB1))
               L2=TRUELEN(DATAKEY(NB1))
-              WRITE(77,101) DATAKEY(NB1)(L1:L2)
+              CALL TOLOG77_STRING(DATAKEY(NB1)(L1:L2),
+     +         'Key label for 1st label')
               WRITE(*,100) 'Key label for second buffer '
               DATAKEY_(1:50)=READC_B('c.l. for new data','@')
               DATAKEY(NB2)=DATAKEY_
               L1=TRUEBEG(DATAKEY(NB2))
               L2=TRUELEN(DATAKEY(NB2))
-              WRITE(77,101) DATAKEY(NB2)(L1:L2)
+              CALL TOLOG77_STRING(DATAKEY(NB2)(L1:L2),
+     +         'Key label for 2nd label')
               CALL SHOW_BUFFERS
 C..............................................................................
             ELSEIF(ICSAVE.EQ.6)THEN                 !generate a FORTRAN program
@@ -1277,7 +1282,8 @@ C pedimos nombre de fichero FORTRAN; si ya existe, lo borramos
               FORTRAN_FILE=READC_B('@','@')
               L1=TRUEBEG(FORTRAN_FILE)
               L2=TRUELEN(FORTRAN_FILE)
-              WRITE(77,101) FORTRAN_FILE(L1:L2)
+              CALL TOLOG77_STRING(FORTRAN_FILE(L1:L2),
+     +         'Ouput FORTRAN file name')
               INQUIRE(FILE=FORTRAN_FILE,EXIST=LOGFILE)
               IF(LOGFILE)THEN
                 COMANDO='rm -f '
@@ -1605,7 +1611,7 @@ C..............................................................................
                   END IF
                 END IF
               END DO
-              WRITE(77,*) FALPHA
+              WRITE(77,*) FALPHA,'# alpha/2'
               FACTOR_TSTUDENT=FTSTUDENTI(NF-NCOEF,FALPHA)
               NDATA=0
               NREMOVED=0
@@ -1674,7 +1680,7 @@ C..............................................................................
               DATAKEY(NB)=DATAKEY_
               L1=TRUEBEG(DATAKEY(NB))
               L2=TRUELEN(DATAKEY(NB))
-              WRITE(77,101) DATAKEY(NB)(L1:L2)
+              CALL TOLOG77_STRING(DATAKEY(NB)(L1:L2),'Key label')
               CALL SHOW_BUFFERS
 C..............................................................................
             END IF
@@ -1694,4 +1700,6 @@ C------------------------------------------------------------------------------
 100     FORMAT(A,$)
 101     FORMAT(A)
 102     FORMAT(79('-'))
+111     FORMAT(I12,1X,A)
+112     FORMAT(11X,A1,1X,A)
         END

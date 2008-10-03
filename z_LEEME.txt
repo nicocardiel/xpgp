@@ -1,0 +1,15 @@
+* Cambios 4.5 -> 4.6
+- Hay comentarios en cada linea del fichero log.
+- Cualquier linea que comience por "#" en el log es ignorada.
+- Se pueden descomentar las ultimas lineas para que el log file se ejecute
+y el programa termine.
+- Ahora el botón para cargar fichero Xi,Yi tiene acelerador (tecla "f").
+- Cuando se modifica algún punto en una gráfica, los límites se actualizan
+  (antes el programa recordaba los límites iniciales).
+- Se ha mejorado la posibilidad de incluir etiquetas externas y líneas.
+
+* ToDO
+- Salvar buffer en FITS (?)
+- Revisar calculo de errores en la prediccion,... en los ajustes polinomicos.
+- Incluir ajuste de pseudofits con errores en cada pixel.
+- Incluir ajuste mediante splines adaptables.

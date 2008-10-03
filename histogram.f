@@ -47,7 +47,7 @@ C definimos parametros del histograma necesarios
           WRITE(*,100) 'Ymin '
         END IF
         XMINH=READF_B(CDUMMY)
-        WRITE(77,*) XMINH
+        WRITE(77,*) XMINH,'# minimum value'
         IF(CAXIS.EQ.'X')THEN
           WRITE(CDUMMY,*) XMAXBUFF(NB0)
           WRITE(*,100) 'Xmax '
@@ -56,10 +56,10 @@ C definimos parametros del histograma necesarios
           WRITE(*,100) 'Ymax '
         END IF
         XMAXH=READF_B(CDUMMY)
-        WRITE(77,*) XMAXH
+        WRITE(77,*) XMAXH,'# maximum value'
         WRITE(*,100) 'No. of bins '
         NBIN=READILIM_B('100',2,NBINMAX)
-        WRITE(77,*) NBIN
+        WRITE(77,111) NBIN,'# Number of bins'
 C------------------------------------------------------------------------------
         DO K=1,NBIN
           NDATA(K)=0
@@ -81,7 +81,7 @@ C
 C------------------------------------------------------------------------------
         WRITE(*,100) 'Buffer # to store histogram '
         NBNEW=READILIM_B('@',1,NBUFFMAX)
-        WRITE(77,*) NBNEW
+        WRITE(77,111) NBNEW,'# Selected buffer number'
         WRITE(*,100) 'Selected buffer is #'
         WRITE(*,*) NBNEW
         IF(LDEFBUFF(NBNEW))THEN
@@ -117,4 +117,5 @@ C
 C------------------------------------------------------------------------------
 100     FORMAT(A,$)
 101     FORMAT(A)
+111     FORMAT(I12,1X,A)
         END

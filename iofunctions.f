@@ -10,11 +10,13 @@ C
         IMPLICIT NONE
         CHARACTER*(*) CDEF,CVAL
 C
-        INTEGER I,L1,L2
+        INTEGER I,L1,L2,LL1,LL2
         INTEGER TRUEBEG,TRUELEN
+        INTEGER INDEXR
         INTEGER NERR
         CHARACTER*255 CADENA
         LOGICAL LBATCH
+        LOGICAL LOOP
 C
         COMMON/BLKLBATCH/LBATCH
 C------------------------------------------------------------------------------
@@ -31,7 +33,18 @@ C------------------------------------------------------------------------------
           WRITE(*,100)'? '
         END IF
         IF(LBATCH)THEN
-          READ(78,'(A)',ERR=20) CADENA
+          LOOP=.TRUE.
+          DO WHILE(LOOP)
+            READ(78,'(A)',ERR=20) CADENA
+            IF(CADENA(1:1).NE.'#') LOOP=.FALSE. !saltamos comentario en col. 1
+          END DO
+          LL2=INDEXR(CADENA,'#') !truncamos comentario no en primera columna
+          IF(LL2.GT.1)THEN
+            CADENA=CADENA(1:LL2-1)
+          END IF
+          LL1=TRUEBEG(CADENA) !eliminamos espacios por delante
+          LL2=TRUELEN(CADENA) !eliminamos espacios por detras
+          CADENA=CADENA(LL1:LL2)
           WRITE(*,'(A)') CADENA(1:TRUELEN(CADENA))
         ELSE
           READ(*,'(A)',ERR=20) CADENA
@@ -79,12 +92,14 @@ C
         CHARACTER*(*) CDEF
 C
         INTEGER I,L1,L2
+        INTEGER LCOMMENT
         INTEGER N
         INTEGER NERR
         INTEGER TRUEBEG,TRUELEN
         CHARACTER*1 C
         CHARACTER*255 CADENA
         LOGICAL LBATCH
+        LOGICAL LOOP
 C
         COMMON/BLKLBATCH/LBATCH
 C------------------------------------------------------------------------------
@@ -101,7 +116,13 @@ C------------------------------------------------------------------------------
           WRITE(*,100)'? '
         END IF
         IF(LBATCH)THEN
-          READ(78,'(A)',ERR=20)CADENA
+          LOOP=.TRUE.
+          DO WHILE(LOOP)
+            READ(78,'(A)',ERR=20) CADENA
+            IF(CADENA(1:1).NE.'#') LOOP=.FALSE.
+          END DO
+          LCOMMENT=INDEX(CADENA,'#')
+          IF(LCOMMENT.NE.0) CADENA=CADENA(1:LCOMMENT-1) !elimina el comentario
           WRITE(*,'(A)') CADENA(1:TRUELEN(CADENA))
         ELSE
           READ(*,'(A)',ERR=20)CADENA
@@ -140,6 +161,7 @@ C
         INTEGER N1,N2
 C
         INTEGER I,L1,L2
+        INTEGER LCOMMENT
         INTEGER N
         INTEGER NERR
         INTEGER TRUEBEG,TRUELEN
@@ -147,6 +169,7 @@ C
         CHARACTER*255 CDUMMY
         CHARACTER*255 CADENA
         LOGICAL LBATCH
+        LOGICAL LOOP
 C
         COMMON/BLKLBATCH/LBATCH
 C------------------------------------------------------------------------------
@@ -172,7 +195,13 @@ C------------------------------------------------------------------------------
           WRITE(*,100)'? '
         END IF
         IF(LBATCH)THEN
-          READ(78,'(A)',ERR=20)CADENA
+          LOOP=.TRUE.
+          DO WHILE(LOOP)
+            READ(78,'(A)',ERR=20) CADENA
+            IF(CADENA(1:1).NE.'#') LOOP=.FALSE.
+          END DO
+          LCOMMENT=INDEX(CADENA,'#')
+          IF(LCOMMENT.NE.0) CADENA=CADENA(1:LCOMMENT-1) !elimina el comentario
           WRITE(*,'(A)') CADENA(1:TRUELEN(CADENA))
         ELSE
           READ(*,'(A)',ERR=20)CADENA
@@ -225,12 +254,14 @@ C
         CHARACTER*(*) CDEF
 C
         INTEGER I,L1,L2
+        INTEGER LCOMMENT
         INTEGER NERR
         REAL F
         INTEGER TRUEBEG,TRUELEN
         CHARACTER*1 C
         CHARACTER*255 CADENA
         LOGICAL LBATCH
+        LOGICAL LOOP
 C
         COMMON/BLKLBATCH/LBATCH
 C------------------------------------------------------------------------------
@@ -247,7 +278,13 @@ C------------------------------------------------------------------------------
           WRITE(*,100)'? '
         END IF
         IF(LBATCH)THEN
-          READ(78,'(A)',ERR=20)CADENA
+          LOOP=.TRUE.
+          DO WHILE(LOOP)
+            READ(78,'(A)',ERR=20) CADENA
+            IF(CADENA(1:1).NE.'#') LOOP=.FALSE.
+          END DO
+          LCOMMENT=INDEX(CADENA,'#')
+          IF(LCOMMENT.NE.0) CADENA=CADENA(1:LCOMMENT-1) !elimina el comentario
           WRITE(*,'(A)') CADENA(1:TRUELEN(CADENA))
         ELSE
           READ(*,'(A)',ERR=20)CADENA

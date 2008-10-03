@@ -1,5 +1,5 @@
 C------------------------------------------------------------------------------
-C Version 15-September-1999
+C Version 24-September-2008
 C------------------------------------------------------------------------------
 C Copyright N. Cardiel, Departamento de Astrofisica
 C Universidad Complutense de Madrid, 28040-Madrid, Spain
@@ -16,6 +16,7 @@ C
 C
         INCLUDE 'nbuffmax.inc'
         INCLUDE 'ndatamax.inc'
+        INCLUDE 'version.inc'
 C
         INTEGER SYSTEMFUNCTION
         INTEGER TRUELEN,TRUEBEG
@@ -52,6 +53,7 @@ C
         REAL XMINBUFF(NBUFFMAX),XMAXBUFF(NBUFFMAX)
         REAL YMINBUFF(NBUFFMAX),YMAXBUFF(NBUFFMAX)
         CHARACTER*1 CH,CCHANGE,CSAVE,COVER,CSET0,CAPEND,CSURE
+        CHARACTER*4 VERSION_BATCH
         CHARACTER*20 XOPT,YOPT
         CHARACTER*20 XYNAME(NDATAMAX,NBUFFMAX)  !OJO: tama~no igual que CEXTRAE
         CHARACTER*50 CBUTTON,CDUMMY
@@ -74,6 +76,7 @@ C
         LOGICAL LXERR(NBUFFMAX),LYERR(NBUFFMAX)
         LOGICAL LERRXNULL,LERRYNULL
         LOGICAL LANY
+        LOGICAL LOOP
 C
         COMMON/BLKINFILE/INFILE
         COMMON/BLKID/ID
@@ -109,6 +112,7 @@ C------------------------------------------------------------------------------
 C------------------------------------------------------------------------------
 C Abrimos fichero log de esta sesion
         OPEN(77,FILE='xpgp.log',STATUS='UNKNOWN',FORM='FORMATTED')
+        WRITE(77,101) '# xpgp version:'//VERSION
         LBATCH=.FALSE.
 C------------------------------------------------------------------------------
 C------------------------------------------------------------------------------
@@ -141,6 +145,14 @@ C Indicamos si usamos un fichero log ya existente
             END IF
           END DO
           OPEN(78,FILE=BATCHFILE,STATUS='OLD',FORM='FORMATTED')
+          READ(78,'(15X,A4)') VERSION_BATCH
+          IF(VERSION_BATCH.NE.VERSION)THEN
+            WRITE(*,101) '>>> Current version..: '//VERSION
+            WRITE(*,101) '>>> Log. file version: '//VERSION_BATCH
+            WRITE(*,101) 'WARNING: both versions do not match!'
+            WRITE(*,100) 'Press <CR> to continue...'
+            READ(*,*)
+          END IF
         END IF
 C Abrimos la(s) salida(s) grafica(s) y establecemos regiones de dibujo/botones
         CALL RPGBEGOK('/Xserve',0)
@@ -202,7 +214,7 @@ C De momento no hay ningun buffer cargado
         CALL SHOW_BUFFERS
 C------------------------------------------------------------------------------
 C distintas formas de cargar datos en los buffers
-        CALL BUTTON( 9,'file: Xi,Yi',0)
+        CALL BUTTON( 9,'[f]ile: Xi,Yi',0)
         CALL BUTTON(10,'file: (N) Yi',0)
         CALL BUTTON(11,'f(Xij,Yij)',0)
         CALL BUTTON(11,'f(Xij,Yij)',3)
@@ -283,7 +295,11 @@ C Bucle principal
         LEXIT=.FALSE.
         DO WHILE(.NOT.LEXIT)
           IF(LBATCH)THEN
-            READ(78,101) CBATCH
+            LOOP=.TRUE.
+            DO WHILE(LOOP)
+              READ(78,101) CBATCH
+              IF(CBATCH(1:1).NE.'#') LOOP=.FALSE.
+            END DO
             IF(CBATCH(1:18).EQ.'END_of_xpgp.log')THEN
               CLOSE(78)
               NB=-1
@@ -297,7 +313,7 @@ C Bucle principal
             CALL CHUPPER(CH)
 C..........................0000000001111
 C..........................1234567890123
-            NBLOCAL=INDEX('12345678PUZWQ',CH)
+            NBLOCAL=INDEX('12345678PUZWQF',CH)
             IF(NBLOCAL.EQ.9)THEN
               NBLOCAL=55
             ELSEIF(NBLOCAL.EQ.10)THEN
@@ -308,6 +324,8 @@ C..........................1234567890123
               NBLOCAL=64
             ELSEIF(NBLOCAL.EQ.13)THEN
               NBLOCAL=200
+            ELSEIF(NBLOCAL.EQ.14)THEN
+              NBLOCAL=9
             END IF
             IF(NBLOCAL.NE.0)THEN
               CALL BUTTQEX(NBLOCAL,LBEXIST)
@@ -319,7 +337,7 @@ C..............................................................................
             CALL FIND_NEAREST(XC,YC)
 C..............................................................................
           ELSEIF((NB.GE.1).AND.(NB.LE.NBUFFMAX))THEN
-            WRITE(77,'(I3.3,10X,A)') NB,'<buffer #>'
+            CALL TOLOG77(NB,'Select buffer <buffer #>')
             IF(.NOT.LDEFBUFF(NB))THEN
               WRITE(*,101) 'WARNING: this buffer is undefined'
             ELSE
@@ -334,13 +352,13 @@ C..............................................................................
             END IF
 C..............................................................................
           ELSEIF(NB.EQ.9)THEN
-            WRITE(77,'(I3.3,10X,A)') NB,'<file: Xi,Yi>'
-            CALL BUTTON(9,'file: Xi,Yi',5)
+            CALL TOLOG77(NB,'Open new file <file: Xi,Yi>')
+            CALL BUTTON(9,'[f]ile: Xi,Yi',5)
             WRITE(*,100) 'Select buffer...'
             NB_=0
             DO WHILE((NB_.LT.1).OR.(NB_.GT.NBUFFMAX))
               IF(LBATCH)THEN
-                READ(78,*) NB_
+                CALL READ_NB(NB_)
               ELSE
                 CALL RPGBAND(0,0,0.,0.,XC,YC,CH)
                 CALL IFBUTTON(XC,YC,NB_)
@@ -351,7 +369,7 @@ C..............................................................................
                 END IF
               END IF
             END DO
-            WRITE(77,*) NB_  !...........................................al log
+            WRITE(77,111) NB_,'# Selected buffer number'
             WRITE(*,'(A,I1,A)') '   ...OK! Buffer #',NB_,' selected'
 C
             WRITE(CBUTTON,'(A10,I1,A1)') 'buffer # [',NB_,']'
@@ -362,7 +380,7 @@ C
               WRITE(*,101) 'been defined'
               WRITE(*,100) 'Do you want to change its content (y/n) '
               CCHANGE(1:1)=READC_B('n','yn')
-              WRITE(77,101) CCHANGE(1:TRUELEN(CCHANGE))
+              WRITE(77,112) CCHANGE,'# change buffer content'
               LIGNORE=(CCHANGE.EQ.'n')
             ELSE
               LIGNORE=.FALSE.
@@ -398,16 +416,16 @@ C
             END IF
 C
             CALL SHOW_BUFFERS
-            CALL BUTTON(9,'file: Xi,Yi',0)
+            CALL BUTTON(9,'[f]ile: Xi,Yi',0)
 C..............................................................................
           ELSEIF(NB.EQ.10)THEN
-            WRITE(77,'(I3.3,10X,A)') NB,'<file: (N) Yi>'
+            CALL TOLOG77(NB,'Open new file <file: (N) Yi>')
             CALL BUTTON(10,'file: (N) Yi',5)
             WRITE(*,100) 'Select buffer...'
             NB_=0
             DO WHILE((NB_.LT.1).OR.(NB_.GT.NBUFFMAX))
               IF(LBATCH)THEN
-                READ(78,*) NB_
+                CALL READ_NB(NB_)
               ELSE
                 CALL RPGBAND(0,0,0.,0.,XC,YC,CH)
                 CALL IFBUTTON(XC,YC,NB_)
@@ -418,7 +436,7 @@ C..............................................................................
                 END IF
               END IF
             END DO
-            WRITE(77,*) NB_ !............................................al log
+            WRITE(77,111) NB_,'# Selected buffer number'
             WRITE(*,'(A,I1,A)') '   ...OK! Buffer #',NB_,' selected'
 C
             WRITE(CBUTTON,'(A10,I1,A1)') 'buffer # [',NB_,']'
@@ -429,7 +447,7 @@ C
               WRITE(*,101) 'been defined'
               WRITE(*,100) 'Do you want to change its content (y/n) '
               CCHANGE(1:1)=READC_B('n','yn')
-              WRITE(77,101) CCHANGE(1:TRUELEN(CCHANGE))
+              WRITE(77,112) CCHANGE,'# change buffer content'
               LIGNORE=(CCHANGE.EQ.'n')
             ELSE
               LIGNORE=.FALSE.
@@ -468,7 +486,7 @@ C
             CALL BUTTON(10,'file: (N) Yi',0)
 C..............................................................................
           ELSEIF(NB.EQ.11)THEN
-            WRITE(77,'(I3.3,10X,A)') NB,'<f(Xij,Yij)>'
+            CALL TOLOG77(NB,'Function with buffers <f(Xij,Yij)>')
             CALL BUTTON(11,'f(Xij,Yij)',5)
             CALL EXEC_FUNCTION1(ISTATUS)
             IF(ISTATUS.EQ.0)THEN
@@ -481,14 +499,14 @@ C
             CALL BUTTON(11,'f(Xij,Yij)',0)
 C..............................................................................
           ELSEIF(NB.EQ.12)THEN
-            WRITE(77,'(I3.3,10X,A)') NB,'<f(x)>'
+            CALL TOLOG77(NB,'Function (generic) <f(x)>')
             CALL BUTTON(12,'f(x)',5)
 C
             WRITE(*,100) 'Select destination buffer...'
             NB_=0
             DO WHILE((NB_.LT.1).OR.(NB_.GT.NBUFFMAX))
               IF(LBATCH)THEN
-                READ(78,*) NB_
+                CALL READ_NB(NB_)
               ELSE
                 CALL RPGBAND(0,0,0.,0.,XC,YC,CH)
                 CALL IFBUTTON(XC,YC,NB_)
@@ -503,7 +521,7 @@ C
                 END IF
               END IF
             END DO
-            WRITE(77,*) NB_
+            WRITE(77,111) NB_,'# Destination buffer for function'
             WRITE(*,'(A,I1,A)') '   ...OK! Buffer #',NB_,' selected'
 C
             CALL EXEC_FUNCTION2(ISTATUS,NB_)
@@ -535,35 +553,35 @@ C
             CALL BUTTON(12,'f(x)',0)
 C..............................................................................
           ELSEIF(NB.EQ.13)THEN
-            WRITE(77,'(I3.3,10X,A)') NB,'<# >>> #>'
+            CALL TOLOG77(NB,'Copy buffer <# >>> #>')
             CALL BUTTON(13,'# >>> #',5)
 C
             WRITE(*,100) 'Select initial buffer...'
             NB_=0
             DO WHILE((NB_.LT.1).OR.(NB_.GT.NBUFFMAX))
               IF(LBATCH)THEN
-                READ(78,*) NB_
+                CALL READ_NB(NB_)
               ELSE
                 CALL RPGBAND(0,0,0.,0.,XC,YC,CH)
                 CALL IFBUTTON(XC,YC,NB_)
               END IF
               IF(.NOT.LDEFBUFF(NB_)) NB_=0
             END DO
-            WRITE(77,*) NB_
+            WRITE(77,111) NB_,'# Initial buffer'
             WRITE(*,'(A,I1,A)') '   ...OK! Buffer #',NB_,' selected'
 C
             WRITE(*,100) 'Select destination buffer...'
             NB__=0
             DO WHILE((NB__.LT.1).OR.(NB__.GT.NBUFFMAX))
               IF(LBATCH)THEN
-                READ(78,*) NB__
+                CALL READ_NB(NB__)
               ELSE
                 CALL RPGBAND(0,0,0.,0.,XC,YC,CH)
                 CALL IFBUTTON(XC,YC,NB__)
               END IF
               IF(NB__.EQ.NB_) NB__=0
             END DO
-            WRITE(77,*) NB__
+            WRITE(77,111) NB__,'# Destination buffer'
             WRITE(*,'(A,I1,A)') '   ...OK! Buffer #',NB__,' selected'
             WRITE(CBUTTON,'(A10,I1,A1)') 'buffer # [',NB__,']'
             CALL BUTTON(NB__,CBUTTON,-NCOLORBUFF(NB__)-1)
@@ -574,7 +592,8 @@ C
                 WRITE(*,101) '(2) append data to existing buffer'
                 WRITE(*,100) 'Option (1/2) '
                 CAPEND(1:1)=READC_B('@','12')
-                WRITE(77,101) CAPEND
+                WRITE(77,112) CAPEND,
+     +           '# 1=replace full buffer, 2=append data'
               ELSE
                 CAPEND='1'
               END IF
@@ -590,7 +609,7 @@ C
             CALL BUTTON(13,'# >>> #',0)
 C..............................................................................
           ELSEIF(NB.EQ.14)THEN
-            WRITE(77,'(I3.3,10X,A)') NB,'<edit>'
+            CALL TOLOG77(NB,'Edit data <edit>')
             CALL BUTTON(14,'edit',5)
 C
             CALL ONLYONE(NB_)
@@ -608,7 +627,7 @@ C
                 WRITE(*,100) 'Select buffer...'
                 DO WHILE((NB_.LT.1).OR.(NB_.GT.NBUFFMAX))
                   IF(LBATCH)THEN
-                    READ(78,*) NB_
+                    CALL READ_NB(NB_)
                   ELSE
                     CALL RPGBAND(0,0,0.,0.,XC,YC,CH)
                     CALL IFBUTTON(XC,YC,NB_)
@@ -620,7 +639,7 @@ C
                   END IF
                   IF(.NOT.LDEFBUFF(NB_)) NB_=0
                 END DO
-                WRITE(77,*) NB_
+                WRITE(77,111) NB_,'# Selected buffer number'
                 WRITE(*,'(A,I1,A)') '   ...OK! Buffer #',NB_,' selected'
               ELSE
                 WRITE(*,'(A,I1,A)') 'Buffer #',NB_,' selected'
@@ -635,12 +654,13 @@ C
               NB__=0
               DO WHILE(NB__.EQ.0)
                 IF(LBATCH)THEN
-                  READ(78,*) NB__
+                  CALL READ_NB(NB__)
                 ELSE
                   CALL RPGBAND(0,0,0.,0.,XC,YC,CH)
                   CALL IFBUTTON(XC,YC,NB__)
                 END IF
-                WRITE(77,*) NB__
+                WRITE(77,111) NB__,'# 14=back, 22=change 1 p., '//
+     +           '30=remove 1 p., 38=remove region'
                 IF(NB__.EQ.14)THEN
                   WRITE(*,101) '...OK! Edition cancelled!'
                 ELSEIF(NB__.EQ.22)THEN
@@ -697,7 +717,7 @@ C
             CALL BUTTON(14,'edit',0)
 C..............................................................................
           ELSEIF(NB.EQ.15)THEN
-            WRITE(77,'(I3.3,10X,A)') NB,'<fits>'
+            CALL TOLOG77(NB,'Compute fits to data <fits>')
             CALL BUTTON(15,'fits',5)
 C
             CALL ONLYONE(NB_)
@@ -715,7 +735,7 @@ C
                 WRITE(*,100) 'Select buffer...'
                 DO WHILE((NB_.LT.1).OR.(NB_.GT.NBUFFMAX))
                   IF(LBATCH)THEN
-                    READ(78,*) NB_
+                    CALL READ_NB(NB_)
                   ELSE
                     CALL RPGBAND(0,0,0.,0.,XC,YC,CH)
                     CALL IFBUTTON(XC,YC,NB_)
@@ -727,7 +747,7 @@ C
                   END IF
                   IF(.NOT.LDEFBUFF(NB_)) NB_=0
                 END DO
-                WRITE(77,*) NB_
+                WRITE(77,111) NB_,'# Selected buffer number'
                 WRITE(*,'(A,I1,A)') '   ...OK! Buffer #',NB_,' selected'
               ELSE
                 WRITE(*,'(A,I1,A)') 'Buffer #',NB_,' selected'
@@ -739,15 +759,17 @@ C
                 CALL BUTTON(15,'<<< back',-3)
                 CALL BUTTON(23,'linear reg.',0)
                 CALL BUTTON(31,'polynomial',0)
+                CALL BUTTON(39,'other...',0)
                 NB__=0
                 DO WHILE(NB__.EQ.0)
                   IF(LBATCH)THEN
-                    READ(78,*) NB__
+                    CALL READ_NB(NB__)
                   ELSE
                     CALL RPGBAND(0,0,0.,0.,XC,YC,CH)
                     CALL IFBUTTON(XC,YC,NB__)
                   END IF
-                  WRITE(77,*) NB__
+                  WRITE(77,111) NB__,'# 15=back, 23=lin.reg., '//
+     +             '31=poly., 39=other'
                   IF(NB__.EQ.15)THEN
                     WRITE(*,101) '...OK! Fit cancelled!'
                   ELSEIF(NB__.EQ.23)THEN
@@ -759,7 +781,10 @@ C
                     CALL BUTTON(31,'polynomial',5)
                     CALL BUTTON(15,'<<< back',3)
                     CALL SFITPOL(NB_)
-ccc                 CALL SHOW_BUFFERS !no hace falta por esta en SFITPOL
+                  ELSEIF(NB__.EQ.39)THEN
+                    CALL BUTTON(39,'other...',5)
+                    CALL BUTTON(15,'<<< back',3)
+                    CALL OTHERFIT(NB_)
                   ELSE
                     NB__=0
                   END IF
@@ -768,6 +793,7 @@ ccc                 CALL SHOW_BUFFERS !no hace falta por esta en SFITPOL
                 CALL BUTTON(55,'[P]ostScript',3)
                 CALL BUTTON(23,'linear reg.',-1)
                 CALL BUTTON(31,'polinomyal',-1)
+                CALL BUTTON(39,'other...',-1)
               ELSE
                 WRITE(*,101) 'ERROR: selected buffer must be activated.'
                 WRITE(*,100) 'Press <CR> to continue...'
@@ -782,7 +808,7 @@ C
             CALL BUTTON(15,'fits',0)
 C..............................................................................
           ELSEIF(NB.EQ.16)THEN
-            WRITE(77,'(I3.3,10X,A)') NB,'<save buffer>'
+            CALL TOLOG77(NB,'Save data in buffer <save buffer>')
             CALL BUTTON(16,'save buffer',5)
             WRITE(*,100) 'Select buffer...'
             CALL ONLYONE(NB_)
@@ -799,7 +825,7 @@ C..............................................................................
               IF(NB_.EQ.0)THEN
                 DO WHILE((NB_.LT.1).OR.(NB_.GT.NBUFFMAX))
                   IF(LBATCH)THEN
-                    READ(78,*) NB_
+                    CALL READ_NB(NB_)
                   ELSE
                     CALL RPGBAND(0,0,0.,0.,XC,YC,CH)
                     CALL IFBUTTON(XC,YC,NB_)
@@ -810,7 +836,7 @@ C..............................................................................
                     END IF
                   END IF
                 END DO
-                WRITE(77,*) NB_
+                WRITE(77,111) NB_,'# Selected buffer number'
                 WRITE(*,'(A,I1,A)') '   ...OK! Buffer #',NB_,' selected'
               ELSE
                 WRITE(*,'(A,I1,A)') 'Buffer #',NB_,' selected'
@@ -820,7 +846,7 @@ C
               OUTFILE(1:255)=READC_B('@','@')
               L1=TRUEBEG(OUTFILE)
               L2=TRUELEN(OUTFILE)
-              WRITE(77,101) OUTFILE(L1:L2)
+              CALL TOLOG77_STRING(OUTFILE(L1:L2),'Output file name')
               WRITE(*,100) 'Saving file...'
               OPEN(10,FILE=OUTFILE,STATUS='UNKNOWN',FORM='FORMATTED')
               IF(LXYNAME(NB_))THEN
@@ -850,7 +876,7 @@ C
             CALL BUTTON(16,'save buffer',0)
 C..............................................................................
           ELSEIF(NB.EQ.41)THEN
-            WRITE(77,'(I3.3,10X,A)') NB,'<color index>'
+            CALL TOLOG77(NB,'Change color <color index>')
             CALL BUTTON(41,'color index',5)
 C
             CALL ONLYONE(NB_)
@@ -868,7 +894,7 @@ C
                 WRITE(*,100) 'Select buffer...'
                 DO WHILE((NB_.LT.1).OR.(NB_.GT.NBUFFMAX))
                   IF(LBATCH)THEN
-                    READ(78,*) NB_
+                    CALL READ_NB(NB_)
                   ELSE
                     CALL RPGBAND(0,0,0.,0.,XC,YC,CH)
                     CALL IFBUTTON(XC,YC,NB_)
@@ -880,7 +906,7 @@ C
                   END IF
                   IF(.NOT.LDEFBUFF(NB_)) NB_=0
                 END DO
-                WRITE(77,*) NB_
+                WRITE(77,111) NB_,'# Selected buffer number'
                 WRITE(*,'(A,I1,A)') '   ...OK! Buffer #',NB_,' selected'
               ELSE
                 WRITE(*,'(A,I1,A)') 'Buffer #',NB_,' selected'
@@ -915,12 +941,12 @@ C
               NB__=0
               DO WHILE(NB__.EQ.0)
                 IF(LBATCH)THEN
-                  READ(78,*) NB__
+                  CALL READ_NB(NB__)
                 ELSE
                   CALL RPGBAND(0,0,0.,0.,XC,YC,CH)
                   CALL IFBUTTON(XC,YC,NB__)
                 END IF
-                WRITE(77,*) NB__
+                WRITE(77,111) NB__,'# Selected color (button number!)'
                 IF(NB__.EQ.17)THEN
                   NCOLORBUFF(NB_)=2
                 ELSEIF(NB__.EQ.18)THEN
@@ -949,7 +975,7 @@ C
                   WRITE(CDUMMY,*) NCOLORBUFF_
                   WRITE(*,100) 'New CI for symbols (minimum 2) '
                   NCOLORBUFF_=READI_B(CDUMMY)
-                  WRITE(77,*) NCOLORBUFF_
+                  WRITE(77,111) NCOLORBUFF_,'# Selected color number'
                   IF(NCOLORBUFF_.LT.2)THEN
                     WRITE(*,101) 'ERROR: invalid colour. Must be >=2.'
                     WRITE(*,100) 'Press <CR> to continue...'
@@ -987,7 +1013,7 @@ C
             CALL BUTTON(41,'color index',0)
 C..............................................................................
           ELSEIF(NB.EQ.42)THEN
-            WRITE(77,'(I3.3,10X,A)') NB,'<line width>'
+            CALL TOLOG77(NB,'Change line width <line width>')
             CALL BUTTON(42,'line width',5)
 C
             CALL ONLYONE(NB_)
@@ -1005,7 +1031,7 @@ C
                 WRITE(*,100) 'Select buffer...'
                 DO WHILE((NB_.LT.1).OR.(NB_.GT.NBUFFMAX))
                   IF(LBATCH)THEN
-                    READ(78,*) NB_
+                    CALL READ_NB(NB_)
                   ELSE
                     CALL RPGBAND(0,0,0.,0.,XC,YC,CH)
                     CALL IFBUTTON(XC,YC,NB_)
@@ -1017,7 +1043,7 @@ C
                   END IF
                   IF(.NOT.LDEFBUFF(NB_)) NB_=0
                 END DO
-                WRITE(77,*) NB_
+                WRITE(77,111) NB_,'# Selected buffer number'
                 WRITE(*,'(A,I1,A)') '   ...OK! Buffer #',NB_,' selected'
               ELSE
                 WRITE(*,'(A,I1,A)') 'Buffer #',NB_,' selected'
@@ -1082,12 +1108,13 @@ C
               NB__=0
               DO WHILE(NB__.EQ.0)
                 IF(LBATCH)THEN
-                  READ(78,*) NB__
+                  CALL READ_NB(NB__)
                 ELSE
                   CALL RPGBAND(0,0,0.,0.,XC,YC,CH)
                   CALL IFBUTTON(XC,YC,NB__)
                 END IF
-                WRITE(77,*) NB__
+                WRITE(77,111) NB__,
+     +           '# Selected line width (button number!)'
                 IF(NB__.EQ.17)THEN
                   LWBUFF(NB_)=1
                 ELSEIF(NB__.EQ.18)THEN
@@ -1127,7 +1154,7 @@ C
                   WRITE(CDUMMY,*) LWBUFF(NB_)
                   WRITE(*,100) 'New LW for symbols '
                   LWBUFF(NB_)=READI_B(CDUMMY)
-                  WRITE(77,*) LWBUFF(NB_)
+                  WRITE(77,111) LWBUFF(NB_),'# Selected line width'
                 ELSE
                   NB__=0
                 END IF
@@ -1160,7 +1187,7 @@ C
             CALL BUTTON(42,'line width',0)
 C..............................................................................
           ELSEIF(NB.EQ.43)THEN
-            WRITE(77,'(I3.3,10X,A)') NB,'<height>'
+            CALL TOLOG77(NB,'Change current height <height>')
             CALL BUTTON(43,'height',5)
 C
             CALL ONLYONE(NB_)
@@ -1178,7 +1205,7 @@ C
                 WRITE(*,100) 'Select buffer...'
                 DO WHILE((NB_.LT.1).OR.(NB_.GT.NBUFFMAX))
                   IF(LBATCH)THEN
-                    READ(78,*) NB_
+                    CALL READ_NB(NB_)
                   ELSE
                     CALL RPGBAND(0,0,0.,0.,XC,YC,CH)
                     CALL IFBUTTON(XC,YC,NB_)
@@ -1190,7 +1217,7 @@ C
                   END IF
                   IF(.NOT.LDEFBUFF(NB_)) NB_=0
                 END DO
-                WRITE(77,*) NB_
+                WRITE(77,111) NB_,'# Selected buffer number'
                 WRITE(*,'(A,I1,A)') '   ...OK! Buffer #',NB_,' selected'
               ELSE
                 WRITE(*,'(A,I1,A)') 'Buffer #',NB_,' selected'
@@ -1255,12 +1282,12 @@ C
               NB__=0
               DO WHILE(NB__.EQ.0)
                 IF(LBATCH)THEN
-                  READ(78,*) NB__
+                  CALL READ_NB(NB__)
                 ELSE
                   CALL RPGBAND(0,0,0.,0.,XC,YC,CH)
                   CALL IFBUTTON(XC,YC,NB__)
                 END IF
-                WRITE(77,*) NB__
+                WRITE(77,111) NB_,'# Selected CH (button number!)'
                 IF(NB__.EQ.17)THEN
                   CHBUFF(NB_)=0.2
                 ELSEIF(NB__.EQ.18)THEN
@@ -1300,7 +1327,7 @@ C
                   WRITE(CDUMMY,*) CHBUFF(NB_)
                   WRITE(*,100) 'New CH for symbols '
                   CHBUFF(NB_)=READF_B(CDUMMY)
-                  WRITE(77,*) CHBUFF(NB_)
+                  WRITE(77,111) CHBUFF(NB_),'# Selected CH'
                 ELSE
                   NB__=0
                 END IF
@@ -1333,7 +1360,7 @@ C
             CALL BUTTON(43,'height',0)
 C..............................................................................
           ELSEIF(NB.EQ.44)THEN
-            WRITE(77,'(I3.3,10X,A)') NB,'<symbols>'
+            CALL TOLOG77(NB,'Change current symbol <symbols>')
             CALL BUTTON(44,'symbols',5)
 C
             CALL ONLYONE(NB_)
@@ -1351,7 +1378,7 @@ C
                 WRITE(*,100) 'Select buffer...'
                 DO WHILE((NB_.LT.1).OR.(NB_.GT.NBUFFMAX))
                   IF(LBATCH)THEN
-                    READ(78,*) NB_
+                    CALL READ_NB(NB_)
                   ELSE
                     CALL RPGBAND(0,0,0.,0.,XC,YC,CH)
                     CALL IFBUTTON(XC,YC,NB_)
@@ -1363,7 +1390,7 @@ C
                   END IF
                   IF(.NOT.LDEFBUFF(NB_)) NB_=0
                 END DO
-                WRITE(77,*) NB_
+                WRITE(77,111) NB_,'# Selected buffer number'
                 WRITE(*,'(A,I1,A)') '   ...OK! Buffer #',NB_,' selected'
               ELSE
                 WRITE(*,'(A,I1,A)') 'Buffer #',NB_,' selected'
@@ -1428,12 +1455,12 @@ C
               NB__=0
               DO WHILE(NB__.EQ.0)
                 IF(LBATCH)THEN
-                  READ(78,*) NB__
+                  CALL READ_NB(NB__)
                 ELSE
                   CALL RPGBAND(0,0,0.,0.,XC,YC,CH)
                   CALL IFBUTTON(XC,YC,NB__)
                 END IF
-                WRITE(77,*) NB__
+                WRITE(77,111) NB__,'# Selected symbol (button number!)'
                 IF(NB__.EQ.17)THEN
                   NSYMBBUFF(NB_)=1
                 ELSEIF(NB__.EQ.18)THEN
@@ -1473,7 +1500,7 @@ C
                   WRITE(CDUMMY,*) NSYMBBUFF(NB_)
                   WRITE(*,100) 'New symbol number '
                   NSYMBBUFF(NB_)=READF_B(CDUMMY)
-                  WRITE(77,*) NSYMBBUFF(NB_)
+                  WRITE(77,111) NSYMBBUFF(NB_),'# Selected symbol'
                 ELSE
                   NB__=0
                 END IF
@@ -1506,7 +1533,7 @@ C
             CALL BUTTON(44,'symbols',0)
 C..............................................................................
           ELSEIF(NB.EQ.45)THEN
-            WRITE(77,'(I3.3,10X,A)') NB,'<line type>'
+            CALL TOLOG77(NB,'Change current line <line type>')
             CALL BUTTON(45,'line type',5)
 C
             CALL ONLYONE(NB_)
@@ -1524,7 +1551,7 @@ C
                 WRITE(*,100) 'Select buffer...'
                 DO WHILE((NB_.LT.1).OR.(NB_.GT.NBUFFMAX))
                   IF(LBATCH)THEN
-                    READ(78,*) NB_
+                    CALL READ_NB(NB_)
                   ELSE
                     CALL RPGBAND(0,0,0.,0.,XC,YC,CH)
                     CALL IFBUTTON(XC,YC,NB_)
@@ -1536,7 +1563,7 @@ C
                   END IF
                   IF(.NOT.LDEFBUFF(NB_)) NB_=0
                 END DO
-                WRITE(77,*) NB_
+                WRITE(77,111) NB_,'# Selected buffer number'
                 WRITE(*,'(A,I1,A)') '   ...OK! Buffer #',NB_,' selected'
               ELSE
                 WRITE(*,'(A,I1,A)') 'Buffer #',NB_,' selected'
@@ -1576,12 +1603,13 @@ C
               NB__=0
               DO WHILE(NB__.EQ.0)
                 IF(LBATCH)THEN
-                  READ(78,*) NB__
+                  CALL READ_NB(NB__)
                 ELSE
                   CALL RPGBAND(0,0,0.,0.,XC,YC,CH)
                   CALL IFBUTTON(XC,YC,NB__)
                 END IF
-                WRITE(77,*) NB__
+                WRITE(77,111) NB__,
+     +           '# Selected line type (button number!)'
                 IF(NB__.EQ.17)THEN
                   NSYMBBUFF(NB_)=1001
                 ELSEIF(NB__.EQ.18)THEN
@@ -1619,7 +1647,7 @@ C
             CALL BUTTON(45,'line type',0)
 C..............................................................................
           ELSEIF(NB.EQ.46)THEN
-            WRITE(77,'(I3.3,10X,A)') NB,'<file labels>'
+            CALL TOLOG77(NB,'Open file with labels <file labels>')
             CALL BUTTON(46,'file labels',5)
             IF(LLABELS)THEN
               LLABELS=.FALSE.
@@ -1638,7 +1666,7 @@ C..............................................................................
             END IF
 C..............................................................................
           ELSEIF(NB.EQ.47)THEN
-            WRITE(77,'(I3.3,10X,A)') NB,'<errors>'
+            CALL TOLOG77(NB,'<errors>')
             CALL BUTTON(47,'errors',5)
 C
             CALL ONLYONE(NB_)
@@ -1656,7 +1684,7 @@ C
                 WRITE(*,100) 'Select buffer...'
                 DO WHILE((NB_.LT.1).OR.(NB_.GT.NBUFFMAX))
                   IF(LBATCH)THEN
-                    READ(78,*) NB_
+                    CALL READ_NB(NB_)
                   ELSE
                     CALL RPGBAND(0,0,0.,0.,XC,YC,CH)
                     CALL IFBUTTON(XC,YC,NB_)
@@ -1668,7 +1696,7 @@ C
                   END IF
                   IF(.NOT.LDEFBUFF(NB_)) NB_=0
                 END DO
-                WRITE(77,*) NB_
+                WRITE(77,111) NB_,'# Selected buffer number'
                 WRITE(*,'(A,I1,A)') '   ...OK! Buffer #',NB_,' selected'
               ELSE
                 WRITE(*,'(A,I1,A)') 'Buffer #',NB_,' selected'
@@ -1701,12 +1729,13 @@ C
                 CALL BUTTON(47,'<<< back',0)
                 CALL BUTTON(47,'<<< back',-3)
                 IF(LBATCH)THEN
-                  READ(78,*) NB__
+                  CALL READ_NB(NB__)
                 ELSE
                   CALL RPGBAND(0,0,0.,0.,XC,YC,CH)
                   CALL IFBUTTON(XC,YC,NB__)
                 END IF
-                WRITE(77,*) NB__
+                WRITE(77,111) NB__,
+     +           '# Selected error manipulation (button number!)'
                 IF(NB__.EQ.23)THEN
                   IF(LXERR(NB_))THEN
                     LXERR(NB_)=.FALSE.
@@ -1724,7 +1753,8 @@ C
                   WRITE(*,100) 'Factor to be added quadratically '
                   WRITE(*,100) 'to err X'
                   FFACTOR=READF_B('@')
-                  WRITE(77,*) FFACTOR
+                  WRITE(77,*) FFACTOR,
+     +             '# Factor to be added quadratically to err X'
                   DO I=1,NDATABUFF(NB_)
                     EXDATA(I,NB_)=EXDATA(I,NB_)*EXDATA(I,NB_)+
      +               FFACTOR*FFACTOR
@@ -1735,7 +1765,8 @@ C
                   WRITE(*,100) 'Factor to be added quadratically '
                   WRITE(*,100) 'to err Y'
                   FFACTOR=READF_B('@')
-                  WRITE(77,*) FFACTOR
+                  WRITE(77,*) FFACTOR,
+     +             '# Factor to be added quadratically to err Y'
                   DO I=1,NDATABUFF(NB_)
                     EYDATA(I,NB_)=EYDATA(I,NB_)*EYDATA(I,NB_)+
      +               FFACTOR*FFACTOR
@@ -1746,7 +1777,7 @@ C
                   WRITE(*,100) 'Do you want to set err X = 0 '
                   WRITE(*,100) '(y/n) '
                   CSET0(1:1)=READC_B('y','yn')
-                  WRITE(77,101) CSET0
+                  WRITE(77,112) CSET0,'# set err X = 0'
                   IF(CSET0.EQ.'y')THEN
                     DO I=1,NDATABUFF(NB_)
                       EXDATA(I,NB_)=0.
@@ -1757,7 +1788,7 @@ C
                   WRITE(*,100) 'Do you want to set err Y = 0 '
                   WRITE(*,100) '(y/n) '
                   CSET0(1:1)=READC_B('y','yn')
-                  WRITE(77,101) CSET0
+                  WRITE(77,112) CSET0,'# set err Y = 0'
                   IF(CSET0.EQ.'y')THEN
                     DO I=1,NDATABUFF(NB_)
                       EYDATA(I,NB_)=0.
@@ -1782,7 +1813,7 @@ C
             CALL BUTTON(47,'errors',0)
 C..............................................................................
           ELSEIF(NB.EQ.63)THEN
-            WRITE(77,'(I3.3,10X,A)') NB,'<Zoom>'
+            CALL TOLOG77(NB,'<Zoom>')
             CALL BUTTON(63,'[Z]oom',5)
 C
             CALL ONLYONE(NB_)
@@ -1799,23 +1830,33 @@ C
               WRITE(*,101)'Press cursor at two corners of the imaginary'
      +         //' BOX to be zoomed'
               IF(LBATCH)THEN
-                READ(78,*) XC1,YC1
+                LOOP=.TRUE.
+                DO WHILE(LOOP)
+                  READ(78,101) CBATCH
+                  IF(CBATCH(1:1).NE.'#') LOOP=.FALSE.
+                END DO
+                READ(CBATCH,*) XC1,YC1
               ELSE
                 CALL RPGBAND(0,0,0.,0.,XC1,YC1,CH)
               END IF
-              WRITE(77,*) XC1,YC1
+              WRITE(77,*) XC1,YC1,'# first corner for zoom'
               IF(XC1.LT.XMIN) XC1=XMIN
               IF(XC1.GT.XMAX) XC1=XMAX
               IF(YC1.LT.YMIN) YC1=YMIN
               IF(YC1.GT.YMAX) YC1=YMAX
               IF(LBATCH)THEN
-                READ(78,*) XC2,YC2
+                LOOP=.TRUE.
+                DO WHILE(LOOP)
+                  READ(78,101) CBATCH
+                  IF(CBATCH(1:1).NE.'#') LOOP=.FALSE.
+                END DO
+                READ(CBATCH,*) XC2,YC2
               ELSE
                 CALL PGSCI(4)
                 CALL RPGBAND(2,0,XC1,YC1,XC2,YC2,CH)
                 CALL PGSCI(1)
               END IF
-              WRITE(77,*) XC2,YC2
+              WRITE(77,*) XC2,YC2,'# second corner for zoom'
               IF(XC2.LT.XMIN) XC2=XMIN
               IF(XC2.GT.XMAX) XC2=XMAX
               IF(YC2.LT.YMIN) YC2=YMIN
@@ -1838,7 +1879,7 @@ C
             CALL BUTTON(63,'[Z]oom',0)
 C..............................................................................
           ELSEIF(NB.EQ.64)THEN
-            WRITE(77,'(I3.3,10X,A)') NB,'<Whole>'
+            CALL TOLOG77(NB,'Replot (unzoom) <Whole>')
             CALL BUTTON(64,'[W]hole',5)
             CALL ONLYONE(NB_)
             IF(NB_.EQ.-1)THEN
@@ -1864,7 +1905,7 @@ C..............................................................................
             CALL BUTTON(64,'[W]hole',0)
 C..............................................................................
           ELSEIF(NB.EQ.71)THEN
-            WRITE(77,'(I3.3,10X,A)') NB,'<Xmin>'
+            CALL TOLOG77(NB,'Define Xmin <Xmin>')
             IF(LXMINFIX)THEN
               LXMINFIX=.FALSE.
             ELSE
@@ -1872,7 +1913,7 @@ C..............................................................................
               WRITE(*,100) 'New Xmin '
               WRITE(CDUMMY,*) XMIN
               XMIN=READF_B(CDUMMY)
-              WRITE(77,*) XMIN
+              WRITE(77,*) XMIN,'# New Xmin'
               LXMINFIX=.TRUE.
             END IF
             CALL PLOT_SETTINGS
@@ -1882,7 +1923,7 @@ C..............................................................................
             END IF
 C..............................................................................
           ELSEIF(NB.EQ.79)THEN
-            WRITE(77,'(I3.3,10X,A)') NB,'<Xmax>'
+            CALL TOLOG77(NB,'Define Xmax <Xmax>')
             IF(LXMAXFIX)THEN
               LXMAXFIX=.FALSE.
             ELSE
@@ -1890,7 +1931,7 @@ C..............................................................................
               WRITE(*,100) 'New Xmax '
               WRITE(CDUMMY,*) XMAX
               XMAX=READF_B(CDUMMY)
-              WRITE(77,*) XMAX
+              WRITE(77,*) XMAX,'# New Xmax'
               LXMAXFIX=.TRUE.
             END IF
             CALL PLOT_SETTINGS
@@ -1900,7 +1941,7 @@ C..............................................................................
             END IF
 C..............................................................................
           ELSEIF(NB.EQ.87)THEN
-            WRITE(77,'(I3.3,10X,A)') NB,'<Ymin>'
+            CALL TOLOG77(NB,'Define Ymin <Ymin>')
             IF(LYMINFIX)THEN
               LYMINFIX=.FALSE.
             ELSE
@@ -1908,7 +1949,7 @@ C..............................................................................
               WRITE(*,100) 'New Ymin '
               WRITE(CDUMMY,*) YMIN
               YMIN=READF_B(CDUMMY)
-              WRITE(77,*) YMIN
+              WRITE(77,*) YMIN,'# New Ymin'
               LYMINFIX=.TRUE.
             END IF
             CALL PLOT_SETTINGS
@@ -1918,7 +1959,7 @@ C..............................................................................
             END IF
 C..............................................................................
           ELSEIF(NB.EQ.95)THEN
-            WRITE(77,'(I3.3,10X,A)') NB,'<Ymax>'
+            CALL TOLOG77(NB,'Define Ymax <Ymax>')
             IF(LYMAXFIX)THEN
               LYMAXFIX=.FALSE.
             ELSE
@@ -1926,7 +1967,7 @@ C..............................................................................
               WRITE(*,100) 'New Ymax '
               WRITE(CDUMMY,*) YMAX
               YMAX=READF_B(CDUMMY)
-              WRITE(77,*) YMAX
+              WRITE(77,*) YMAX,'# New Ymax'
               LYMAXFIX=.TRUE.
             END IF
             CALL PLOT_SETTINGS
@@ -1936,11 +1977,12 @@ C..............................................................................
             END IF
 C..............................................................................
           ELSEIF(NB.EQ.55)THEN
-            WRITE(77,'(I3.3,10X,A)') NB,'<PostScript>'
+            CALL TOLOG77(NB,'Generate PostScript file <PostScript>')
             CALL BUTTON(55,'[P]ostScript',5)
             WRITE(*,100) 'New graphics device '
             NEWDEV(1:255)=READC_B('/ps','@')
-            WRITE(77,101) NEWDEV(1:TRUELEN(NEWDEV))
+            CALL TOLOG77_STRING(NEWDEV(1:TRUELEN(NEWDEV)),
+     +       'New graphics device')
             IDNEW=PGOPEN(NEWDEV)
             IF(IDNEW.LE.0)THEN
               WRITE(*,101) 'ERROR: invalid graphics device.'
@@ -1961,7 +2003,7 @@ C..............................................................................
             CALL BUTTON(55,'[P]ostScript',-4)
 C..............................................................................
           ELSEIF(NB.EQ.56)THEN
-            WRITE(77,'(I3.3,10X,A)') NB,'<Update>'
+            CALL TOLOG77(NB,'Update plot <Update>')
             CALL BUTTON(56,'[U]pdate',5)
             CALL UPDATEPLOT(.FALSE.,ISTATUS)
             IF(ISTATUS.EQ.0)THEN
@@ -1978,11 +2020,12 @@ C..............................................................................
             END IF
 C..............................................................................
           ELSEIF(NB.EQ.103)THEN
-            WRITE(77,'(I3.3,10X,A)') NB,'<X label>'
+            CALL TOLOG77(NB,'Update X label <X label>')
             CALL BUTTON(103,'X label:',5)
             WRITE(*,100) 'New X label (0=empty) '
             CXLABEL(1:255)=READC_B(CXLABEL,'@')
-            WRITE(77,101) CXLABEL(1:TRUELEN(CXLABEL))
+            CALL TOLOG77_STRING(CXLABEL(1:TRUELEN(CXLABEL)),
+     +       'X label')
             IF(CXLABEL.EQ.'0')THEN
               CXLABEL=' '
               LXLABEL=.FALSE.
@@ -1991,15 +2034,16 @@ C..............................................................................
               WRITE(CDUMMY,*) XLABEL_D
               WRITE(*,100) 'Distance to the X-axis............... '
               XLABEL_D=READF_B(CDUMMY)
-              WRITE(77,*) XLABEL_D
+              WRITE(77,*) XLABEL_D,'# Distance to the X-axis'
               WRITE(CDUMMY,*) XLABEL_C
               WRITE(*,100) 'Label location relative to the X-axis '
               XLABEL_C=READF_B(CDUMMY)
-              WRITE(77,*) XLABEL_C
+              WRITE(77,*) XLABEL_C,
+     +         '# Label location relative to the X-axis'
               WRITE(CDUMMY,*) XLABEL_J
               WRITE(*,100) 'Label justification.................. '
               XLABEL_J=READF_B(CDUMMY)
-              WRITE(77,*) XLABEL_J
+              WRITE(77,*) XLABEL_J,'# Label justification'
             END IF
             CALL PLOT_SETTINGS
             IF(LBUFFER)THEN
@@ -2008,11 +2052,12 @@ C..............................................................................
             END IF
 C..............................................................................
           ELSEIF(NB.EQ.111)THEN
-            WRITE(77,'(I3.3,10X,A)') NB,'<Y label>'
+            CALL TOLOG77(NB,'Update Y label <Y label>')
             CALL BUTTON(111,'Y label:',5)
             WRITE(*,100) 'New Y label (0=empty) '
             CYLABEL(1:255)=READC_B(CYLABEL,'@')
-            WRITE(77,101) CYLABEL(1:TRUELEN(CYLABEL))
+            CALL TOLOG77_STRING(CYLABEL(1:TRUELEN(CYLABEL)),
+     +       'Y label')
             IF(CYLABEL.EQ.'0')THEN
               CYLABEL=' '
               LYLABEL=.FALSE.
@@ -2021,15 +2066,16 @@ C..............................................................................
               WRITE(CDUMMY,*) YLABEL_D
               WRITE(*,100) 'Distance to the Y-axis............... '
               YLABEL_D=READF_B(CDUMMY)
-              WRITE(77,*) YLABEL_D
+              WRITE(77,*) YLABEL_D,'# Distance to the Y-axis'
               WRITE(CDUMMY,*) YLABEL_C
               WRITE(*,100) 'Label location relative to the Y-axis '
               YLABEL_C=READF_B(CDUMMY)
-              WRITE(77,*) YLABEL_C
+              WRITE(77,*) YLABEL_C,
+     +         '# Label location relative to the Y-axis'
               WRITE(CDUMMY,*) YLABEL_J
               WRITE(*,100) 'Label justification.................. '
               YLABEL_J=READF_B(CDUMMY)
-              WRITE(77,*) YLABEL_J
+              WRITE(77,*) YLABEL_J,'# Label justification'
             END IF
             CALL PLOT_SETTINGS
             IF(LBUFFER)THEN
@@ -2038,11 +2084,12 @@ C..............................................................................
             END IF
 C..............................................................................
           ELSEIF(NB.EQ.119)THEN
-            WRITE(77,'(I3.3,10X,A)') NB,'<Plot label>'
+            CALL TOLOG77(NB,'Update plot label <Plot label>')
             CALL BUTTON(119,'Plot label:',5)
             WRITE(*,100) 'New plot label (0=empty) '
             CGLABEL(1:255)=READC_B(CGLABEL,'@')
-            WRITE(77,101) CGLABEL(1:TRUELEN(CGLABEL))
+            CALL TOLOG77_STRING(CGLABEL(1:TRUELEN(CGLABEL)),
+     +       'Plot label')
             IF(CGLABEL.EQ.'0')THEN
               CGLABEL=' '
               LGLABEL=.FALSE.
@@ -2051,15 +2098,16 @@ C..............................................................................
               WRITE(CDUMMY,*) GLABEL_D
               WRITE(*,100) 'Distance to the Y-axis............... '
               GLABEL_D=READF_B(CDUMMY)
-              WRITE(77,*) GLABEL_D
+              WRITE(77,*) GLABEL_D,'# Distance to the Y-axis'
               WRITE(CDUMMY,*) GLABEL_C
               WRITE(*,100) 'Label location relative to the Y-axis '
               GLABEL_C=READF_B(CDUMMY)
-              WRITE(77,*) GLABEL_C
+              WRITE(77,*) GLABEL_C,
+     +         '# Label location relative to the Y-axis'
               WRITE(CDUMMY,*) GLABEL_J
               WRITE(*,100) 'Label justification.................. '
               GLABEL_J=READF_B(CDUMMY)
-              WRITE(77,*) GLABEL_J
+              WRITE(77,*) GLABEL_J,'# Label justification'
             END IF
             CALL PLOT_SETTINGS
             IF(LBUFFER)THEN
@@ -2068,14 +2116,14 @@ C..............................................................................
             END IF
 C..............................................................................
           ELSEIF(NB.EQ.127)THEN
-            WRITE(77,'(I3.3,10X,A)') NB,'<Expand (%)>'
+            CALL TOLOG77(NB,'Define Expand factor <Expand (%)>')
             WRITE(CEXPAND,*) IEXPAND
             L1=TRUEBEG(CEXPAND)
             L2=TRUELEN(CEXPAND)
             CALL BUTTON(127,'Exp.(%)='//CEXPAND(L1:L2),5)
             WRITE(*,100) 'New expand value (%) '
             IEXPAND=READILIM_B(CEXPAND,0,100)
-            WRITE(77,*) IEXPAND
+            WRITE(77,111) IEXPAND,'# New expand value (%)'
             CALL PLOT_SETTINGS
             IF(LBUFFER)THEN
               CALL BUTTON(55,'[P]ostScript',3)
@@ -2083,7 +2131,7 @@ C..............................................................................
             END IF
 C..............................................................................
           ELSEIF(NB.EQ.128)THEN
-            WRITE(77,'(I3.3,10X,A)') NB,'<DATA Key>'
+            CALL TOLOG77(NB,'Modify data key <DATA Key>')
             IF(IDATAKEY.EQ.0)THEN
               CALL BUTTON(128,'KEY off',5)
             ELSEIF(IDATAKEY.EQ.1)THEN
@@ -2105,13 +2153,13 @@ C
             END IF
 C..............................................................................
           ELSEIF(NB.EQ.135)THEN
-            WRITE(77,'(I3.3,10X,A)') NB,'<XOPT>'
+            CALL TOLOG77(NB,'Set X axis parameters <XOPT>')
             L1=TRUEBEG(XOPT)
             L2=TRUELEN(XOPT)
             CALL BUTTON(135,'X:'//XOPT(L1:L2),5)
             WRITE(*,100) 'New XOPT (0=empty) '
             XOPT(1:20)=READC_B(XOPT,'ABCGILNPMTSV120')
-            WRITE(77,101) XOPT(1:TRUELEN(XOPT))
+            CALL TOLOG77_STRING(XOPT(1:TRUELEN(XOPT)),'XOPT for X axis')
             IF(XOPT.EQ.'0') XOPT=' '
             CALL PLOT_SETTINGS
             IF(LBUFFER)THEN
@@ -2120,13 +2168,13 @@ C..............................................................................
             END IF
 C..............................................................................
           ELSEIF(NB.EQ.136)THEN
-            WRITE(77,'(I3.3,10X,A)') NB,'<YOPT>'
+            CALL TOLOG77(NB,'Set Y axis parameters <YOPT>')
             L1=TRUEBEG(YOPT)
             L2=TRUELEN(YOPT)
             CALL BUTTON(136,'Y:'//YOPT(L1:L2),5)
             WRITE(*,100) 'New YOPT (0=empty) '
             YOPT(1:20)=READC_B(YOPT,'ABCGILNPMTSV120')
-            WRITE(77,101) YOPT(1:TRUELEN(YOPT))
+            CALL TOLOG77_STRING(YOPT(1:TRUELEN(YOPT)),'YOPT for Y axis')
             IF(YOPT.EQ.'0') YOPT=' '
             CALL PLOT_SETTINGS
             IF(LBUFFER)THEN
@@ -2135,7 +2183,7 @@ C..............................................................................
             END IF
 C..............................................................................
           ELSEIF(NB.EQ.143)THEN
-            WRITE(77,'(I3.3,10X,A)') NB,'<JUST>'
+            CALL TOLOG77(NB,'Set un(equal) scales <JUST>')
             IF(AXISJUST.EQ.0)THEN
               CALL BUTTON(143,'JUST=1',0)
               CALL BUTTON(143,'JUST=1',-8)
@@ -2151,7 +2199,7 @@ C..............................................................................
             END IF
 C..............................................................................
           ELSEIF(NB.EQ.144)THEN
-            WRITE(77,'(I3.3,10X,A)') NB,'<Axis CF>'
+            CALL TOLOG77(NB,'Set current font for axis <Axis CF>')
             AXISCF=AXISCF+1
             IF(AXISCF.GT.4) AXISCF=1
             IF(AXISCF.EQ.1)THEN
@@ -2173,14 +2221,14 @@ C..............................................................................
             END IF
 C..............................................................................
           ELSEIF(NB.EQ.151)THEN
-            WRITE(77,'(I3.3,10X,A)') NB,'<Axis LW>'
+            CALL TOLOG77(NB,'Set line with for axis <Axis LW>')
             WRITE(CAXISLW,*) AXISLW
             L1=TRUEBEG(CAXISLW)
             L2=TRUELEN(CAXISLW)
             CALL BUTTON(151,'LW='//CAXISLW(L1:L2),5)
             WRITE(*,100) 'New Axis LW '
             AXISLW=READI_B(CAXISLW)
-            WRITE(77,*) AXISLW
+            WRITE(77,111) AXISLW,'# New Axis LW'
             CALL PLOT_SETTINGS
             IF(LBUFFER)THEN
               CALL BUTTON(55,'[P]ostScript',3)
@@ -2188,14 +2236,14 @@ C..............................................................................
             END IF
 C..............................................................................
           ELSEIF(NB.EQ.152)THEN
-            WRITE(77,'(I3.3,10X,A)') NB,'<Axis CH>'
+            CALL TOLOG77(NB,'Set current height for axis <Axis CH>')
             WRITE(CAXISCH,'(F7.2)') AXISCH
             L1=TRUEBEG(CAXISCH)
             L2=TRUELEN(CAXISCH)
             CALL BUTTON(152,'CH='//CAXISCH(L1:L2),5)
             WRITE(*,100) 'New Axis CH '
             AXISCH=READF_B(CAXISCH)
-            WRITE(77,*) AXISCH
+            WRITE(77,*) AXISCH,'# New Axis CH'
             CALL PLOT_SETTINGS
             IF(LBUFFER)THEN
               CALL BUTTON(55,'[P]ostScript',3)
@@ -2203,7 +2251,7 @@ C..............................................................................
             END IF
 C..............................................................................
           ELSEIF(NB.EQ.159)THEN
-            WRITE(77,'(I3.3,10X,A)') NB,'<statistics>'
+            CALL TOLOG77(NB,'Perform statistical analysis <statistics>')
             CALL BUTTON(159,'statistics',5)
 C
             CALL ONLYONE(NB_)
@@ -2221,7 +2269,7 @@ C
                 WRITE(*,100) 'Select buffer...'
                 DO WHILE((NB_.LT.1).OR.(NB_.GT.NBUFFMAX))
                   IF(LBATCH)THEN
-                    READ(78,*) NB_
+                    CALL READ_NB(NB_)
                   ELSE
                     CALL RPGBAND(0,0,0.,0.,XC,YC,CH)
                     CALL IFBUTTON(XC,YC,NB_)
@@ -2233,7 +2281,7 @@ C
                   END IF
                   IF(.NOT.LDEFBUFF(NB_)) NB_=0
                 END DO
-                WRITE(77,*) NB_
+                WRITE(77,111) NB_,'# Selected buffer number'
                 WRITE(*,'(A,I1,A)') '   ...OK! Buffer #',NB_,' selected'
               ELSE
                 WRITE(*,'(A,I1,A)') 'Buffer #',NB_,' selected'
@@ -2245,7 +2293,7 @@ C
             CALL BUTTON(159,'statistics',0)
 C..............................................................................
           ELSEIF(NB.EQ.167)THEN
-            WRITE(77,'(I3.3,10X,A)') NB,'<X histogram>'
+            CALL TOLOG77(NB,'Generate X data histogram <X histogram>')
             CALL BUTTON(167,'X histogram',5)
 C
             CALL ONLYONE(NB_)
@@ -2263,7 +2311,7 @@ C
                 WRITE(*,100) 'Select buffer...'
                 DO WHILE((NB_.LT.1).OR.(NB_.GT.NBUFFMAX))
                   IF(LBATCH)THEN
-                    READ(78,*) NB_
+                    CALL READ_NB(NB_)
                   ELSE
                     CALL RPGBAND(0,0,0.,0.,XC,YC,CH)
                     CALL IFBUTTON(XC,YC,NB_)
@@ -2275,7 +2323,7 @@ C
                   END IF
                   IF(.NOT.LDEFBUFF(NB_)) NB_=0
                 END DO
-                WRITE(77,*) NB_
+                WRITE(77,111) NB_,'# Selected buffer number'
                 WRITE(*,'(A,I1,A)') '   ...OK! Buffer #',NB_,' selected'
               ELSE
                 WRITE(*,'(A,I1,A)') 'Buffer #',NB_,' selected'
@@ -2289,7 +2337,7 @@ C
             CALL BUTTON(167,'X histogram',0)
 C..............................................................................
           ELSEIF(NB.EQ.168)THEN
-            WRITE(77,'(I3.3,10X,A)') NB,'<Y histogram>'
+            CALL TOLOG77(NB,'Generate Y data histogram <Y histogram>')
             CALL BUTTON(168,'Y histogram',5)
 C
             CALL ONLYONE(NB_)
@@ -2307,7 +2355,7 @@ C
                 WRITE(*,100) 'Select buffer...'
                 DO WHILE((NB_.LT.1).OR.(NB_.GT.NBUFFMAX))
                   IF(LBATCH)THEN
-                    READ(78,*) NB_
+                    CALL READ_NB(NB_)
                   ELSE
                     CALL RPGBAND(0,0,0.,0.,XC,YC,CH)
                     CALL IFBUTTON(XC,YC,NB_)
@@ -2319,7 +2367,7 @@ C
                   END IF
                   IF(.NOT.LDEFBUFF(NB_)) NB_=0
                 END DO
-                WRITE(77,*) NB_
+                WRITE(77,111) NB_,'# Selected buffer number'
                 WRITE(*,'(A,I1,A)') '   ...OK! Buffer #',NB_,' selected'
               ELSE
                 WRITE(*,'(A,I1,A)') 'Buffer #',NB_,' selected'
@@ -2338,6 +2386,11 @@ C..............................................................................
      >       '........(y/n) '
             CSURE(1:1)=READC_B('y','yn')
             IF(CSURE.EQ.'y')THEN
+              WRITE(77,101) '#Uncomment next 3 lines to execute the'//
+     +         ' log file and stop the program:'
+              WRITE(77,101) '#200         # <QUIT>'
+              WRITE(77,101) '#y           # really want to leave?' 
+              WRITE(77,101) '#n           # save log file?'
               WRITE(77,101) 'END_of_xpgp.log'         !marca fin de fichero log
               CLOSE(77)
               WRITE(*,100) 'Do you want to save a logfile of this '
@@ -2363,8 +2416,8 @@ C..............................................................................
               END IF
               LEXIT=.TRUE.
             ELSE
-              WRITE(77,'(I3.3,10X,A)') NB,'<QUIT>'
-              WRITE(77,101) CSURE
+              CALL TOLOG77(NB,'End of program <QUIT>')
+              WRITE(77,112) CSURE,'# End of program'
               CALL BUTTON(200,'[Q]UIT',0)
             END IF
 C..............................................................................
@@ -2377,4 +2430,6 @@ C------------------------------------------------------------------------------
         STOP
 100     FORMAT(A,$)
 101     FORMAT(A)
+111     FORMAT(I12,1X,A)
+112     FORMAT(11X,A1,1X,A)
         END

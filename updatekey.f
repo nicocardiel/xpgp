@@ -38,24 +38,26 @@ C------------------------------------------------------------------------------
         WRITE(*,100) 'Option (0=none) '
         WRITE(CDUMMY,*) IDATAKEY
         IDATAKEY=READILIM_B(CDUMMY,0,4)
-        WRITE(77,*) IDATAKEY
+        WRITE(77,111) IDATAKEY,'# key location (0,...,4)'
 C
         IF(IDATAKEY.EQ.0) RETURN
 C------------------------------------------------------------------------------
         WRITE(CDUMMY,*) DATAKEYCH
         WRITE(*,100) 'Current height for text in key '
         DATAKEYCH=READF_B(CDUMMY)
-        WRITE(77,*) DATAKEYCH
+        WRITE(77,*) DATAKEYCH,'# Current height for text in key'
         WRITE(CDUMMY,*) DATAKEYCHSYMB
         WRITE(*,100) 'Current height for symbol in key (0=actual size) '
         DATAKEYCHSYMB=READF_B(CDUMMY)
-        WRITE(77,*) DATAKEYCHSYMB
+        WRITE(77,*) DATAKEYCHSYMB,
+     +   '# Current height for symbol in key (0=actual size)'
 C------------------------------------------------------------------------------
         NB=1
         DO WHILE(NB.NE.0)
           WRITE(*,100) 'Buffer # to change key label (0=exit)'
           NB=READILIM_B('0',0,NBUFFMAX)
-          WRITE(77,*) NB
+          WRITE(77,111) NB,
+     +     '# Buffer number to change key label (0=exit)'
           IF(NB.NE.0)THEN
             IF(LUSEBUFF(NB))THEN
               L1=TRUEBEG(DATAKEY(NB))
@@ -65,7 +67,7 @@ C------------------------------------------------------------------------------
               DATAKEY(NB)=DATAKEY_
               L1=TRUEBEG(DATAKEY(NB))
               L2=TRUELEN(DATAKEY(NB))
-              WRITE(77,101) DATAKEY(NB)(L1:L2)
+              CALL TOLOG77_STRING(DATAKEY(NB)(L1:L2),'Key label')
             ELSE
               WRITE(*,101) 'ERROR: this buffer is not activated'
               WRITE(*,100) 'Press <CR> to continue...'
@@ -80,4 +82,5 @@ C------------------------------------------------------------------------------
 C------------------------------------------------------------------------------
 100     FORMAT(A,$)
 101     FORMAT(A)
+111     FORMAT(I12,1X,A)
         END
