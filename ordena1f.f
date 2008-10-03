@@ -26,63 +26,63 @@ C REAL    A(N) -> data matrix to be sorted
 C
 Comment
 C------------------------------------------------------------------------------
-	SUBROUTINE ORDENA1F(N,A)
-	IMPLICIT NONE
+        SUBROUTINE ORDENA1F(N,A)
+        IMPLICIT NONE
 C
-	INTEGER N
-	REAL A(N)
+        INTEGER N
+        REAL A(N)
 C local variables
-	INTEGER L,R,I,J
-	REAL RR
+        INTEGER L,R,I,J
+        REAL RR
 C------------------------------------------------------------------------------
-	IF(N.EQ.1)RETURN                                              !evidente
+        IF(N.EQ.1)RETURN                                              !evidente
 C
 C H1: initialize
-	L=N/2+1
-	R=N
+        L=N/2+1
+        R=N
 C
 C H2: decrease L or R
-10	IF(L.GT.1)THEN
-	  L=L-1
-	  RR=A(L)
-	ELSE
-	  RR=A(R)
-	  A(R)=A(1)
-	  R=R-1
-	  IF(R.EQ.1)THEN
-	    A(1)=RR
-	    RETURN
-	  END IF
-	END IF
+10      IF(L.GT.1)THEN
+          L=L-1
+          RR=A(L)
+        ELSE
+          RR=A(R)
+          A(R)=A(1)
+          R=R-1
+          IF(R.EQ.1)THEN
+            A(1)=RR
+            RETURN
+          END IF
+        END IF
 C
 C H3: prepare for sift-up
-	J=L
+        J=L
 C
 C H4: advance downward
-20	I=J
-	J=2*J
-	IF(J.GT.R)THEN
-	  GOTO 30
-	END IF
+20      I=J
+        J=2*J
+        IF(J.GT.R)THEN
+          GOTO 30
+        END IF
 C
 C H5: find "larger" son
-	IF(J+1.LE.R)THEN
-	  IF(A(J).LT.A(J+1))THEN
-	    J=J+1
-	  END IF
-	END IF
+        IF(J+1.LE.R)THEN
+          IF(A(J).LT.A(J+1))THEN
+            J=J+1
+          END IF
+        END IF
 C
 C H6: larger than A(J)?
-	IF(RR.GE.A(J))THEN
-	  GOTO 30
-	END IF
+        IF(RR.GE.A(J))THEN
+          GOTO 30
+        END IF
 C
 C H7: move it up
-	A(I)=A(J)
-	GOTO 20
+        A(I)=A(J)
+        GOTO 20
 C
 C H8: store RR
-30	A(I)=RR
-	GOTO 10                                              !return to step H2
+30      A(I)=RR
+        GOTO 10                                              !return to step H2
 C
-	END
+        END

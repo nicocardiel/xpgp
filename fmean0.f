@@ -25,30 +25,30 @@ C REAL SIGMA -> r.m.s. around the mean value
 C
 Comment
 C------------------------------------------------------------------------------
-	REAL FUNCTION FMEAN0(N,X,SIGMA)
-	IMPLICIT NONE
-	INTEGER N
-	REAL X(N)
-	REAL SIGMA
+        REAL FUNCTION FMEAN0(N,X,SIGMA)
+        IMPLICIT NONE
+        INTEGER N
+        REAL X(N)
+        REAL SIGMA
 C
-	INTEGER I
-	REAL SUM
+        INTEGER I
+        REAL SUM
 C------------------------------------------------------------------------------
-	IF(N.LE.0) STOP 'FATAL ERROR: in function FMEAN0: N.LE.0'
-	SUM=0.
-	DO I=1,N
-	  SUM=SUM+X(I)
-	END DO
-	FMEAN0=SUM/REAL(N)
+        IF(N.LE.0) STOP 'FATAL ERROR: in function FMEAN0: N.LE.0'
+        SUM=0.
+        DO I=1,N
+          SUM=SUM+X(I)
+        END DO
+        FMEAN0=SUM/REAL(N)
 C
-	IF(N.EQ.1)THEN
-	  SIGMA=0.
-	ELSE
-	  SUM=0.
-	  DO I=1,N
-	    SUM=SUM+(X(I)-FMEAN0)*(X(I)-FMEAN0)
-	  END DO
-	  SIGMA=SQRT(SUM/REAL(N-1))
-	END IF
+        IF(N.EQ.1)THEN
+          SIGMA=0.
+        ELSE
+          SUM=0.
+          DO I=1,N
+            SUM=SUM+(X(I)-FMEAN0)*(X(I)-FMEAN0)
+          END DO
+          SIGMA=SQRT(SUM/REAL(N-1))
+        END IF
 C
-	END
+        END

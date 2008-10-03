@@ -1,0 +1,2 @@
+        INTEGER NBUFFMAX
+        PARAMETER (NBUFFMAX=8)

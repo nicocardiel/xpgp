@@ -30,48 +30,48 @@ C           VARA     : variance of the intercept coefficient
 C           VARB     : variance of the slope
 C******************************************************************************
 C
-	SUBROUTINE LINREGEY(N,X,Y,EY,A,B,VARA,VARB)
-	IMPLICIT NONE
+        SUBROUTINE LINREGEY(N,X,Y,EY,A,B,VARA,VARB)
+        IMPLICIT NONE
 C routine parameters
-	INTEGER N
-	DOUBLE PRECISION X(N),Y(N),EY(N)
-	DOUBLE PRECISION A,B
-	DOUBLE PRECISION VARA,VARB
+        INTEGER N
+        DOUBLE PRECISION X(N),Y(N),EY(N)
+        DOUBLE PRECISION A,B
+        DOUBLE PRECISION VARA,VARB
 C local variables
-	INTEGER I
-	DOUBLE PRECISION DELTA,SERR
-	DOUBLE PRECISION SX,SY,SXX,SXY
+        INTEGER I
+        DOUBLE PRECISION DELTA,SERR
+        DOUBLE PRECISION SX,SY,SXX,SXY
 C------------------------------------------------------------------------------
-	SERR=0.D0
-	DO I=1,N
-	  SERR=SERR+1.D0/(EY(I)*EY(I))
-	END DO
+        SERR=0.D0
+        DO I=1,N
+          SERR=SERR+1.D0/(EY(I)*EY(I))
+        END DO
 C
-	SX=0.D0
-	DO I=1,N
-	  SX=SX+X(I)/(EY(I)*EY(I))
-	END DO
+        SX=0.D0
+        DO I=1,N
+          SX=SX+X(I)/(EY(I)*EY(I))
+        END DO
 C
-	SY=0.D0
-	DO I=1,N
-	  SY=SY+Y(I)/(EY(I)*EY(I))
-	END DO
+        SY=0.D0
+        DO I=1,N
+          SY=SY+Y(I)/(EY(I)*EY(I))
+        END DO
 C
-	SXX=0.D0
-	DO I=1,N
-	  SXX=SXX+X(I)*X(I)/(EY(I)*EY(I))
-	END DO
+        SXX=0.D0
+        DO I=1,N
+          SXX=SXX+X(I)*X(I)/(EY(I)*EY(I))
+        END DO
 C
-	SXY=0.D0
-	DO I=1,N
-	  SXY=SXY+X(I)*Y(I)/(EY(I)*EY(I))
-	END DO
+        SXY=0.D0
+        DO I=1,N
+          SXY=SXY+X(I)*Y(I)/(EY(I)*EY(I))
+        END DO
 C
-	DELTA=SERR*SXX-SX*SX
+        DELTA=SERR*SXX-SX*SX
 C------------------------------------------------------------------------------
-	B=(SERR*SXY-SX*SY)/DELTA
-	VARB=SERR/DELTA
-	A=SY/SERR-B*SX/SERR
-	VARA=SXX/DELTA
+        B=(SERR*SXY-SX*SY)/DELTA
+        VARB=SERR/DELTA
+        A=SY/SERR-B*SX/SERR
+        VARA=SXX/DELTA
 C------------------------------------------------------------------------------
-	END
+        END

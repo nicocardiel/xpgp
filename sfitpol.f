@@ -8,8 +8,7 @@ C
         INCLUDE 'xpgpdir.inc'
         INCLUDE 'nsimul.inc'
 C
-        INTEGER NBUFFMAX                 !numero de buffers de datos diferentes
-        PARAMETER (NBUFFMAX=8)
+        INCLUDE 'nbuffmax.inc'
         INCLUDE 'ndatamax.inc'
         INTEGER NDEGMAX         !grado maximo del polinomio que puede ajustarse
         PARAMETER (NDEGMAX=16)
@@ -73,7 +72,7 @@ C
         CHARACTER*1 CH,CFIT,CSAVE
         CHARACTER*50 CXMINF,CXMAXF
         CHARACTER*50 CDUMMY
-        CHARACTER*50 DATAKEY(NBUFFMAX)
+        CHARACTER*50 DATAKEY(NBUFFMAX),DATAKEY_
         CHARACTER*255 FORTRAN_FILE
         CHARACTER*255 COMANDO
         LOGICAL LXERR(NBUFFMAX),LYERR(NBUFFMAX)
@@ -143,8 +142,8 @@ C mostramos seleccion inicial de coeficiones para el grado elegido
           WRITE(CDUMMY,*) K-1
           L1=TRUEBEG(CDUMMY)
           L2=TRUELEN(CDUMMY)
-          CALL BUTTON(NBDEG(K),'a\\d'//CDUMMY(L1:L2),0)
-          IF(NDEG.GE.K-1) CALL BUTTON(NBDEG(K),'a\\d'//CDUMMY(L1:L2),1)
+          CALL BUTTON(NBDEG(K),'a\d'//CDUMMY(L1:L2),0)
+          IF(NDEG.GE.K-1) CALL BUTTON(NBDEG(K),'a\d'//CDUMMY(L1:L2),1)
         END DO
         CALL BUTTSYTEXT(YTEXTOLD)
         CALL BUTTON(38,'go >>>',0)
@@ -194,7 +193,7 @@ C permitimos refinar el numero de coeficientes a ajustar
                 WRITE(CDUMMY,*) K-1
                 L1=TRUEBEG(CDUMMY)
                 L2=TRUELEN(CDUMMY)
-                CALL BUTTON(NBDEG(K),'a\\d'//CDUMMY(L1:L2),-1)
+                CALL BUTTON(NBDEG(K),'a\d'//CDUMMY(L1:L2),-1)
               END DO
               CALL BUTTON(38,'go >>>',-1)
               RETURN
@@ -209,10 +208,10 @@ C permitimos refinar el numero de coeficientes a ajustar
                 CALL BUTTSYTEXT(0.45)
                 IF(IFCOEF(K))THEN
                   IFCOEF(K)=.FALSE.
-                  CALL BUTTON(NBDEG(K),'a\\d'//CDUMMY(L1:L2),0)
+                  CALL BUTTON(NBDEG(K),'a\d'//CDUMMY(L1:L2),0)
                 ELSE
                   IFCOEF(K)=.TRUE.
-                  CALL BUTTON(NBDEG(K),'a\\d'//CDUMMY(L1:L2),1)
+                  CALL BUTTON(NBDEG(K),'a\d'//CDUMMY(L1:L2),1)
                 END IF
                 CALL BUTTSYTEXT(YTEXTOLD)
               END IF
@@ -276,7 +275,7 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         DO WHILE(CFIT.NE.'0')
           WRITE(*,100) 'Fit.....(a/b/c/d/e/f/g/h, 0=none, '//
      >     '?=show options) '
-          CFIT=READC_B('0','abcdefgh0?')
+          CFIT(1:1)=READC_B('0','abcdefgh0?')
           WRITE(77,101) CFIT
           WRITE(*,102)
 C..............................................................................
@@ -930,7 +929,7 @@ C Si hemos hecho algun ajuste, podemos salvar esta informacion en otros
 C buffers
         IF(LANYPLOT)THEN
           WRITE(*,100) 'Are you saving fit results (y/n) '
-          CSAVE=READC_B('n','yn')
+          CSAVE(1:1)=READC_B('n','yn')
           WRITE(77,101) CSAVE
         ELSE
           CSAVE='n'
@@ -999,7 +998,8 @@ C..............................................................................
               LDEFBUFF(NB)=.TRUE.
               LUSEBUFF(NB)=.TRUE.
               WRITE(*,100) 'Key label '
-              DATAKEY(NB)=READC_B('polynomial fit','@')
+              DATAKEY_(1:50)=READC_B('polynomial fit','@')
+              DATAKEY(NB)=DATAKEY_
               L1=TRUEBEG(DATAKEY(NB))
               L2=TRUELEN(DATAKEY(NB))
               WRITE(77,101) DATAKEY(NB)(L1:L2)
@@ -1025,7 +1025,8 @@ C..............................................................................
               LDEFBUFF(NB)=.TRUE.
               LUSEBUFF(NB)=.TRUE.
               WRITE(*,100) 'Key label '
-              DATAKEY(NB)=READC_B('polynomial predictions','@')
+              DATAKEY_(1:50)=READC_B('polynomial predictions','@')
+              DATAKEY(NB)=DATAKEY_
               L1=TRUEBEG(DATAKEY(NB))
               L2=TRUELEN(DATAKEY(NB))
               WRITE(77,101) DATAKEY(NB)(L1:L2)
@@ -1051,7 +1052,8 @@ C..............................................................................
               LDEFBUFF(NB)=.TRUE.
               LUSEBUFF(NB)=.TRUE.
               WRITE(*,100) 'Key label '
-              DATAKEY(NB)=READC_B('residuals','@')
+              DATAKEY_(1:50)=READC_B('residuals','@')
+              DATAKEY(NB)=DATAKEY_
               L1=TRUEBEG(DATAKEY(NB))
               L2=TRUELEN(DATAKEY(NB))
               WRITE(77,101) DATAKEY(NB)(L1:L2)
@@ -1150,12 +1152,14 @@ C..............................................................................
               LDEFBUFF(NB2)=.TRUE.
               LUSEBUFF(NB2)=.TRUE.
               WRITE(*,100) 'Key label for  first buffer '
-              DATAKEY(NB1)=READC_B('c.l. for prediction','@')
+              DATAKEY_(1:50)=READC_B('c.l. for prediction','@')
+              DATAKEY(NB1)=DATAKEY_
               L1=TRUEBEG(DATAKEY(NB1))
               L2=TRUELEN(DATAKEY(NB1))
               WRITE(77,101) DATAKEY(NB1)(L1:L2)
               WRITE(*,100) 'Key label for second buffer '
-              DATAKEY(NB2)=READC_B('c.l. for prediction','@')
+              DATAKEY_(1:50)=READC_B('c.l. for prediction','@')
+              DATAKEY(NB2)=DATAKEY_
               L1=TRUEBEG(DATAKEY(NB2))
               L2=TRUELEN(DATAKEY(NB2))
               WRITE(77,101) DATAKEY(NB2)(L1:L2)
@@ -1254,12 +1258,14 @@ C..............................................................................
               LDEFBUFF(NB2)=.TRUE.
               LUSEBUFF(NB2)=.TRUE.
               WRITE(*,100) 'Key label for  first buffer '
-              DATAKEY(NB1)=READC_B('c.l. for new data','@')
+              DATAKEY_(1:50)=READC_B('c.l. for new data','@')
+              DATAKEY(NB1)=DATAKEY_
               L1=TRUEBEG(DATAKEY(NB1))
               L2=TRUELEN(DATAKEY(NB1))
               WRITE(77,101) DATAKEY(NB1)(L1:L2)
               WRITE(*,100) 'Key label for second buffer '
-              DATAKEY(NB2)=READC_B('c.l. for new data','@')
+              DATAKEY_(1:50)=READC_B('c.l. for new data','@')
+              DATAKEY(NB2)=DATAKEY_
               L1=TRUEBEG(DATAKEY(NB2))
               L2=TRUELEN(DATAKEY(NB2))
               WRITE(77,101) DATAKEY(NB2)(L1:L2)
@@ -1520,7 +1526,7 @@ C unimos todos los subficheros en un fichero unico
               END IF
 C compilamos el programa
               IF(LOK)THEN
-                COMANDO='f77 -o '
+                COMANDO='gfortran -o '
                 LL1=TRUEBEG(FORTRAN_FILE)
                 LL2=TRUELEN(FORTRAN_FILE)
                 COMANDO(8:)=FORTRAN_FILE(LL1:LL2-2)
@@ -1664,7 +1670,8 @@ C..............................................................................
               LDEFBUFF(NB)=.TRUE.
               LUSEBUFF(NB)=.TRUE.
               WRITE(*,100) 'Key label for new buffer '
-              DATAKEY(NB)=READC_B('stripped data','@')
+              DATAKEY_(1:50)=READC_B('stripped data','@')
+              DATAKEY(NB)=DATAKEY_
               L1=TRUEBEG(DATAKEY(NB))
               L2=TRUELEN(DATAKEY(NB))
               WRITE(77,101) DATAKEY(NB)(L1:L2)
@@ -1680,7 +1687,7 @@ C borramos botones
           WRITE(CDUMMY,*) K-1
           L1=TRUEBEG(CDUMMY)
           L2=TRUELEN(CDUMMY)
-          CALL BUTTON(NBDEG(K),'a\\d'//CDUMMY(L1:L2),-1)
+          CALL BUTTON(NBDEG(K),'a\d'//CDUMMY(L1:L2),-1)
         END DO
         CALL BUTTON(38,'go >>>',-1)
 C------------------------------------------------------------------------------

@@ -36,44 +36,42 @@ C
 Comment
 C------------------------------------------------------------------------------
         SUBROUTINE LUSOLV(A,N,NDIM,ORDER,SCALEROW,B,X)
-	IMPLICIT NONE
+        IMPLICIT NONE
 C
-	INTEGER N,NDIM
-	DOUBLE PRECISION A(NDIM,NDIM)
-	INTEGER ORDER(N)
-	DOUBLE PRECISION SCALEROW(N)
-	DOUBLE PRECISION B(N),X(N)
+        INTEGER N,NDIM
+        DOUBLE PRECISION A(NDIM,NDIM)
+        INTEGER ORDER(N)
+        DOUBLE PRECISION SCALEROW(N)
+        DOUBLE PRECISION B(N),X(N)
 C local variables
-	INTEGER I,I0,J
-	DOUBLE PRECISION DSUM
+        INTEGER I,I0,J
+        DOUBLE PRECISION DSUM
 C------------------------------------------------------------------------------
 C reordenamos y reescalamos los elementos del vector B siguiendo la informacion
 C contenida en los vectores ORDER y SCALEROW
-	DO I=1,N
-	  I0=ORDER(I)
-	  X(I)=B(I0)*SCALEROW(I0)
-	END DO
+        DO I=1,N
+          I0=ORDER(I)
+          X(I)=B(I0)*SCALEROW(I0)
+        END DO
 C------------------------------------------------------------------------------
-C calculamos el vector B'
-	X(1)=X(1)/A(1,1)
-	IF(N.EQ.1) RETURN
-	DO I=2,N
-	  DSUM=0.D0
-	  DO J=1,I-1
-	    DSUM=DSUM+A(I,J)*X(J)
-	  END DO
-	  X(I)=(X(I)-DSUM)/A(I,I)
-	END DO
+C calculamos el vector Bprime
+        X(1)=X(1)/A(1,1)
+        IF(N.EQ.1) RETURN
+        DO I=2,N
+          DSUM=0.D0
+          DO J=1,I-1
+            DSUM=DSUM+A(I,J)*X(J)
+          END DO
+          X(I)=(X(I)-DSUM)/A(I,I)
+        END DO
 C------------------------------------------------------------------------------
 C finalmente obtenemos las soluciones para X
-	DO I=2,N
-	  DSUM=0.D0
-	  DO J=N-I+2,N
-	    DSUM=DSUM+A(N-I+1,J)*X(J)
-	  END DO
-	  X(N-I+1)=X(N-I+1)-DSUM
-	END DO
+        DO I=2,N
+          DSUM=0.D0
+          DO J=N-I+2,N
+            DSUM=DSUM+A(N-I+1,J)*X(J)
+          END DO
+          X(N-I+1)=X(N-I+1)-DSUM
+        END DO
 C------------------------------------------------------------------------------
-100	FORMAT(A,$)
-101	FORMAT(A)
-	END
+        END

@@ -2,65 +2,65 @@ C******************************************************************************
 C Calcula el nivel de significacion de la distribucion F de Fisher con N1 y N2
 C grados de libertad (area de la cola derecha calculada a partir de la
 C abcisa X).
-	REAL FUNCTION FFFISHER(N1,N2,X)
-	IMPLICIT NONE
-	INTEGER N1,N2
-	REAL X
-	REAL BETAI
+        REAL FUNCTION FFFISHER(N1,N2,X)
+        IMPLICIT NONE
+        INTEGER N1,N2
+        REAL X
+        REAL BETAI
 C
-	FFFISHER=BETAI(REAL(N2)/2.,REAL(N1)/2.,
+        FFFISHER=BETAI(REAL(N2)/2.,REAL(N1)/2.,
      +   REAL(N2)/(REAL(N2)+REAL(N1)*X))
-	END
+        END
 C******************************************************************************
 C Calcula el nivel de significacion de la distribucion t de Student con N
 C grados de libertad (area de la cola derecha calculada a partir de la
 C abcisa X).
-	REAL FUNCTION FTSTUDENT(N,X)
-	IMPLICIT NONE
-	INTEGER N
-	REAL X
-	REAL BETAI
+        REAL FUNCTION FTSTUDENT(N,X)
+        IMPLICIT NONE
+        INTEGER N
+        REAL X
+        REAL BETAI
 C
-	FTSTUDENT=0.5*BETAI(REAL(N)/2.,0.5,REAL(N)/(REAL(N)+X*X))
-	END
+        FTSTUDENT=0.5*BETAI(REAL(N)/2.,0.5,REAL(N)/(REAL(N)+X*X))
+        END
 C******************************************************************************
 C Calcula la abcisa a cuya derecha la distribucion t de Student con N grados de
 C libertad cubre un area (nivel de significacion) alpha
-	REAL FUNCTION FTSTUDENTI(N,ALPHA)
-	IMPLICIT NONE
-	INTEGER N
-	REAL ALPHA
-	REAL INVIERTE_FTSTUDENT
+        REAL FUNCTION FTSTUDENTI(N,ALPHA)
+        IMPLICIT NONE
+        INTEGER N
+        REAL ALPHA
+        REAL INVIERTE_FTSTUDENT
 C
-	FTSTUDENTI=INVIERTE_FTSTUDENT(N,ALPHA)
-	END
+        FTSTUDENTI=INVIERTE_FTSTUDENT(N,ALPHA)
+        END
 C******************************************************************************
 C Calcula el area de la cola derecha de la curva normal tipificada a partir de
 C la abcisa X.
-	REAL FUNCTION FNORTIP(X)
-	IMPLICIT NONE
-	REAL X
-	REAL GAMMQ
+        REAL FUNCTION FNORTIP(X)
+        IMPLICIT NONE
+        REAL X
+        REAL GAMMQ
 C
-	FNORTIP=0.5*GAMMQ(0.5,X*X/2.)
-	END
+        FNORTIP=0.5*GAMMQ(0.5,X*X/2.)
+        END
 C******************************************************************************
 C Calcula el nivel de significacion de la distribucion chi-cuadrado con N
 C grados de libertad (area de la cola derecha calculada a partir de la 
 C abcisa X).
-	REAL FUNCTION FCHISQR(N,X)
-	IMPLICIT NONE
-	INTEGER N
-	REAL X
-	REAL GAMMQ
+        REAL FUNCTION FCHISQR(N,X)
+        IMPLICIT NONE
+        INTEGER N
+        REAL X
+        REAL GAMMQ
 C
-	FCHISQR=GAMMQ(REAL(N)/2.,X/2.)
-	END
+        FCHISQR=GAMMQ(REAL(N)/2.,X/2.)
+        END
 C
 C******************************************************************************
 C******************************************************************************
       FUNCTION GAMMP(A,X)
-      IF(X.LT.0..OR.A.LE.0.)PAUSE
+      IF(X.LT.0..OR.A.LE.0.) STOP 'PAUSE'
       IF(X.LT.A+1.)THEN
         CALL GSER(GAMSER,A,X,GLN)
         GAMMP=GAMSER
@@ -72,7 +72,7 @@ C******************************************************************************
       END
 C******************************************************************************
       FUNCTION GAMMQ(A,X)
-      IF(X.LT.0..OR.A.LE.0.)PAUSE
+      IF(X.LT.0..OR.A.LE.0.) STOP 'PAUSE'
       IF(X.LT.A+1.)THEN
         CALL GSER(GAMSER,A,X,GLN)
         GAMMQ=1.-GAMSER
@@ -87,7 +87,7 @@ C******************************************************************************
       PARAMETER (ITMAX=100,EPS=3.E-7)
       GLN=GAMMLN(A)
       IF(X.LE.0.)THEN
-        IF(X.LT.0.)PAUSE
+        IF(X.LT.0.) STOP 'PAUSE'
         GAMSER=0.
         RETURN
       ENDIF
@@ -100,7 +100,7 @@ C******************************************************************************
         SUM=SUM+DEL
         IF(ABS(DEL).LT.ABS(SUM)*EPS)GO TO 1
 11    CONTINUE
-      PAUSE 'A too large, ITMAX too small'
+      STOP 'PAUSE: A too large, ITMAX too small'
 1     GAMSER=SUM*EXP(-X+A*LOG(X)-GLN)
       RETURN
       END
@@ -129,7 +129,7 @@ C******************************************************************************
           GOLD=G
         ENDIF
 11    CONTINUE
-      PAUSE 'A too large, ITMAX too small'
+      STOP 'PAUSE: A too large, ITMAX too small'
 1     GAMMCF=EXP(-X+A*ALOG(X)-GLN)*G
       RETURN
       END
@@ -153,7 +153,7 @@ C******************************************************************************
 C******************************************************************************
       real FUNCTION BETAI(A,B,X)
       real a,b,x,gammln,betacf
-      IF(X.LT.0..OR.X.GT.1.)PAUSE 'bad argument X in BETAI'
+      IF(X.LT.0..OR.X.GT.1.) STOP 'PAUSE: bad argument X in BETAI'
       IF(X.EQ.0..OR.X.EQ.1.)THEN
         BT=0.
       ELSE
@@ -194,7 +194,7 @@ C******************************************************************************
         BZ=1.
         IF(ABS(AZ-AOLD).LT.EPS*ABS(AZ))GO TO 1
 11    CONTINUE
-      PAUSE 'A or B too big, or ITMAX too small'
+      STOP 'PAUSE: A or B too big, or ITMAX too small'
 1     BETACF=AZ
       RETURN
       END
@@ -209,69 +209,69 @@ C******************************************************************************
       END
 C******************************************************************************
 C******************************************************************************
-	REAL FUNCTION INVIERTE_FTSTUDENT(N,ALPHA)
-	IMPLICIT NONE
-	INTEGER N
-	REAL ALPHA
+        REAL FUNCTION INVIERTE_FTSTUDENT(N,ALPHA)
+        IMPLICIT NONE
+        INTEGER N
+        REAL ALPHA
 C
-	REAL FUNK_IFTSTUDENT
-	EXTERNAL FUNK_IFTSTUDENT
+        REAL FUNK_IFTSTUDENT
+        EXTERNAL FUNK_IFTSTUDENT
 C
-	INTEGER NDEG_OF_FREEDOM
-	INTEGER NEVAL
-	REAL X0,DX0
-	REAL XF,DXF
-	REAL SIGNIFICACION
+        INTEGER NDEG_OF_FREEDOM
+        INTEGER NEVAL
+        REAL X0,DX0
+        REAL XF,DXF
+        REAL SIGNIFICACION
 C
-	COMMON/BLKIFTSTUDENT1/NDEG_OF_FREEDOM
-	COMMON/BLKIFTSTUDENT2/SIGNIFICACION
+        COMMON/BLKIFTSTUDENT1/NDEG_OF_FREEDOM
+        COMMON/BLKIFTSTUDENT2/SIGNIFICACION
 C------------------------------------------------------------------------------
 C Segun el valor de alfa, hacemos una estimacion del punto inicial para
 C DOWNHILL, usando el valor de la funcion t de student para infinitos grados 
 C de libertad (distribucion normal).
-	IF(ALPHA.GT.0.50)THEN
-	  X0=0.0
-	ELSEIF(ALPHA.GT.0.40)THEN
-	  X0=0.253
-	ELSEIF(ALPHA.GT.0.30)THEN
-	  X0=0.524
-	ELSEIF(ALPHA.GT.0.20)THEN
-	  X0=0.842
-	ELSEIF(ALPHA.GT.0.10)THEN
-	  X0=1.282
-	ELSEIF(ALPHA.GT.0.050)THEN
-	  X0=1.645
-	ELSEIF(ALPHA.GT.0.025)THEN
-	  X0=1.960
-	ELSEIF(ALPHA.GT.0.010)THEN
-	  X0=2.326
-	ELSEIF(ALPHA.GT.0.005)THEN
-	  X0=2.576
-	ELSEIF(ALPHA.GT.0.001)THEN
-	  X0=3.090
-	ELSE
-	  X0=3.291
-	END IF
-	DX0=.1
+        IF(ALPHA.GT.0.50)THEN
+          X0=0.0
+        ELSEIF(ALPHA.GT.0.40)THEN
+          X0=0.253
+        ELSEIF(ALPHA.GT.0.30)THEN
+          X0=0.524
+        ELSEIF(ALPHA.GT.0.20)THEN
+          X0=0.842
+        ELSEIF(ALPHA.GT.0.10)THEN
+          X0=1.282
+        ELSEIF(ALPHA.GT.0.050)THEN
+          X0=1.645
+        ELSEIF(ALPHA.GT.0.025)THEN
+          X0=1.960
+        ELSEIF(ALPHA.GT.0.010)THEN
+          X0=2.326
+        ELSEIF(ALPHA.GT.0.005)THEN
+          X0=2.576
+        ELSEIF(ALPHA.GT.0.001)THEN
+          X0=3.090
+        ELSE
+          X0=3.291
+        END IF
+        DX0=.1
 C------------------------------------------------------------------------------
-	NDEG_OF_FREEDOM=N
-	SIGNIFICACION=ALPHA
-	CALL DOWNHILL(1,X0,DX0,FUNK_IFTSTUDENT,1.0,0.5,2.0,1.E-7,
+        NDEG_OF_FREEDOM=N
+        SIGNIFICACION=ALPHA
+        CALL DOWNHILL(1,X0,DX0,FUNK_IFTSTUDENT,1.0,0.5,2.0,1.E-7,
      >   XF,DXF,NEVAL)
-	INVIERTE_FTSTUDENT=XF
-	RETURN
-	END
+        INVIERTE_FTSTUDENT=XF
+        RETURN
+        END
 C * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-	REAL FUNCTION FUNK_IFTSTUDENT(X)
-	IMPLICIT NONE
-	REAL X
+        REAL FUNCTION FUNK_IFTSTUDENT(X)
+        IMPLICIT NONE
+        REAL X
 C
-	REAL FTSTUDENT
+        REAL FTSTUDENT
 C
-	INTEGER N
-	REAL ALPHA
-	COMMON/BLKIFTSTUDENT1/N
-	COMMON/BLKIFTSTUDENT2/ALPHA
+        INTEGER N
+        REAL ALPHA
+        COMMON/BLKIFTSTUDENT1/N
+        COMMON/BLKIFTSTUDENT2/ALPHA
 C------------------------------------------------------------------------------	
-	FUNK_IFTSTUDENT=ABS(ALPHA-FTSTUDENT(N,X))
-	END
+        FUNK_IFTSTUDENT=ABS(ALPHA-FTSTUDENT(N,X))
+        END

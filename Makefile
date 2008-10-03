@@ -19,6 +19,7 @@ FSOURCE = button.f buttqbr.f buttqcf.f buttqch.f buttqex.f \
           rpgenv.f rpgeras.f rpgerasb.f rpgerasw.f \
           cextrae.f \
           chupper.f \
+          cleantab.f \
           copydata.f \
           downhill.f \
           downhilld.f \
@@ -71,6 +72,7 @@ FOBJECT = button.o buttqbr.o buttqcf.o buttqch.o buttqex.o \
           rpgenv.o rpgeras.o rpgerasb.o rpgerasw.o \
           cextrae.o \
           chupper.o \
+          cleantab.o \
           copydata.o \
           downhill.o \
           downhilld.o \
@@ -118,7 +120,7 @@ FOBJECT = button.o buttqbr.o buttqcf.o buttqch.o buttqex.o \
           yfunkd_linregexy.o
 # Default rule to create program
 xpgp:  $(FOBJECT)
-	g77 -o $@ $(FOBJECT) -L$(PGPLOTDIR) -L$(X11DIR) -lpgplot -lX11
+	gfortran -Wall -o $@ $(FOBJECT) -L$(PGPLOTDIR) -L$(X11DIR) -lpgplot -lX11
 # Target to clean object modules
 clean:    $(FOBJECT)
 	rm -f $(FOBJECT)
@@ -140,6 +142,6 @@ include:
 	touch $(FSOURCE)
 # second level dependencies
 .f.o: $(FSOURCE)
-	g77 -c $?
+	gfortran -Wall -c $?
 # definitions
 .PRECIOUS: xpgp

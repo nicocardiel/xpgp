@@ -24,7 +24,7 @@ C CHARACTER*(*) CADENA -> input character string
 C
 Comment
 C------------------------------------------------------------------------------
-	INTEGER FUNCTION TRUEBEG(CADENA)
+        INTEGER FUNCTION TRUEBEG(CADENA)
         IMPLICIT NONE
         CHARACTER*(*) CADENA
 C
