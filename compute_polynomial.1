@@ -1,0 +1,178 @@
+C funciones auxiliares
+	INTEGER TRUEBEG
+	INTEGER TRUELEN
+	INTEGER READI_B
+	REAL READF_B
+	REAL FTSTUDENTI
+	REAL FEXTRAE
+	CHARACTER*255 READC_B
+C variables del programa
+	INTEGER I,L1,L2
+	INTEGER ISTATUS
+	INTEGER NSKIP,NREAD,NCOLUMN,NCOLUMNE
+	REAL ALPHA
+	DOUBLE PRECISION FACTOR_TSTUDENT
+	DOUBLE PRECISION X0,Y0,ERR_Y0,ERR_EXPY0
+	DOUBLE PRECISION YY0,ERR_X0
+	CHARACTER*1 CINPUT
+	CHARACTER*50 CX0,CDUMMY
+	CHARACTER*255 INFILE,OUTFILE,CLINEA
+	LOGICAL LOGFILE,LEXIT
+C------------------------------------------------------------------------------
+	WRITE(*,101) '(1) Input/Output data from keyboard'
+	WRITE(*,101) '(2) Input/Output data from ascii file'
+	WRITE(*,100) 'Option (1/2) '
+	CINPUT=READC_B('1','12')
+C------------------------------------------------------------------------------
+        WRITE(*,100) '* NOTE: alfa(1sigma)=0.1587'
+        WRITE(*,100) ', alfa(2sigma)=0.0228'
+        WRITE(*,101) ', alfa(3sigma)=0.00135'
+	WRITE(*,100) 'Significance level (alpha/2) to estimate '//
+     >  'uncertainties '
+	ALPHA=READF_B('0.1587')
+        FACTOR_TSTUDENT=DBLE(FTSTUDENTI(NDEG_FREEDOM,ALPHA))
+        WRITE(CDUMMY,*) NDEG_FREEDOM
+        L1=TRUEBEG(CDUMMY)
+        L2=TRUELEN(CDUMMY)
+        WRITE(*,100) 'T(alpha/2) for '
+        WRITE(*,100) CDUMMY(L1:L2)
+        WRITE(*,100) ' degrees of freedom: '
+        WRITE(*,*) FACTOR_TSTUDENT
+C------------------------------------------------------------------------------
+5	IF(CINPUT.EQ.'1')THEN
+	  LEXIT=.FALSE.
+	  DO WHILE(.NOT.LEXIT)
+	    WRITE(*,100) 'X0 (=END to exit from this program) '
+	    CX0=READC_B('END','@')
+	    IF(CX0.EQ.'END')THEN
+	      LEXIT=.TRUE.
+	    ELSE
+	      READ(CX0,*,ERR=910) X0
+	      WRITE(*,100) 'X error to be added quadratically '
+	      ERR_X0=READF_B('0.0')
+	      CALL SCOMPUTE_POLYNOMIAL(X0,Y0,ERR_X0,ERR_Y0,ERR_EXPY0)
+	      WRITE(*,100) 'Y0.......: '
+	      WRITE(*,*) Y0
+	      WRITE(*,100) 'ERR_Y0...: '
+	      WRITE(*,*) ERR_Y0*FACTOR_TSTUDENT
+	      WRITE(*,100) 'ERR_EXPY0: '
+	      WRITE(*,*) ERR_EXPY0*FACTOR_TSTUDENT
+	    END IF
+	  END DO
+C..............................................................................
+	ELSEIF(CINPUT.EQ.'2')THEN
+C fichero Input
+	  LOGFILE=.FALSE.
+	  DO WHILE(.NOT.LOGFILE)
+	    WRITE(*,100) 'Input file name.....'
+	    INFILE=READC_B('@','@')
+	    INQUIRE(FILE=INFILE,EXIST=LOGFILE)
+	    IF(.NOT.LOGFILE)THEN
+	      WRITE(*,101) 'ERROR: this file does not exist. '//
+     >         'Try again.'
+	      WRITE(*,100) 'Press <CR> to continue...'
+	      READ(*,*)
+	    END IF
+	  END DO
+	  OPEN(10,FILE=INFILE,STATUS='OLD',FORM='FORMATTED')
+C fichero Output
+	  LOGFILE=.TRUE.
+	  DO WHILE(LOGFILE)
+	    WRITE(*,100) 'Output file name....'
+	    OUTFILE=READC_B('@','@')
+	    INQUIRE(FILE=OUTFILE,EXIST=LOGFILE)
+	    IF(LOGFILE)THEN
+	      WRITE(*,101) 'ERROR: this file already exist. '//
+     >         'Try again.'
+	      WRITE(*,100) 'Press <CR> to continue...'
+	      READ(*,*)
+	    END IF
+	  END DO
+	  OPEN(20,FILE=OUTFILE,STATUS='NEW',FORM='FORMATTED')
+C saltamos lineas en caso necesario
+	  WRITE(*,100) 'No. of lines to be skipped (0=none) '
+	  NSKIP=READI_B('0')
+	  IF(NSKIP.GT.0)THEN
+	    DO I=1,NSKIP
+	      READ(10,*,END=900)
+	    END DO
+	  END IF
+C indicamos numero de lineas a leer
+	  WRITE(*,100) 'No. of lines to be read.....(0=all) '
+	  NREAD=READI_B('0')
+C indicamos numero de columna de la cual se extraera la variable x
+	  WRITE(*,100) 'No. of column to read x-data'
+	  NCOLUMN=READI_B('@')
+	  WRITE(*,100) 'No. of column to read errors in x-data'
+	  NCOLUMNE=READI_B('@')
+C leemos linea a linea, calculamos resultados y salvamos en fichero de salida
+	  I=1
+10	  READ(10,101,END=20) CLINEA
+	  X0=FEXTRAE(CLINEA,NCOLUMN,ISTATUS)
+	  IF(ISTATUS.EQ.-1)THEN
+	    WRITE(*,101) 'ERROR while reading:'
+	    WRITE(*,100) 'file: '
+	    WRITE(*,101) INFILE(1:TRUELEN(INFILE))
+	    WRITE(*,100) 'row number...: '
+	    WRITE(*,*) I
+	    WRITE(*,100) 'column number: '
+	    WRITE(*,*) NCOLUMN
+	    CLOSE(10)
+	    CLOSE(20)
+	    STOP
+	  END IF
+	  ERR_X0=FEXTRAE(CLINEA,NCOLUMNE,ISTATUS)
+	  IF(ISTATUS.EQ.-1)THEN
+	    WRITE(*,101) 'ERROR while reading:'
+	    WRITE(*,100) 'file: '
+	    WRITE(*,101) INFILE(1:TRUELEN(INFILE))
+	    WRITE(*,100) 'row number...: '
+	    WRITE(*,*) I
+	    WRITE(*,100) 'column number: '
+	    WRITE(*,*) NCOLUMNE
+	    CLOSE(10)
+	    CLOSE(20)
+	    STOP
+	  END IF
+	  CALL SCOMPUTE_POLYNOMIAL(X0,Y0,ERR_X0,ERR_Y0,ERR_EXPY0)
+	  WRITE(20,*) X0,Y0,ERR_Y0*FACTOR_TSTUDENT,
+     >     ERR_EXPY0*FACTOR_TSTUDENT
+	  IF(I.EQ.NREAD) GOTO 20
+	  I=I+1
+	  GOTO 10
+20	  CLOSE(10)
+	  CLOSE(20)
+	  IF(NREAD.NE.0)THEN     !chequeamos que hemos leido el numero esperado
+	    IF(I-1.NE.NREAD)THEN
+	      WRITE(*,101) 'WARNING:'
+	      WRITE(*,100) 'expected number of rows to be read: '
+	      WRITE(*,*) NREAD
+	      WRITE(*,100) 'actual number of rows read........: '
+	      WRITE(*,*) I-1
+	      WRITE(*,100) 'Press <CR> to continue...'
+	      READ(*,*)
+	    END IF
+	  END IF
+	END IF
+C------------------------------------------------------------------------------
+	STOP
+100	FORMAT(A,$)
+101	FORMAT(A)
+C------------------------------------------------------------------------------
+900	WRITE(*,101) 'ERROR: unexpected end of file.'
+	WRITE(*,100) 'Press <CR> to continue...'
+	READ(*,*)
+	CLOSE(10)
+	CLOSE(20)
+	STOP
+C------------------------------------------------------------------------------
+910	WRITE(*,101) 'ERROR: invalid number.'
+	WRITE(*,100) 'Press <CR> to continue...'
+	READ(*,*)
+	GOTO 5
+	STOP
+C------------------------------------------------------------------------------
+	END
+C
+C******************************************************************************
+C
