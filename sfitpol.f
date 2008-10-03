@@ -23,14 +23,12 @@ C
         INTEGER TRUEBEG
         INTEGER TRUELEN
         INTEGER READILIM_B
-        INTEGER REDSYSTEM
-        EXTERNAL REDSYSTEM
+        INTEGER SYSTEMFUNCTION
         REAL READF_B
         REAL FCHISQR
         REAL FFFISHER
         REAL FTSTUDENTI
         REAL RANRED
-        EXTERNAL RANRED
         REAL FMEAN0
         CHARACTER*255 READC_B
         CHARACTER*255 XPGPDIR_
@@ -1278,9 +1276,7 @@ C pedimos nombre de fichero FORTRAN; si ya existe, lo borramos
               IF(LOGFILE)THEN
                 COMANDO='rm -f '
                 COMANDO(7:)=FORTRAN_FILE(L1:L2)
-                L2=TRUELEN(COMANDO)
-                COMANDO(L2+1:0)='\0'
-                ISYSTEM=REDSYSTEM(COMANDO)
+                ISYSTEM=SYSTEMFUNCTION(COMANDO)
                 IF((ISYSTEM.EQ.127).OR.(ISYSTEM.EQ.-1))THEN
                   WRITE(*,101) 'ERROR: while calling system function.'
                   WRITE(*,100) 'Press <CR> to continue...'
@@ -1300,7 +1296,7 @@ c si existe algun fichero compute_polynomial.0, lo borramos
               IF(LOK)THEN
                 INQUIRE(FILE='./compute_polynomial.0',EXIST=LOGFILE)
                 IF(LOGFILE)THEN
-                  ISYSTEM=REDSYSTEM('rm -f compute_polynomial.0\0')
+                  ISYSTEM=SYSTEMFUNCTION('rm -f compute_polynomial.0')
                   IF((ISYSTEM.EQ.127).OR.(ISYSTEM.EQ.-1))THEN
                     WRITE(*,101) 'ERROR: while calling system function.'
                     WRITE(*,100) 'Press <CR> to continue...'
@@ -1346,8 +1342,8 @@ C copiamos cuerpo del programa principal desde el directorio de xpgp
                 L1=TRUEBEG(XPGPDIR_)
                 L2=TRUELEN(XPGPDIR_)
                 COMANDO(7:L2-L1+7)=XPGPDIR_(L1:L2)
-                COMANDO(L2-L1+8:)='/compute_polynomial.1 . \0'
-                ISYSTEM=REDSYSTEM(COMANDO)
+                COMANDO(L2-L1+8:)='/compute_polynomial.1'
+                ISYSTEM=SYSTEMFUNCTION(COMANDO)
                 IF((ISYSTEM.EQ.127.OR.ISYSTEM.EQ.-1))THEN
                   WRITE(*,101) 'ERROR: while calling system function.'
                   WRITE(*,100) 'Press <CR> to continue...'
@@ -1367,7 +1363,7 @@ c si existe algun fichero compute_polynomial.2, lo borramos
               IF(LOK)THEN
                 INQUIRE(FILE='./compute_polynomial.2',EXIST=LOGFILE)
                 IF(LOGFILE)THEN
-                  ISYSTEM=REDSYSTEM('rm -f compute_polynomial.2\0')
+                  ISYSTEM=SYSTEMFUNCTION('rm -f compute_polynomial.2')
                   IF((ISYSTEM.EQ.127).OR.(ISYSTEM.EQ.-1))THEN
                     WRITE(*,101) 'ERROR: while calling system function.'
                     WRITE(*,100) 'Press <CR> to continue...'
@@ -1502,9 +1498,7 @@ C unimos todos los subficheros en un fichero unico
                 COMANDO='cat compute_polynomial.? > '
                 L2=TRUELEN(COMANDO)
                 COMANDO(L2+1:)=FORTRAN_FILE
-                L2=TRUELEN(COMANDO)
-                COMANDO(L2+1:)='\0'
-                ISYSTEM=REDSYSTEM(COMANDO)
+                ISYSTEM=SYSTEMFUNCTION(COMANDO)
                 IF((ISYSTEM.EQ.127.OR.ISYSTEM.EQ.-1))THEN
                   WRITE(*,101) 'ERROR: while calling system function.'
                   WRITE(*,100) 'Press <CR> to continue...'
@@ -1559,8 +1553,8 @@ C compilamos el programa
                 L2=TRUELEN(COMANDO)
                 COMANDO(L2+2:)=XPGPDIR_(LL1:LL2)
                 L2=TRUELEN(COMANDO)
-                COMANDO(L2+1:)='/downhill.f\0'
-                ISYSTEM=REDSYSTEM(COMANDO)
+                COMANDO(L2+1:)='/downhill.f'
+                ISYSTEM=SYSTEMFUNCTION(COMANDO)
                 WRITE(*,*)
                 IF((ISYSTEM.EQ.127.OR.ISYSTEM.EQ.-1))THEN
                   WRITE(*,101) 'ERROR: while calling system function.'
@@ -1582,7 +1576,7 @@ C compilamos el programa
               END IF
 C borramos ficheros intermedios
               IF(LOK)THEN
-                ISYSTEM=REDSYSTEM('rm -f compute_polynomial.?\0')
+                ISYSTEM=SYSTEMFUNCTION('rm -f compute_polynomial.?')
               END IF
               WRITE(*,*)
 C..............................................................................

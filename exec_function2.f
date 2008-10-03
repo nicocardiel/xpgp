@@ -11,8 +11,7 @@ C
 	PARAMETER (NBUFFMAX=8)
         INCLUDE 'ndatamax.inc'
 C
-	EXTERNAL REDSYSTEM
-	INTEGER REDSYSTEM
+	INTEGER SYSTEMFUNCTION
 	INTEGER TRUEBEG,TRUELEN
 	INTEGER READILIM_B
 	REAL READF_B
@@ -198,7 +197,7 @@ C..............................................................................
 	CLOSE(10)
 C------------------------------------------------------------------------------
 C compilamos el fichero con la funcion
-	ISYSTEM=REDSYSTEM('f77 -o funct_xpgp funct_xpgp.f\0')
+	ISYSTEM=SYSTEMFUNCTION('f77 -o funct_xpgp funct_xpgp.f')
 	IF((ISYSTEM.EQ.127.OR.ISYSTEM.EQ.-1))THEN
 	  WRITE(*,101) 'ERROR: while calling system function.'
 	  WRITE(*,100) 'Press <CR> to continue...'
@@ -213,7 +212,7 @@ C compilamos el fichero con la funcion
 	END IF
 C------------------------------------------------------------------------------
 C ejecutamos el fichero con la funcion
-	ISYSTEM=REDSYSTEM('./funct_xpgp\0')
+	ISYSTEM=SYSTEMFUNCTION('./funct_xpgp')
 	IF((ISYSTEM.EQ.127.OR.ISYSTEM.EQ.-1))THEN
 	  WRITE(*,101) 'ERROR: while calling executing function.'
 	  WRITE(*,100) 'Press <CR> to continue...'
@@ -237,7 +236,7 @@ C leemos el fichero con todos los datos de los buffers
 	WRITE(*,101) 'INFO: buffer data were updated'
 C------------------------------------------------------------------------------
 C borramos el fichero con los datos del buffer
-90	ISYSTEM=REDSYSTEM('rm -f onebuffer_xpgp.dat\0')
+90	ISYSTEM=SYSTEMFUNCTION('rm -f onebuffer_xpgp.dat')
 	IF((ISYSTEM.EQ.127.OR.ISYSTEM.EQ.-1))THEN
 	  WRITE(*,101) 'ERROR: while removing onebuffer_xpgp.dat.'
 	  WRITE(*,100) 'Press <CR> to continue...'
@@ -249,7 +248,7 @@ C borramos el fichero con los datos del buffer
 	END IF
 C------------------------------------------------------------------------------
 C borramos el fichero fortran y su ejecutable
-	ISYSTEM=REDSYSTEM('rm -f funct_xpgp.f funct_xpgp\0')
+	ISYSTEM=SYSTEMFUNCTION('rm -f funct_xpgp.f funct_xpgp')
 	IF((ISYSTEM.EQ.127.OR.ISYSTEM.EQ.-1))THEN
 	  WRITE(*,101) 'ERROR: while removing funct_xpgp*'
 	  WRITE(*,100) 'Press <CR> to continue...'

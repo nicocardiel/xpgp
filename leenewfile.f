@@ -15,8 +15,7 @@ C
 C
 	INTEGER READI_B
 	CHARACTER*255 READC_B
-	INTEGER REDSYSTEM
-	EXTERNAL REDSYSTEM
+	INTEGER SYSTEMFUNCTION
 	INTEGER TRUEBEG,TRUELEN
 C
 	INTEGER I
@@ -26,6 +25,7 @@ C
 	INTEGER NNAME,NX,NY,NEX,NEY
 	INTEGER NDATABUFF(NBUFFMAX)
 	INTEGER ISTATUSEXTRAE
+        INTEGER NCOMMENTS
 	REAL XDATA(NDATAMAX,NBUFFMAX),EXDATA(NDATAMAX,NBUFFMAX)
 	REAL YDATA(NDATAMAX,NBUFFMAX),EYDATA(NDATAMAX,NBUFFMAX)
 	REAL FEXTRAE
@@ -35,7 +35,7 @@ C
 	CHARACTER*20 CEXTRAE                    !funcion para extraer la cadena
 	CHARACTER*50 DATAKEY(NBUFFMAX)
 	CHARACTER*255 INFILE
-	CHARACTER*255 CLINEA
+	CHARACTER*1000 CLINEA
 	LOGICAL LOGFILE
 	LOGICAL LXERR(NBUFFMAX),LYERR(NBUFFMAX)
 	LOGICAL LXYNAME(NBUFFMAX)
@@ -66,7 +66,7 @@ C------------------------------------------------------------------------------
      +   (INDEX(INFILE,'?').NE.0))THEN
           L1=TRUEBEG(INFILE)
           L2=TRUELEN(INFILE)
-          ISYSTEM=REDSYSTEM('ls '//INFILE(L1:L2)//'\0')
+          ISYSTEM=SYSTEMFUNCTION('ls '//INFILE(L1:L2))
 	  GOTO 5
 	END IF
 
@@ -176,8 +176,13 @@ C..............................................................................
 	  END IF
 C------------------------------------------------------------------------------
 	  WRITE(*,100) 'Reading file...'
+          NCOMMENTS=0
 	  I=0
 10	  READ(10,101,END=902) CLINEA
+          IF(CLINEA(1:1).EQ.'#')THEN !ignora lineas con comentarios
+            NCOMMENTS=NCOMMENTS+1
+            GOTO 10
+          END IF
 	  I=I+1
 C..............................................................................
 	  IF(IMODE.EQ.1)THEN
@@ -323,15 +328,17 @@ C..............................................................................
 C calculamos los limites de los datos leidos
 	CALL UPDATELIMITS(NB)
 C mostramos datos basicos sobre los puntos leidos
-	WRITE(*,100) '>>> No. of rows read: '
+	WRITE(*,100) '>>> No. of rows with comments (unread): '
+	WRITE(*,*) NCOMMENTS
+	WRITE(*,100) '>>> No. of rows read..................: '
 	WRITE(*,*) NDATABUFF(NB)
-	WRITE(*,100) '>>> Xmin............: '
+	WRITE(*,100) '>>> Xmin..............................: '
 	WRITE(*,*) XMINBUFF(NB)
-	WRITE(*,100) '>>> Xmax............: '
+	WRITE(*,100) '>>> Xmax..............................: '
 	WRITE(*,*) XMAXBUFF(NB)
-	WRITE(*,100) '>>> Ymin............: '
+	WRITE(*,100) '>>> Ymin..............................: '
 	WRITE(*,*) YMINBUFF(NB)
-	WRITE(*,100) '>>> Ymax............: '
+	WRITE(*,100) '>>> Ymax..............................: '
 	WRITE(*,*) YMAXBUFF(NB)
 	IF(LUNREAD)THEN
 	  WRITE(*,101) 'WARNING: there were unread data'

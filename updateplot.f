@@ -137,6 +137,11 @@ C expansion
 	DX=XMAX-XMIN
 	IF(.NOT.LXMINFIX) XMIN=XMIN-DX*REAL(IEXPAND)/100.
 	IF(.NOT.LXMAXFIX) XMAX=XMAX+DX*REAL(IEXPAND)/100.
+C corregimos XMIN=XMAX
+        IF(XMIN.EQ.XMAX)THEN
+          XMIN=XMIN-0.1
+          XMAX=XMAX+0.1
+        END IF
 C YMIN
 	IF(.NOT.LYMINFIX)THEN
 	  LLIMITFIRST=.TRUE.
@@ -169,6 +174,11 @@ C expansion
 	DY=YMAX-YMIN
 	IF(.NOT.LYMINFIX) YMIN=YMIN-DY*REAL(IEXPAND)/100.
 	IF(.NOT.LYMAXFIX) YMAX=YMAX+DY*REAL(IEXPAND)/100.
+C corregimos YMIN=YMAX
+        IF(YMIN.EQ.YMAX)THEN
+          YMIN=YMIN-0.1
+          YMAX=YMAX+0.1
+        END IF
 C------------------------------------------------------------------------------
 C salvamos opciones de dibujo anteriores
 	CALL PGQLW(OLDLW)

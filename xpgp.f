@@ -18,8 +18,7 @@ C
 	PARAMETER (NBUFFMAX=8)
         INCLUDE 'ndatamax.inc'
 C
-	INTEGER REDSYSTEM
-	EXTERNAL REDSYSTEM
+	INTEGER SYSTEMFUNCTION
 	INTEGER TRUELEN,TRUEBEG
 	INTEGER READI_B,READILIM_B
 	REAL READF_B
@@ -125,8 +124,8 @@ C Indicamos si usamos un fichero log ya existente
      +       (INDEX(BATCHFILE,'?').NE.0))THEN
 	      L1=TRUEBEG(BATCHFILE)
 	      L2=TRUELEN(BATCHFILE)
-	      ISYSTEM=REDSYSTEM('ls '//BATCHFILE(L1:L2)//
-     +         ' | grep -v xpgp.log\0')
+	      ISYSTEM=SYSTEMFUNCTION('ls '//BATCHFILE(L1:L2)//
+     +         ' | grep -v xpgp.log')
 	    ELSE
 	      INQUIRE(FILE=BATCHFILE,EXIST=LOGFILE)
 	      IF(.NOT.LOGFILE)THEN
@@ -2347,10 +2346,10 @@ C..............................................................................
 	            IF(COVER.EQ.'y') LOGFILE=.FALSE.
 	          END IF
 	        END DO
-	        ISYSTEM=REDSYSTEM('mv -f xpgp.log '//
-     +           FILELOG(TRUEBEG(FILELOG):TRUELEN(FILELOG))//'\0')
+	        ISYSTEM=SYSTEMFUNCTION('mv -f xpgp.log '//
+     +           FILELOG(TRUEBEG(FILELOG):TRUELEN(FILELOG)))
 	      ELSE
-	        ISYSTEM=REDSYSTEM('rm -f xpgp.log\0')
+	        ISYSTEM=SYSTEMFUNCTION('rm -f xpgp.log')
 	      END IF
 	      LEXIT=.TRUE.
 	    ELSE

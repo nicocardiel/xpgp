@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Version 24-August-2004
+# Version 03-October-2007
 #------------------------------------------------------------------------------
 # To install xpgp properly, you must follow these three steps:
 # make include
@@ -49,12 +49,14 @@ FSOURCE = button.f buttqbr.f buttqcf.f buttqch.f buttqex.f \
           ordena1f1i.f \
           plot_settings.f \
           probks.f \
+          ranred.f \
           sfitpol.f \
           show_buffers.f \
           show_fitpol.f \
           slinreg.f \
           spearman.f \
           statistic.f \
+          systemfunction.f \
           truebeg.f \
           truelen.f \
           updatekey.f \
@@ -99,12 +101,14 @@ FOBJECT = button.o buttqbr.o buttqcf.o buttqch.o buttqex.o \
           ordena1f1i.o \
           plot_settings.o \
           probks.o \
+          ranred.o \
           sfitpol.o \
           show_buffers.o \
           show_fitpol.o \
           slinreg.o \
           spearman.o \
           statistic.o \
+          systemfunction.o \
           truebeg.o \
           truelen.o \
           updatekey.o \
@@ -112,20 +116,16 @@ FOBJECT = button.o buttqbr.o buttqcf.o buttqch.o buttqex.o \
           updateplot.o \
           xpgp.o \
           yfunkd_linregexy.o
-CSOURCE = ranred_.c \
-          redsystem_.c
-COBJECT = ranred_.o \
-          redsystem_.o
 # Default rule to create program
-xpgp:  $(FOBJECT) $(COBJECT)
-	g77 -o $@ $(FOBJECT) $(COBJECT) -L$(PGPLOTDIR) -L$(X11DIR) -lpgplot -lX11
+xpgp:  $(FOBJECT)
+	g77 -o $@ $(FOBJECT) -L$(PGPLOTDIR) -L$(X11DIR) -lpgplot -lX11
 # Target to clean object modules
-clean:    $(FOBJECT) $(COBJECT)
-	rm -f $(FOBJECT) $(COBJECT)
+clean:    $(FOBJECT)
+	rm -f $(FOBJECT)
 	rm -f xpgpdir.inc nsimul.inc ndatamax.inc
 # Target to touch source modules
 touch:
-	touch $(FSOURCE) $(CSOURCE)
+	touch $(FSOURCE)
 # Target to create the file xpgpdir.inc
 include:
 	rm -f xpgpdir.inc
@@ -137,11 +137,9 @@ include:
 	rm -f ndatamax.inc
 	echo "        INTEGER NDATAMAX" > ndatamax.inc
 	echo "        PARAMETER(NDATAMAX=$(NDATAMAX))" >> ndatamax.inc
-	touch $(FSOURCE) $(CSOURCE)
+	touch $(FSOURCE)
 # second level dependencies
 .f.o: $(FSOURCE)
 	g77 -c $?
-.c.o: $(CSOURCE)
-	gcc -c $?
 # definitions
 .PRECIOUS: xpgp

@@ -10,8 +10,7 @@ C
 	PARAMETER (NBUFFMAX=8)
         INCLUDE 'ndatamax.inc'
 C
-	EXTERNAL REDSYSTEM
-	INTEGER REDSYSTEM
+	INTEGER SYSTEMFUNCTION
 	INTEGER TRUEBEG,TRUELEN
 	CHARACTER*255 READC_B
 C
@@ -308,7 +307,7 @@ C..............................................................................
 	CLOSE(10)
 C------------------------------------------------------------------------------
 C compilamos el fichero con la funcion
-	ISYSTEM=REDSYSTEM('f77 -o funct_xpgp funct_xpgp.f\0')
+	ISYSTEM=SYSTEMFUNCTION('f77 -o funct_xpgp funct_xpgp.f')
 	IF((ISYSTEM.EQ.127.OR.ISYSTEM.EQ.-1))THEN
 	  WRITE(*,101) 'ERROR: while calling system function.'
 	  WRITE(*,100) 'Press <CR> to continue...'
@@ -323,7 +322,7 @@ C compilamos el fichero con la funcion
 	END IF
 C------------------------------------------------------------------------------
 C ejecutamos el fichero con la funcion
-	ISYSTEM=REDSYSTEM('./funct_xpgp\0')
+	ISYSTEM=SYSTEMFUNCTION('./funct_xpgp')
 	IF((ISYSTEM.EQ.127.OR.ISYSTEM.EQ.-1))THEN
 	  WRITE(*,101) 'ERROR: while calling executing function.'
 	  WRITE(*,100) 'Press <CR> to continue...'
@@ -350,7 +349,7 @@ C leemos el fichero con todos los datos de los buffers
 	WRITE(*,101) 'INFO: buffer data were updated'
 C------------------------------------------------------------------------------
 C borramos el fichero con los datos de los buffers
-90	ISYSTEM=REDSYSTEM('rm -f allbuffers_xpgp.dat\0')
+90	ISYSTEM=SYSTEMFUNCTION('rm -f allbuffers_xpgp.dat')
 	IF((ISYSTEM.EQ.127.OR.ISYSTEM.EQ.-1))THEN
 	  WRITE(*,101) 'ERROR: while removing allbuffers_xpgp.dat.'
 	  WRITE(*,100) 'Press <CR> to continue...'
@@ -364,7 +363,7 @@ C borramos el fichero con los datos de los buffers
 	END IF
 C------------------------------------------------------------------------------
 C borramos el fichero fortran y su ejecutable
-	ISYSTEM=REDSYSTEM('rm -f funct_xpgp.f funct_xpgp\0')
+	ISYSTEM=SYSTEMFUNCTION('rm -f funct_xpgp.f funct_xpgp')
 	IF((ISYSTEM.EQ.127.OR.ISYSTEM.EQ.-1))THEN
 	  WRITE(*,101) 'ERROR: while removing funct_xpgp*'
 	  WRITE(*,100) 'Press <CR> to continue...'
