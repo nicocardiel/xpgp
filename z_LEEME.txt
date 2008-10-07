@@ -8,8 +8,11 @@ y el programa termine.
   (antes el programa recordaba los límites iniciales).
 - Se ha mejorado la posibilidad de incluir etiquetas externas y líneas.
 
+* Cambios 4.6 -> 4.7
+- Incluido ajuste de pseudofits con errores en cada pixel
+
+
 * ToDO
 - Salvar buffer en FITS (?)
 - Revisar calculo de errores en la prediccion,... en los ajustes polinomicos.
-- Incluir ajuste de pseudofits con errores en cada pixel.
 - Incluir ajuste mediante splines adaptables.

@@ -34,14 +34,16 @@ C
         REAL A(NDEGMAX+1)
         REAL XDATA(NDATAMAX,NBUFFMAX),YDATA(NDATAMAX,NBUFFMAX)
         REAL EXDATA(NDATAMAX,NBUFFMAX),EYDATA(NDATAMAX,NBUFFMAX)
-        REAL XF(NDATAMAX),YF(NDATAMAX)
+        REAL XF(NDATAMAX),YF(NDATAMAX),EYF(NDATAMAX)
         REAL XP(NPLOTMAX),YP(NPLOTMAX)
         REAL XMIN,XMAX,YMIN,YMAX
         REAL XMIN0,XMAX0,XMINF,XMAXF
-        CHARACTER*1 CSAVE
+        REAL TSIGMA
+        CHARACTER*1 CSAVE,CERR
         CHARACTER*50 DATAKEY(NBUFFMAX),DATAKEY_
         CHARACTER*50 CXMINF,CXMAXF
         LOGICAL LUP
+        LOGICAL LOOP
         LOGICAL LXERR(NBUFFMAX),LYERR(NBUFFMAX)
         LOGICAL LDEFBUFF(NBUFFMAX),LUSEBUFF(NBUFFMAX)
 C
@@ -83,12 +85,33 @@ C------------------------------------------------------------------------------
           ILUP=READILIM_B('1',1,2)
           WRITE(77,111) ILUP,'# side: 1=upper, 2=lower'
           LUP=(ILUP.EQ.1)
+          WRITE(*,100) 'Are you considering error bars (y/n) '
+          CERR(1:1)=READC_B('n','yn')
+          WRITE(77,112) CERR,'# Using error bars (y/n)?'
+          IF(CERR.EQ.'y')THEN
+            LOOP=.TRUE.
+            DO WHILE(LOOP)
+              WRITE(*,100) 'Times sigma to fit data (0.0=none) '
+              TSIGMA=READF_B('1.0')
+              IF(TSIGMA.LT.0.0)THEN
+                WRITE(*,100) 'WARNING: this number must be >= 0.0.'
+                WRITE(*,101) ' Try again!'
+              ELSE
+                LOOP=.FALSE.
+              END IF
+            END DO
+            WRITE(77,*) TSIGMA,'# Times sigma to fit data (0=none)'
+          ELSE
+            TSIGMA=0.0
+          END IF
           DO I=1,NF
             XF(I)=XDATA(I,NB0)
             YF(I)=YDATA(I,NB0)
+            EYF(I)=EYDATA(I,NB0)
           END DO
           !realizamos el ajuste
-          CALL PSEUDOFIT(XF,YF,NF,NTERMS,YRMSTOL,WEIGHT,POWER,LUP,A)
+          CALL PSEUDOFIT(XF,YF,EYF,NF,NTERMS,YRMSTOL,WEIGHT,POWER,
+     +     LUP,TSIGMA,A)
           !determinamos los limites para dibujar el ajuste
           XMIN0=(1.+REAL(IEXPAND)/100.)*XMIN+REAL(IEXPAND)/100.*XMAX
           XMIN0=XMIN0/(1.+2.*REAL(IEXPAND)/100.)

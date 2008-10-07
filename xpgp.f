@@ -263,8 +263,8 @@ C zoom y unzoom de plots
 C estadistica
         CALL BUTTON(159,'statistics',0)
         CALL BUTTON(159,'statistics',3)
-        CALL BUTTON(160,' ',0)
-        CALL BUTTON(160,' ',3)
+        CALL BUTTON(160,'randomize',0)
+        CALL BUTTON(160,'randomize',3)
         CALL BUTTON(167,'X histogram',0)
         CALL BUTTON(167,'X histogram',3)
         CALL BUTTON(168,'Y histogram',0)
@@ -407,6 +407,7 @@ C
                   CALL BUTTON(46,'file labels',0)
                   CALL BUTTON(47,'errors',0)
                   CALL BUTTON(159,'statistics',0)
+                  CALL BUTTON(160,'randomize',0)
                   CALL BUTTON(167,'X histogram',0)
                   CALL BUTTON(168,'Y histogram',0)
                 END IF
@@ -474,6 +475,7 @@ C
                   CALL BUTTON(46,'file labels',0)
                   CALL BUTTON(47,'errors',0)
                   CALL BUTTON(159,'statistics',0)
+                  CALL BUTTON(160,'randomize',0)
                   CALL BUTTON(167,'X histogram',0)
                   CALL BUTTON(168,'Y histogram',0)
                 END IF
@@ -542,6 +544,7 @@ C
                 CALL BUTTON(46,'file labels',0)
                 CALL BUTTON(47,'errors',0)
                 CALL BUTTON(159,'statistics',0)
+                CALL BUTTON(160,'randomize',0)
                 CALL BUTTON(167,'X histogram',0)
                 CALL BUTTON(168,'Y histogram',0)
               END IF
@@ -703,6 +706,7 @@ C
                 CALL BUTTON(63,'[Z]oom',3)
                 CALL BUTTON(64,'[W]hole',3)
                 CALL BUTTON(159,'statistics',3)
+                CALL BUTTON(160,'randomize',0)
                 CALL BUTTON(167,'X histogram',0)
                 CALL BUTTON(168,'Y histogram',0)
                 LBUFFER=.FALSE.
@@ -2291,6 +2295,53 @@ C
             END IF
 C
             CALL BUTTON(159,'statistics',0)
+C..............................................................................
+          ELSEIF(NB.EQ.160)THEN
+            CALL TOLOG77(NB,'Randomize buffer data <randomize>')
+            CALL BUTTON(160,'randomize',5)
+C
+            WRITE(*,100) 'Select initial buffer...'
+            NB_=0
+            DO WHILE((NB_.LT.1).OR.(NB_.GT.NBUFFMAX))
+              IF(LBATCH)THEN
+                CALL READ_NB(NB_)
+              ELSE
+                CALL RPGBAND(0,0,0.,0.,XC,YC,CH)
+                CALL IFBUTTON(XC,YC,NB_)
+              END IF
+              IF(.NOT.LDEFBUFF(NB_)) NB_=0
+            END DO
+            WRITE(77,111) NB_,'# Initial buffer'
+            WRITE(*,'(A,I1,A)') '   ...OK! Buffer #',NB_,' selected'
+C
+            WRITE(*,100) 'Select destination buffer...'
+            NB__=0
+            DO WHILE((NB__.LT.1).OR.(NB__.GT.NBUFFMAX))
+              IF(LBATCH)THEN
+                CALL READ_NB(NB__)
+              ELSE
+                CALL RPGBAND(0,0,0.,0.,XC,YC,CH)
+                CALL IFBUTTON(XC,YC,NB__)
+              END IF
+              IF(NB__.EQ.NB_) NB__=0
+            END DO
+            WRITE(77,111) NB__,'# Destination buffer'
+            WRITE(*,'(A,I1,A)') '   ...OK! Buffer #',NB__,' selected'
+            WRITE(CBUTTON,'(A10,I1,A1)') 'buffer # [',NB__,']'
+            CALL BUTTON(NB__,CBUTTON,-NCOLORBUFF(NB__)-1)
+C
+            IF(LDEFBUFF(NB__))THEN
+              WRITE(*,101) 'WARNING: last buffer will be overwritten'
+            END IF
+C
+            CALL RANDOMIZEDATA(NB_,NB__,CAPEND)
+C
+            CALL BUTTON(56,'[U]pdate',-5)          !hay que actualizar graficos
+            CALL BUTTON(55,'[P]ostScript',3)           !desactivamos PostScript
+C
+            CALL SHOW_BUFFERS
+C
+            CALL BUTTON(160,'randomize',0)
 C..............................................................................
           ELSEIF(NB.EQ.167)THEN
             CALL TOLOG77(NB,'Generate X data histogram <X histogram>')

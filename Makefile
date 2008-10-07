@@ -60,6 +60,7 @@ FSOURCE = button.f buttqbr.f buttqcf.f buttqch.f buttqex.f \
           polfit.f \
           probks.f \
           pseudofit.f \
+          randomizedata.f \
           ranred.f \
           read_nb.f \
           sfitpol.f \
