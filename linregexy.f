@@ -96,7 +96,7 @@ C establecemos valores para la llamada a DOWNHILL
 C------------------------------------------------------------------------------
 C llamamos a downwhill
         CALL DOWNHILLD(2,X0,DX0,YFUNKD_LINREGEXY,ALPHA,BETA,GAMMA,
-     >   YRMSTOL,XF,DXF,NEVAL)
+     >   YRMSTOL,XF,DXF,NEVAL,5000)
         A=XF(1)
         B=XF(2)
         VARA=DXF(1)*DXF(1)

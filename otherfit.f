@@ -28,6 +28,7 @@ C
         INTEGER LWBUFF(NBUFFMAX),NSYMBBUFF(NBUFFMAX)
         INTEGER L1,L2
         INTEGER ILUP
+        INTEGER NEVALMAX
         REAL YRMSTOL
         REAL WEIGHT
         REAL POWER
@@ -75,6 +76,9 @@ C------------------------------------------------------------------------------
           WRITE(*,100) 'YRMSTOL for DOWNHILL '
           YRMSTOL=READF_B('1E-5')
           WRITE(77,*) YRMSTOL,'# YRMSTOL for DOWNHILL'
+          WRITE(*,100) 'NEVALMAX for DOWNHILL '
+          NEVALMAX=READILIM_B('5000',10,1000000)
+          WRITE(77,111) NEVALMAX,'# NEVALMAX for DOWNHILL'
           WRITE(*,100) 'WEIGHT for pseudofit '
           WEIGHT=READF_B('100')
           WRITE(77,*) WEIGHT,'# WEIGHT for pseudofit'
@@ -110,8 +114,8 @@ C------------------------------------------------------------------------------
             EYF(I)=EYDATA(I,NB0)
           END DO
           !realizamos el ajuste
-          CALL PSEUDOFIT(XF,YF,EYF,NF,NTERMS,YRMSTOL,WEIGHT,POWER,
-     +     LUP,TSIGMA,A)
+          CALL PSEUDOFIT(XF,YF,EYF,NF,NTERMS,YRMSTOL,NEVALMAX,
+     +     WEIGHT,POWER,LUP,TSIGMA,A)
           !determinamos los limites para dibujar el ajuste
           XMIN0=(1.+REAL(IEXPAND)/100.)*XMIN+REAL(IEXPAND)/100.*XMAX
           XMIN0=XMIN0/(1.+2.*REAL(IEXPAND)/100.)

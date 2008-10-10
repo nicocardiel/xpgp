@@ -12,9 +12,9 @@ C later version. See the file gnu-public-license.txt for details.
 C------------------------------------------------------------------------------
 Comment
 C
-C SUBROUTINE DOWNHILLD(N,X0,DX0,YFUNKD,A,B,G,YRMSTOL,XF,DXF,NEVAL)
+C SUBROUTINE DOWNHILLD(N,X0,DX0,YFUNKD,A,B,G,YRMSTOL,XF,DXF,NEVAL,NEVALMAX)
 C
-C Input N,X0,DX0,YFUNKD,A,B,G,YRMSTOL
+C Input N,X0,DX0,YFUNKD,A,B,G,YRMSTOL,NEVALMAX
 C Output XF,DXF,NEVAL
 C
 C Minimization of the function YFUNKD of N variables using the downhill 
@@ -44,13 +44,12 @@ C                             returns NEVAL=-1 if something goes wrong
 C
 Comment
 C------------------------------------------------------------------------------
-        SUBROUTINE DOWNHILLD(N,X0,DX0,YFUNKD,A,B,G,YRMSTOL,XF,DXF,NEVAL)
+        SUBROUTINE DOWNHILLD(N,X0,DX0,YFUNKD,A,B,G,YRMSTOL,XF,DXF,
+     +   NEVAL,NEVALMAX)
         IMPLICIT NONE
 C
         INTEGER NMAX
         PARAMETER (NMAX=20)                        !maximum number of variables
-        INTEGER NEVALMAX
-        PARAMETER (NEVALMAX=2000) !maximum number of YFUNKD evaluations allowed
 C
         INTEGER N
         DOUBLE PRECISION X0(N),DX0(N)
@@ -61,6 +60,7 @@ C
         DOUBLE PRECISION XF(N)
         DOUBLE PRECISION DXF(N)
         INTEGER NEVAL
+        INTEGER NEVALMAX
 C local variables
         INTEGER I,J
         INTEGER I1                   !index of point with lowest function value

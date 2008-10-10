@@ -257,7 +257,7 @@ C------------------------------------------------------------------------------
         NDEG_OF_FREEDOM=N
         SIGNIFICACION=ALPHA
         CALL DOWNHILL(1,X0,DX0,FUNK_IFTSTUDENT,1.0,0.5,2.0,1.E-7,
-     >   XF,DXF,NEVAL)
+     >   XF,DXF,NEVAL,5000)
         INVIERTE_FTSTUDENT=XF
         RETURN
         END

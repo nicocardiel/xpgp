@@ -1,7 +1,8 @@
 C------------------------------------------------------------------------------
 Comment
 C
-C SUBROUTINE PSEUDOFIT(XF,YF,EYF,NF,NTERMS,YRMSTOL,WEIGHT,POWER,LUP,TSIGMA,A)
+C SUBROUTINE PSEUDOFIT(XF,YF,EYF,NF,NTERMS,YRMSTOL,NEVALMAX,
+C                      WEIGHT,POWER,LUP,TSIGMA,A)
 C
 C Input: XF,YF,EYF,NF,NTERMS,YRMSTOL,WEIGHT,POWER,LUP,CERR
 C Output: A
@@ -13,6 +14,7 @@ C REAL XF(NF),YF(NF) -> data points to be fitted
 C INTEGER NF -> number of data points
 C INTEGER NTERMS -> number of coeffcients
 C REAL YRMSTOL -> stopping criterion for DOWNHILL
+C INTEGER NEVALMAX -> allowed maximum number of iterations for DOWNHILL
 C REAL WEIGHT -> weighting factor to enhance one side of the fit
 C REAL POWER -> power to be used to compute distances
 C LOGICAL LUP -> .TRUE.: fit upper side
@@ -21,8 +23,8 @@ C REAL A(NTERMS) -> fitted coefficients
 C
 Comment
 C------------------------------------------------------------------------------
-        SUBROUTINE PSEUDOFIT(XF,YF,EYF,NF,NTERMS,YRMSTOL,WEIGHT,POWER,
-     +   LUP,TSIGMA,A)
+        SUBROUTINE PSEUDOFIT(XF,YF,EYF,NF,NTERMS,YRMSTOL,NEVALMAX,
+     +   WEIGHT,POWER,LUP,TSIGMA,A)
         IMPLICIT NONE
 C
         INCLUDE 'ndatamax.inc'
@@ -31,6 +33,7 @@ C
         REAL XF(NF),YF(NF),EYF(NF)
         INTEGER NTERMS
         REAL YRMSTOL
+        INTEGER NEVALMAX
         REAL WEIGHT
         REAL POWER
         LOGICAL LUP
@@ -101,7 +104,7 @@ C Usamos DOWNHILL para calcular el ajuste final
           END IF
         END DO
         CALL DOWNHILL(NTERMS,X0,DX0,YFUNK_PSEUDO,1.0,0.5,2.0,YRMSTOL,
-     +   X,DX,NEVAL)
+     +   X,DX,NEVAL,NEVALMAX)
         DO K=1,NTERMS
           A(K)=X(K)
         END DO
