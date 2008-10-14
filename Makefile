@@ -19,11 +19,14 @@ FSOURCE = button.f buttqbr.f buttqcf.f buttqch.f buttqex.f \
           buttscf.f buttsch.f buttsex.f buttsit.f buttspr.f buttsxb.f \
           buttsyb.f buttsytext.f ifbutton.f rpgband.f rpgbegin.f rpgbegok.f \
           rpgenv.f rpgeras.f rpgerasb.f rpgerasw.f \
+          binsearch.f \
           cextrae.f \
           chupper.f \
           cleantab.f \
           copydata.f \
           combpf.f \
+          cubspl.f \
+          cubsplx.f \
           downhill.f \
           downhilld.f \
           editor.f \
@@ -68,6 +71,7 @@ FSOURCE = button.f buttqbr.f buttqcf.f buttqch.f buttqex.f \
           show_fitpol.f \
           slinreg.f \
           spearman.f \
+          splfit.f \
           statistic.f \
           systemfunction.f \
           truebeg.f \
