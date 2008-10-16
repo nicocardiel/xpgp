@@ -12,10 +12,12 @@ C later version. See the file gnu-public-license.txt for details.
 C------------------------------------------------------------------------------
 Comment
 C
-C SUBROUTINE SPLFIT(N,X,Y,ND,XD,YRMSTOL,NEVALMAX,NSEED,NOUT,XOUT,YOUT,
-C                   XMIN,XMAX,YKNOT,ASPL,BSPL,CSPL)
+C SUBROUTINE SPLFIT(N,X,Y,EY,ND,XD,YRMSTOL,NEVALMAX,NSEED,
+C                   WEIGHT,POWER,LUP,TSIGMA,
+C                   NOUT,XOUT,YOUT,XMIN,XMAX,YKNOT,ASPL,BSPL,CSPL)
 C
-C Input: N,X,Y,ND,XD,YRMSTOL,NEVALMAX,NSEED,NOUT,XMIN,XMAX
+C Input: N,X,Y,EY,ND,XD,YRMSTOL,NEVALMAX,NSEED
+C Input: WEIGHT,POWER,LUP,TSIGMA,NOUT,XMIN,XMAX
 C Output: XOUT,YOUT,YKNOT,ASPL,BSPL,CSPL
 C
 C Least-squares fit to splines, using ND knots located at XD(). The maximum 
@@ -23,16 +25,22 @@ C number of knots if defined in the parameter NKNOTSMAX.
 C Input data are X(N), Y(N). XOUT(NOUT), YOUT(NOUT) are the output values which
 C are computed in the range from XMIN to XMAX. The knot location determines the
 C X(),Y() range employed in the fit (which is performed in the interval from
-C XD(1) to XD(ND))
+C XD(1) to XD(ND)). The subroutine also fits the boundary of the data
+C depending on the values of WEIGHT, POWER, LUP and TSIGMA.
 C
 C INTEGER N -> initial number of points in input data
 C REAL    X(N) -> sorted input data
 C REAL    Y(N) -> input data
+C REAL    EY(N) -> input data errors
 C INTEGER ND -> number of knots
 C REAL    XD(ND) -> X location of each knot
 C REAL    YRMSTOL ->  stopping criterion for DOWNHILL
 C INTEGER NEVALMAX -> maximum number of allowed iterations in DOWNHILL
 C INTEGER NSEED -> seed for random numbers
+C REAL    WEIGHT -> for boundary fitting
+C REAL    POWER -> for boundary fitting
+C LOGICAL LUP -> .TRUE. for upper-limit, .FALSE. for lower-limit
+C REAL    TSIGMA -> times sigma for boundary fitting
 C INTEGER NOUT -> number of points in output
 C REAL    XOUT(NOUT) -> output data
 C REAL    YOUT(NOUT) -> output data
@@ -47,7 +55,8 @@ Comment
 C------------------------------------------------------------------------------
 C Esta subrutina requiere POLFIT y DOWNHILL
 C         del ajuste final.
-        SUBROUTINE SPLFIT(N,X,Y,ND,XD,YRMSTOL,NEVALMAX,NSEED,
+        SUBROUTINE SPLFIT(N,X,Y,EY,ND,XD,YRMSTOL,NEVALMAX,NSEED,
+     +   WEIGHT,POWER,LUP,TSIGMA,
      +   NOUT,XOUT,YOUT,XMIN,XMAX,YKNOT,ASPL,BSPL,CSPL)
         IMPLICIT NONE
         INCLUDE 'ndatamax.inc'
@@ -60,16 +69,23 @@ C NKNOTSMAX- numero maximo de nodos
         PARAMETER (NKNOTSMAX=20)
 C
         INTEGER N
-        REAL X(N),Y(N)
+        REAL X(N),Y(N),EY(N)
         INTEGER ND
         REAL XD(ND)
         REAL YRMSTOL
         INTEGER NEVALMAX
         INTEGER NSEED
+        REAL WEIGHT
+        REAL POWER
+        LOGICAL LUP
+        REAL TSIGMA
         INTEGER NOUT
         REAL XOUT(NOUT),YOUT(NOUT)
         REAL XMIN,XMAX
         REAL YKNOT(NKNOTSMAX)
+C
+        EXTERNAL YFUNK_SPLFIT,YFUNK_SPLFIT1,YFUNK_SPLFIT2,YFUNK_SPLFIT3
+        REAL YFUNK_SPLFIT,YFUNK_SPLFIT1,YFUNK_SPLFIT2,YFUNK_SPLFIT3
 C
         INTEGER I,J,K,H,L
         INTEGER NF
@@ -85,13 +101,15 @@ C
         REAL SSPL(NKNOTSMAX)
         REAL XDD(NKNOTSMAX),XX(NKNOTSMAX),DXX(NKNOTSMAX)
         REAL XX0(NKNOTSMAX),DXX0(NKNOTSMAX)
-        EXTERNAL FUNKSPLFIT,FUNKSPLFIT1,FUNKSPLFIT2,FUNKSPLFIT3
-        REAL FUNKSPLFIT,FUNKSPLFIT1,FUNKSPLFIT2,FUNKSPLFIT3
+        REAL WWEIGHT
+        REAL PPOWER
+        REAL TTSIGMA
         REAL A(4),CHISQR,FDUMMY
         REAL SIGMA
         REAL YMINP,YMAXP,XMINP,XMAXP
         CHARACTER*1 CREF
         CHARACTER*20 CDUMMY
+        LOGICAL LLUP
 C
         COMMON/BLKSPLNSEED/NNSEED
         COMMON/BLKSPLFUNK1/NF
@@ -100,10 +118,16 @@ C
         COMMON/BLKSPLFUNK4/XDD
         COMMON/BLKSPLFUNK5/YD
         COMMON/BLKSPLFUNK6/NREF
+        COMMON/BLKSPLFUNK7/WWEIGHT,PPOWER,TTSIGMA
+        COMMON/BLKSPLFUNK8/LLUP
 C------------------------------------------------------------------------------
 C Inicializacion (duplicamos argumentos de entrada de la subrutina para
 C poder pasar la informacion mediante COMMON blocks a las funciones)
         NNSEED=NSEED
+        WWEIGHT=WEIGHT
+        PPOWER=POWER
+        TTSIGMA=TSIGMA
+        LLUP=LUP
 C
         call pgqwin(xminp,xmaxp,yminp,ymaxp)
 C------------------------------------------------------------------------------
@@ -215,13 +239,13 @@ C valores iniciales para DOWNHILL
         END DO
 C llamamos a DOWNHILL
         WRITE(*,100)'Running DOWNHILL...'
-        CALL DOWNHILL(ND,XX0,DXX0,FUNKSPLFIT,1.0,0.5,2.0,YRMSTOL,
+        CALL DOWNHILL(ND,XX0,DXX0,YFUNK_SPLFIT,1.0,0.5,2.0,YRMSTOL,
      +   XX,DXX,NEVAL,NEVALMAX)
         WRITE(*,110)'      no. of function evaluations: ',NEVAL
         DO J=1,ND
           YD(J)=XX(J)
         END DO
-        SIGMA=SQRT(FUNKSPLFIT(YD))
+        SIGMA=SQRT(YFUNK_SPLFIT(YD))
 20      CALL CUBSPL(XD,YD,ND,1,SSPL,ASPL,BSPL,CSPL)                    !IMODE=1
         I0SPL=1                  !la primera vez busca en el inicio de la tabla
         DO K=1,NOUT
@@ -337,14 +361,14 @@ C -> REFINAMOS x e y ----------------------------------------------------------
             DXX0(2)=1. !que remedio
           END IF
           WRITE(*,100)'Running DOWNHILL...'
-          CALL DOWNHILL(2,XX0,DXX0,FUNKSPLFIT3,1.0,0.5,2.0,YRMSTOL,
+          CALL DOWNHILL(2,XX0,DXX0,YFUNK_SPLFIT3,1.0,0.5,2.0,YRMSTOL,
      +     XX,DXX,NEVAL)
           WRITE(*,110)'      no. of function evaluations: ',NEVAL
           XD(NREF)=XX(1)
           YD(NREF)=XX(2)
           WRITE(*,100)'Valor refinado en X,Y: '
           WRITE(*,*) XD(NREF),YD(NREF)
-          SIGMA=SQRT(FUNKSPLFIT3(XX))
+          SIGMA=SQRT(YFUNK_SPLFIT3(XX))
           DO I=1,ND            !actualizamos XDD para futuras llamadas a FUNK's
             XDD(I)=XD(I)
           END DO
@@ -361,11 +385,11 @@ C -> REFINAMOS x --------------------------------------------------------------
             DXX0(1)=1. !que remedio
           END IF
           WRITE(*,100)'Running DOWNHILL...'
-          CALL DOWNHILL(1,XX0,DXX0,FUNKSPLFIT1,1.0,0.5,2.0,YRMSTOL,
+          CALL DOWNHILL(1,XX0,DXX0,YFUNK_SPLFIT1,1.0,0.5,2.0,YRMSTOL,
      +     XX,DXX,NEVAL)
           WRITE(*,110)'      no. of function evaluations: ',NEVAL
           XD(NREF)=XX(1)
-          SIGMA=SQRT(FUNKSPLFIT1(XX))
+          SIGMA=SQRT(YFUNK_SPLFIT1(XX))
           DO I=1,ND            !actualizamos XDD para futuras llamadas a FUNK's
             XDD(I)=XD(I)
           END DO
@@ -382,11 +406,11 @@ C -> REFINAMOS y --------------------------------------------------------------
             DXX0(1)=1. !que remedio
           END IF
           WRITE(*,100)'Running DOWNHILL...'
-          CALL DOWNHILL(1,XX0,DXX0,FUNKSPLFIT2,1.0,0.5,2.0,YRMSTOL,
+          CALL DOWNHILL(1,XX0,DXX0,YFUNK_SPLFIT2,1.0,0.5,2.0,YRMSTOL,
      +     XX,DXX,NEVAL)
           WRITE(*,110)'      no. of function evaluations: ',NEVAL
           YD(NREF)=XX(1)
-          SIGMA=SQRT(FUNKSPLFIT2(XX))
+          SIGMA=SQRT(YFUNK_SPLFIT2(XX))
           WRITE(*,100)'Valor refinado en Y: '
           WRITE(*,*) YD(NREF)
 C -> refinamos todos los nodos-------------------------------------------------
@@ -414,10 +438,10 @@ C -> refinamos todos los nodos-------------------------------------------------
               ELSE
                 DXX0(1)=1. !que remedio
               END IF
-              CALL DOWNHILL(1,XX0,DXX0,FUNKSPLFIT2,1.0,0.5,2.0,YRMSTOL,
-     +         XX,DXX,NEVAL)
+              CALL DOWNHILL(1,XX0,DXX0,YFUNK_SPLFIT2,1.0,0.5,2.0,
+     +         YRMSTOL,XX,DXX,NEVAL)
               YD(NREF)=XX(1)
-              SIGMA=SQRT(FUNKSPLFIT2(XX))
+              SIGMA=SQRT(YFUNK_SPLFIT2(XX))
             ELSE                                            !refinamos en X e Y
               XX0(1)=XD(NREF)                  !valores iniciales para DOWNHILL
               IF(XD(NREF-1).NE.XD(NREF))THEN
@@ -438,12 +462,12 @@ C -> refinamos todos los nodos-------------------------------------------------
                 DXX0(2)=1. !que remedio
               END IF
               WRITE(*,100)'Running DOWNHILL...'
-              CALL DOWNHILL(2,XX0,DXX0,FUNKSPLFIT3,1.0,0.5,2.0,YRMSTOL,
-     +         XX,DXX,NEVAL)
+              CALL DOWNHILL(2,XX0,DXX0,YFUNK_SPLFIT3,1.0,0.5,2.0,
+     +         YRMSTOL,XX,DXX,NEVAL)
               WRITE(*,110)'      no. of function evaluations: ',NEVAL
               XD(NREF)=XX(1)
               YD(NREF)=XX(2)
-              SIGMA=SQRT(FUNKSPLFIT3(XX))
+              SIGMA=SQRT(YFUNK_SPLFIT3(XX))
               DO I=1,ND        !actualizamos XDD para futuras llamadas a FUNK's
                 XDD(I)=XD(I)
               END DO
@@ -463,206 +487,4 @@ C------------------------------------------------------------------------------
 110     FORMAT(A,I6)
 111     FORMAT(I12,1X,A)
 112     FORMAT(11X,A1,1X,A)
-        END
-C
-C******************************************************************************
-C Funcion para minimizar las coordenadas Y de todos los Knots
-        REAL FUNCTION FUNKSPLFIT(X)
-        IMPLICIT NONE
-        INCLUDE 'ndatamax.inc'
-        INTEGER NKNOTSMAX
-        PARAMETER (NKNOTSMAX=20)
-        REAL X(NKNOTSMAX)
-C
-        INTEGER I
-        INTEGER NF,ND
-        INTEGER I0
-        REAL XF(NDATAMAX),YF(NDATAMAX),YF0
-        REAL XDD(NKNOTSMAX)
-        REAL S(NKNOTSMAX),A(NKNOTSMAX),B(NKNOTSMAX),C(NKNOTSMAX)
-        DOUBLE PRECISION F
-C
-        COMMON/BLKSPLFUNK1/NF
-        COMMON/BLKSPLFUNK2/XF,YF
-        COMMON/BLKSPLFUNK3/ND
-        COMMON/BLKSPLFUNK4/XDD
-c------------------------------------------------------------------------------
-        CALL CUBSPL(XDD,X,ND,1,S,A,B,C)                                !IMODE=1
-        F=0.D0
-        I0=1                     !la primera vez busca en el inicio de la tabla
-        DO I=1,NF
-          CALL CUBSPLX(XDD,X,A,B,C,ND,I0,XF(I),YF0)
-          F=F+(DBLE(YF0)-DBLE(YF(I)))*(DBLE(YF0)-DBLE(YF(I)))
-        END DO
-        F=F/DBLE(NF)
-        FUNKSPLFIT=REAL(F)
-C
-        END
-C
-C******************************************************************************
-C Funcion para minimizar la coordenada X de un solo Knot
-        REAL FUNCTION FUNKSPLFIT1(X)
-        IMPLICIT NONE
-        INCLUDE 'ndatamax.inc'
-        INTEGER NKNOTSMAX
-        PARAMETER (NKNOTSMAX=20)
-        REAL X(NKNOTSMAX)
-C
-        INTEGER I
-        INTEGER I0
-        INTEGER NF,ND
-        INTEGER NREF
-        REAL XF(NDATAMAX),YF(NDATAMAX),YF0
-        REAL XDD(NKNOTSMAX)
-        REAL S(NKNOTSMAX),A(NKNOTSMAX),B(NKNOTSMAX),C(NKNOTSMAX)
-        REAL YD(NKNOTSMAX)
-        DOUBLE PRECISION F
-C
-        COMMON/BLKSPLFUNK1/NF
-        COMMON/BLKSPLFUNK2/XF,YF
-        COMMON/BLKSPLFUNK3/ND
-        COMMON/BLKSPLFUNK4/XDD
-        COMMON/BLKSPLFUNK5/YD
-        COMMON/BLKSPLFUNK6/NREF
-C------------------------------------------------------------------------------
-        IF(X(1).LE.XDD(NREF-1)) GOTO 900
-        IF(X(1).GE.XDD(NREF+1)) GOTO 900
-        XDD(NREF)=X(1)
-        CALL CUBSPL(XDD,YD,ND,1,S,A,B,C) !IMODE=1
-        F=0.D0
-        I0=1                     !la primera vez busca en el inicio de la tabla
-        DO I=1,NF
-          CALL CUBSPLX(XDD,YD,A,B,C,ND,I0,XF(I),YF0)
-          F=F+(DBLE(YF0)-DBLE(YF(I)))*(DBLE(YF0)-DBLE(YF(I)))
-        END DO
-        F=F/DBLE(NF)
-        FUNKSPLFIT1=REAL(F)
-        RETURN
-C
-900     FUNKSPLFIT1=1.E20
-        END
-C
-C******************************************************************************
-C Funcion para minimizar la coordenada Y de un solo Knot
-        REAL FUNCTION FUNKSPLFIT2(X)
-        IMPLICIT NONE
-        INCLUDE 'ndatamax.inc'
-        INTEGER NKNOTSMAX
-        PARAMETER (NKNOTSMAX=20)
-        REAL X(NKNOTSMAX)
-C
-        INTEGER I
-        INTEGER I0
-        INTEGER NF,ND
-        INTEGER NREF
-        REAL XF(NDATAMAX),YF(NDATAMAX),YF0
-        REAL XDD(NKNOTSMAX)
-        REAL S(NKNOTSMAX),A(NKNOTSMAX),B(NKNOTSMAX),C(NKNOTSMAX)
-        REAL YD(NKNOTSMAX)
-        DOUBLE PRECISION F
-C
-        COMMON/BLKSPLFUNK1/NF
-        COMMON/BLKSPLFUNK2/XF,YF
-        COMMON/BLKSPLFUNK3/ND
-        COMMON/BLKSPLFUNK4/XDD
-        COMMON/BLKSPLFUNK5/YD
-        COMMON/BLKSPLFUNK6/NREF
-C------------------------------------------------------------------------------
-        YD(NREF)=X(1)
-        CALL CUBSPL(XDD,YD,ND,1,S,A,B,C) !IMODE=1
-        F=0.D0
-        I0=1                     !la primera vez busca en el inicio de la tabla
-        DO I=1,NF
-          CALL CUBSPLX(XDD,YD,A,B,C,ND,I0,XF(I),YF0)
-          F=F+(DBLE(YF0)-DBLE(YF(I)))*(DBLE(YF0)-DBLE(YF(I)))
-        END DO
-        F=F/DBLE(NF)
-        FUNKSPLFIT2=REAL(F)
-C
-        END
-C
-C******************************************************************************
-C Funcion para minimizar las coordenadas X e Y de un solo Knot
-        REAL FUNCTION FUNKSPLFIT3(X)
-        IMPLICIT NONE
-        INCLUDE 'ndatamax.inc'
-        INTEGER NKNOTSMAX
-        PARAMETER (NKNOTSMAX=20)
-        REAL X(NKNOTSMAX)
-C
-        INTEGER I
-        INTEGER I0
-        INTEGER NF,ND
-        INTEGER NREF
-        REAL XF(NDATAMAX),YF(NDATAMAX),YF0
-        REAL XDD(NKNOTSMAX)
-        REAL S(NKNOTSMAX),A(NKNOTSMAX),B(NKNOTSMAX),C(NKNOTSMAX)
-        REAL YD(NKNOTSMAX)
-        DOUBLE PRECISION F
-C
-        COMMON/BLKSPLFUNK1/NF
-        COMMON/BLKSPLFUNK2/XF,YF
-        COMMON/BLKSPLFUNK3/ND
-        COMMON/BLKSPLFUNK4/XDD
-        COMMON/BLKSPLFUNK5/YD
-        COMMON/BLKSPLFUNK6/NREF
-C------------------------------------------------------------------------------
-        IF(X(1).LE.XDD(NREF-1)) GOTO 900
-        IF(X(1).GE.XDD(NREF+1)) GOTO 900
-        XDD(NREF)=X(1)
-        YD(NREF)=X(2)
-        CALL CUBSPL(XDD,YD,ND,1,S,A,B,C) !IMODE=1
-        F=0.D0
-        I0=1                     !la primera vez busca en el inicio de la tabla
-        DO I=1,NF
-          CALL CUBSPLX(XDD,YD,A,B,C,ND,I0,XF(I),YF0)
-          F=F+(DBLE(YF0)-DBLE(YF(I)))*(DBLE(YF0)-DBLE(YF(I)))
-        END DO
-        F=F/DBLE(NF)
-        FUNKSPLFIT3=REAL(F)
-        RETURN
-C
-900     FUNKSPLFIT3=1.E20
-        END
-C
-C******************************************************************************
-C Ordena aleatoriamente los numeros 1,2,...N en la matriz IX(). Esta subrutina
-C es util para optimizar los Knots en orden aleatorio para evitar efectos
-C sistematicos
-        SUBROUTINE RANSPL(N,IX)
-        IMPLICIT NONE
-        INTEGER NMAX
-        PARAMETER(NMAX=100)
-        INTEGER N
-        INTEGER IX(N),IS(NMAX)
-C
-        INTEGER NSEED
-        INTEGER I,K,M,L
-        REAL RANRED
-        COMMON/BLKSPLNSEED/NSEED
-C------------------------------------------------------------------------------
-        IF(N.GT.NMAX)THEN
-          WRITE(*,101)'FATAL ERROR: N.GT.NMAX in RANSPL'
-        END IF
-C
-        DO I=1,N
-          IS(I)=I
-        END DO
-C
-        K=N
-        I=0
-C
-        DO WHILE(K.GE.1)
-          M=INT(RANRED(NSEED)*REAL(K))+1          !numero aleatorio entre 1 y K
-          I=I+1
-          IX(I)=IS(M)
-          IF(M.LT.K)THEN
-            DO L=M,K-1
-              IS(L)=IS(L+1)
-            END DO
-          END IF
-          K=K-1
-        END DO
-C
-101     FORMAT(A)
         END

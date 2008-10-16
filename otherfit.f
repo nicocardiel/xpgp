@@ -92,17 +92,10 @@ C ajustes
           NTERMS=READILIM_B('@',0,10)
           WRITE(77,111) NTERMS,'# Polynomial degree'
           NTERMS=NTERMS+1
-          !parametros para DOWNHILL
-          WRITE(*,100) 'YRMSTOL for DOWNHILL '
-          YRMSTOL=READF_B('1E-5')
-          WRITE(77,*) YRMSTOL,'# YRMSTOL for DOWNHILL'
-          WRITE(*,100) 'NEVALMAX for DOWNHILL '
-          NEVALMAX=READILIM_B('5000',10,1000000)
-          WRITE(77,111) NEVALMAX,'# NEVALMAX for DOWNHILL'
-          !parametros para el ajuste
-          WRITE(*,100) 'WEIGHT for pseudofit '
+          WRITE(*,100) 'WEIGHT for pseudofit (1.0=no pseudofit='//
+     +     'normal polynomial fit) '
           WEIGHT=READF_B('100')
-          WRITE(77,*) WEIGHT,'# WEIGHT for pseudofit'
+          WRITE(77,*) WEIGHT,'# WEIGHT for pseudofit (1.0=no pseudofit)'
           WRITE(*,100) 'POWER for pseudofit '
           POWER=READF_B('2')
           WRITE(77,*) POWER,'# POWER for pseudofit'
@@ -129,6 +122,13 @@ C ajustes
           ELSE
             TSIGMA=0.0
           END IF
+          !parametros para DOWNHILL
+          WRITE(*,100) 'YRMSTOL for DOWNHILL '
+          YRMSTOL=READF_B('1E-5')
+          WRITE(77,*) YRMSTOL,'# YRMSTOL for DOWNHILL'
+          WRITE(*,100) 'NEVALMAX for DOWNHILL '
+          NEVALMAX=READILIM_B('5000',10,1000000)
+          WRITE(77,111) NEVALMAX,'# NEVALMAX for DOWNHILL'
           !realizamos el ajuste
           CALL PSEUDOFIT(XF,YF,EYF,NF,NTERMS,YRMSTOL,NEVALMAX,
      +     WEIGHT,POWER,LUP,TSIGMA,A)
@@ -143,6 +143,36 @@ C..............................................................................
             XKNOT(IKNOT+1)=XF(1)+
      +       (XF(NF)-XF(1))*REAL(IKNOT)/REAL(NKNOTS-1)
           END DO
+          WRITE(*,100) 'WEIGHT for pseudofit (1.0=no pseudofit='//
+     +     'normal polynomial fit) '
+          WEIGHT=READF_B('100')
+          WRITE(77,*) WEIGHT,'# WEIGHT for pseudofit (1.0=no pseudofit)'
+          WRITE(*,100) 'POWER for pseudofit '
+          POWER=READF_B('2')
+          WRITE(77,*) POWER,'# POWER for pseudofit'
+          WRITE(*,100) 'Which side: 1=upper, 2=lower '
+          ILUP=READILIM_B('1',1,2)
+          WRITE(77,111) ILUP,'# side: 1=upper, 2=lower'
+          LUP=(ILUP.EQ.1)
+          WRITE(*,100) 'Are you considering error bars (y/n) '
+          CERR(1:1)=READC_B('n','yn')
+          WRITE(77,112) CERR,'# Using error bars (y/n)?'
+          IF(CERR.EQ.'y')THEN
+            LOOP=.TRUE.
+            DO WHILE(LOOP)
+              WRITE(*,100) 'Times sigma to fit data (0.0=none) '
+              TSIGMA=READF_B('1.0')
+              IF(TSIGMA.LT.0.0)THEN
+                WRITE(*,100) 'WARNING: this number must be >= 0.0.'
+                WRITE(*,101) ' Try again!'
+              ELSE
+                LOOP=.FALSE.
+              END IF
+            END DO
+            WRITE(77,*) TSIGMA,'# Times sigma to fit data (0=none)'
+          ELSE
+            TSIGMA=0.0
+          END IF
           !parametros para DOWNHILL
           WRITE(*,100) 'YRMSTOL for DOWNHILL '
           YRMSTOL=READF_B('1E-5')
@@ -150,11 +180,13 @@ C..............................................................................
           WRITE(*,100) 'NEVALMAX for DOWNHILL '
           NEVALMAX=READILIM_B('5000',10,1000000)
           WRITE(77,111) NEVALMAX,'# NEVALMAX for DOWNHILL'
+          !semilla para numeros aleatorios
           WRITE(*,100) 'NSEED, negative to call srand(time()) '
           NSEED=READI_B('-1')
-          !semilla para numeros aleatorios
           WRITE(77,111) NSEED,'# NSEED for random numbers'
-          CALL SPLFIT(NF,XF,YF,NKNOTS,XKNOT,YRMSTOL,NEVALMAX,NSEED,
+          !realizamos el ajuste
+          CALL SPLFIT(NF,XF,YF,EYF,NKNOTS,XKNOT,YRMSTOL,NEVALMAX,NSEED,
+     +     WEIGHT,POWER,LUP,TSIGMA,
      +     NPLOTMAX,XP,YP,XF(1),XF(NF),YKNOT,ASPL,BSPL,CSPL)
 C..............................................................................
         ELSE !...................................................invalid option

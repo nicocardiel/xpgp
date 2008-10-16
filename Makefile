@@ -65,6 +65,7 @@ FSOURCE = button.f buttqbr.f buttqcf.f buttqch.f buttqex.f \
           pseudofit.f \
           randomizedata.f \
           ranred.f \
+          ranspl.f \
           read_nb.f \
           sfitpol.f \
           show_buffers.f \
@@ -81,6 +82,11 @@ FSOURCE = button.f buttqbr.f buttqcf.f buttqch.f buttqex.f \
 	  updatelimits.f \
           updateplot.f \
           xpgp.f \
+          yfunk_pseudo.f \
+          yfunk_splfit.f \
+          yfunk_splfit1.f \
+          yfunk_splfit2.f \
+          yfunk_splfit3.f \
           yfunkd_linregexy.f
 FOBJECT = $(FSOURCE:.f=.o)
 # Default rule to create program
