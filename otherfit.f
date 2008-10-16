@@ -145,7 +145,7 @@ C..............................................................................
           END DO
           WRITE(*,100) 'WEIGHT for pseudofit (1.0=no pseudofit='//
      +     'normal polynomial fit) '
-          WEIGHT=READF_B('100')
+          WEIGHT=READF_B('1.0')
           WRITE(77,*) WEIGHT,'# WEIGHT for pseudofit (1.0=no pseudofit)'
           WRITE(*,100) 'POWER for pseudofit '
           POWER=READF_B('2')

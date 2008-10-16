@@ -94,7 +94,7 @@ C
         INTEGER NITER,NITERT
         INTEGER NNSEED,NRANND(NKNOTSMAX)
         INTEGER I0SPL
-        REAL XF(NDATAMAX),YF(NDATAMAX)
+        REAL XF(NDATAMAX),YF(NDATAMAX),EYF(NDATAMAX)
         REAL YD(NKNOTSMAX)
         REAL MEANF,RMSF
         REAL ASPL(NKNOTSMAX),BSPL(NKNOTSMAX),CSPL(NKNOTSMAX)
@@ -113,7 +113,7 @@ C
 C
         COMMON/BLKSPLNSEED/NNSEED
         COMMON/BLKSPLFUNK1/NF
-        COMMON/BLKSPLFUNK2/XF,YF
+        COMMON/BLKSPLFUNK2/XF,YF,EYF
         COMMON/BLKSPLFUNK3/NDD
         COMMON/BLKSPLFUNK4/XDD
         COMMON/BLKSPLFUNK5/YD
@@ -158,6 +158,7 @@ C ajuste inicial a polinomio de grado 3
           DO WHILE((X(J).LE.XD(I)).AND.(J.LE.N))
             XF(K)=X(J)
             YF(K)=Y(J)
+            EYF(K)=EY(J)
             K=K+1
             IF(K.GT.NDATAMAX)THEN
               WRITE(*,*)
@@ -199,6 +200,7 @@ C
         DO WHILE((X(J).LE.XD(ND)).AND.(J.LE.N))
           XF(I)=X(J)
           YF(I)=Y(J)
+          EYF(I)=EY(J)
           I=I+1
           IF(I.GT.NDATAMAX)THEN
             WRITE(*,*)
