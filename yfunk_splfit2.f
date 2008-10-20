@@ -54,7 +54,7 @@ C------------------------------------------------------------------------------
             IF(YF0.GE.YF(I))THEN
               F=F+W1*((DBLE(YF0)-DBLE(YF(I)))**POWER)
             ELSE
-              F=F+W2*((DBLE(YF0)-DBLE(YF(I)))**POWER)
+              F=F+W2*((DBLE(YF(I))-DBLE(YF0))**POWER)
             END IF
           END DO
         ELSE !......................................................con errores
