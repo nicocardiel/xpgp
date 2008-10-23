@@ -2,8 +2,7 @@ C Funcion para minimizar las coordenadas Y de todos los Knots
         REAL FUNCTION YFUNK_SPLFIT(X)
         IMPLICIT NONE
         INCLUDE 'ndatamax.inc'
-        INTEGER NKNOTSMAX
-        PARAMETER (NKNOTSMAX=20)
+        INCLUDE 'nknotsmax.inc'
         REAL X(NKNOTSMAX)
 C
         INTEGER I

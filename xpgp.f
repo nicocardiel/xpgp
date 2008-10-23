@@ -112,7 +112,7 @@ C------------------------------------------------------------------------------
 C------------------------------------------------------------------------------
 C Abrimos fichero log de esta sesion
         OPEN(77,FILE='xpgp.log',STATUS='UNKNOWN',FORM='FORMATTED')
-        WRITE(77,101) '# xpgp version:'//VERSION
+        WRITE(77,101) '# xpgp version: '//VERSION
         LBATCH=.FALSE.
 C------------------------------------------------------------------------------
 C------------------------------------------------------------------------------
@@ -145,7 +145,7 @@ C Indicamos si usamos un fichero log ya existente
             END IF
           END DO
           OPEN(78,FILE=BATCHFILE,STATUS='OLD',FORM='FORMATTED')
-          READ(78,'(15X,A4)') VERSION_BATCH
+          READ(78,'(16X,A4)') VERSION_BATCH
           IF(VERSION_BATCH.NE.VERSION)THEN
             WRITE(*,101) '>>> Current version..: '//VERSION
             WRITE(*,101) '>>> Log. file version: '//VERSION_BATCH

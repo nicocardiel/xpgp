@@ -4,11 +4,10 @@
 C
         INCLUDE 'nbuffmax.inc'
         INCLUDE 'ndatamax.inc'
+        INCLUDE 'nknotsmax.inc'
 C
         INTEGER NDEGMAX
         PARAMETER (NDEGMAX=16)
-        INTEGER NKNOTSMAX
-        PARAMETER (NKNOTSMAX=20)
         INTEGER NPLOTMAX
         PARAMETER (NPLOTMAX=1000)
 C
@@ -44,11 +43,13 @@ C
         REAL XDATA(NDATAMAX,NBUFFMAX),YDATA(NDATAMAX,NBUFFMAX)
         REAL EXDATA(NDATAMAX,NBUFFMAX),EYDATA(NDATAMAX,NBUFFMAX)
         REAL XF(NDATAMAX),YF(NDATAMAX),EYF(NDATAMAX)
+        REAL XFMIN,XFMAX
         REAL XP(NPLOTMAX),YP(NPLOTMAX)
         REAL XMIN,XMAX,YMIN,YMAX
         REAL XMIN0,XMAX0,XMINF,XMAXF
         REAL TSIGMA
         CHARACTER*1 CSAVE,CERR
+        CHARACTER*50 CDUMMY
         CHARACTER*50 DATAKEY(NBUFFMAX),DATAKEY_
         CHARACTER*50 CXMINF,CXMAXF
         LOGICAL LUP
@@ -94,10 +95,10 @@ C ajustes
           NTERMS=NTERMS+1
           WRITE(*,100) 'WEIGHT for pseudofit (1.0=no pseudofit='//
      +     'normal polynomial fit) '
-          WEIGHT=READF_B('100')
+          WEIGHT=READF_B('1000.0')
           WRITE(77,*) WEIGHT,'# WEIGHT for pseudofit (1.0=no pseudofit)'
           WRITE(*,100) 'POWER for pseudofit '
-          POWER=READF_B('2')
+          POWER=READF_B('2.0')
           WRITE(77,*) POWER,'# POWER for pseudofit'
           WRITE(*,100) 'Which side: 1=upper, 2=lower '
           ILUP=READILIM_B('1',1,2)
@@ -138,17 +139,20 @@ C..............................................................................
           WRITE(*,100) 'Number of knots '
           NKNOTS=READILIM_B('5',2,20)
           WRITE(77,111) NKNOTS,'# Number of knots'
-          XKNOT(1)=XF(1)
+          !como los datos no tienen por que venir ordenados, buscamos
+          !los extremos en el eje X para fijar ahi al menos dos knots
+          CALL FINDMML(NF,1,NF,XF,XFMIN,XFMAX)
+          XKNOT(1)=XFMIN
           DO IKNOT=1,NKNOTS-1
-            XKNOT(IKNOT+1)=XF(1)+
-     +       (XF(NF)-XF(1))*REAL(IKNOT)/REAL(NKNOTS-1)
+            XKNOT(IKNOT+1)=XFMIN+
+     +       (XFMAX-XFMIN)*REAL(IKNOT)/REAL(NKNOTS-1)
           END DO
           WRITE(*,100) 'WEIGHT for pseudofit (1.0=no pseudofit='//
      +     'normal polynomial fit) '
-          WEIGHT=READF_B('1.0')
+          WEIGHT=READF_B('1000.0')
           WRITE(77,*) WEIGHT,'# WEIGHT for pseudofit (1.0=no pseudofit)'
           WRITE(*,100) 'POWER for pseudofit '
-          POWER=READF_B('2')
+          POWER=READF_B('2.0')
           WRITE(77,*) POWER,'# POWER for pseudofit'
           WRITE(*,100) 'Which side: 1=upper, 2=lower '
           ILUP=READILIM_B('1',1,2)
@@ -181,6 +185,8 @@ C..............................................................................
           NEVALMAX=READILIM_B('5000',10,1000000)
           WRITE(77,111) NEVALMAX,'# NEVALMAX for DOWNHILL'
           !semilla para numeros aleatorios
+          WRITE(*,101) '(Note: NSEED must be > 0 to make the '//
+     +     'merging-knots process repeatable)'
           WRITE(*,100) 'NSEED, negative to call srand(time()) '
           NSEED=READI_B('-1')
           WRITE(77,111) NSEED,'# NSEED for random numbers'
@@ -254,11 +260,15 @@ C dibujamos el ajuste y preguntamos si queremos salvarlo en algun buffer
               NB=READILIM_B('@',1,NBUFFMAX)
               WRITE(77,111) NB,'# Selected buffer number'
               IF(ICSAVE.EQ.1)THEN
+                !ojo: usamos XFMIN y XFMAX (los knots extremos) y no los
+                !valores de CXMINF y CXMAXF (que dependen del plot)
                 WRITE(*,100) 'Xmin '
-                XMINF=READF_B(CXMINF)
+                WRITE(CDUMMY,*) XFMIN
+                XMINF=READF_B(CDUMMY)
                 WRITE(77,*) XMINF,'# Xmin'
                 WRITE(*,100) 'Xmax '
-                XMAXF=READF_B(CXMAXF)
+                WRITE(CDUMMY,*) XFMAX
+                XMAXF=READF_B(CDUMMY)
                 WRITE(77,*) XMAXF,'# Xmax'
                 WRITE(*,100) 'Number of points '
                 NDATA=READILIM_B('1000',2,NDATAMAX)

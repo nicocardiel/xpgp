@@ -64,9 +64,8 @@ C         del ajuste final.
         INTEGER READILIM_B
         REAL READF_B
         CHARACTER*255 READC_B
-C NKNOTSMAX- numero maximo de nodos
-        INTEGER NKNOTSMAX                      !cambiar tambien en funcion FUNK
-        PARAMETER (NKNOTSMAX=20)
+C
+        INCLUDE 'nknotsmax.inc'
 C
         INTEGER N
         REAL X(N),Y(N),EY(N)
@@ -107,9 +106,14 @@ C
         REAL A(4),CHISQR,FDUMMY
         REAL SIGMA
         REAL YMINP,YMAXP,XMINP,XMAXP
+        REAL DELTAX
         CHARACTER*1 CREF
-        CHARACTER*20 CDUMMY
+        CHARACTER*1 CMERGE
+        CHARACTER*1 CREPEAT
+        CHARACTER*80 CDUMMY
         LOGICAL LLUP
+        LOGICAL LOOP,LOOP_
+        LOGICAL LMERGE(NKNOTSMAX),LMERGE_ANY
 C
         COMMON/BLKSPLNSEED/NNSEED
         COMMON/BLKSPLFUNK1/NF
@@ -270,8 +274,10 @@ c dibujamos ajuste final
         write(*,*)sigma
 C mostramos los puntos del ajuste
         DO I=1,ND
-          WRITE(*,100) '>>> Knot #, xknot, yknot: '
-          WRITE(*,*) I,XD(I),YD(I)
+          WRITE(*,100) '>>> Knot #'
+          WRITE(*,'(I2.2,$)') I
+          WRITE(*,100) ', (Xknot,Yknot): '
+          WRITE(*,*) XD(I),YD(I)
           YKNOT(I)=YD(I)
         END DO
 C si el numero de Knots es solo 2 (los extremos) no se permite refinar el
@@ -286,11 +292,21 @@ C Si se quiere refinamos el ajuste
         WRITE(*,101)'(2) Refine X-position  -----> 1 Knot'
         WRITE(*,101)'(3) Refine Y-position  -----> 1 Knot'
         WRITE(*,101)'(W) Refine X and Y position-> all Knots'
+        IF(ND.GT.2)THEN
+          WRITE(*,101)'(M) Merge "touching" knots'
+        END IF
         WRITE(*,101)'(0) Exit'
         WRITE(*,100)'Option '
-        CREF(1:1)=READC_B('0','0123Ww')
-        WRITE(77,112) CREF,'# Option: 1=X&Y, 2=X, 3=Y, w=all knots'
+        IF(ND.GT.2)THEN
+          CREF(1:1)=READC_B('0','0123WwMm')
+        ELSE
+          CREF(1:1)=READC_B('0','0123Ww')
+        END IF
+        WRITE(77,112) CREF,
+     +   '# Option: 1=X&Y, 2=X, 3=Y, w=all knots, m=merge knots'
         IF(CREF.EQ.'w')CREF='W'
+        IF(CREF.EQ.'m')CREF='M'
+C..............................................................................
         IF(CREF.EQ.'0')THEN
           call pgsci(0)
           call pgslw(3)
@@ -305,6 +321,59 @@ C Si se quiere refinamos el ajuste
           call pgslw(1)
           RETURN
         END IF
+C..............................................................................
+        IF(CREF.EQ.'M')THEN
+          DO I=1,ND
+            LMERGE(I)=.FALSE.
+          END DO
+          LMERGE_ANY=.FALSE.
+          LOOP=.TRUE.
+          DO WHILE(LOOP)
+            WRITE(*,*)
+            LOOP_=.TRUE.
+            DO WHILE(LOOP_)
+              WRITE(*,100) 'Delta_X to merge knots '
+              WRITE(CDUMMY,*) (XD(ND)-XD(1))/REAL(N)
+              DELTAX=READF_B(CDUMMY)
+              WRITE(77,*) DELTAX,'# Delta_X to merge knots'
+              IF(DELTAX.GE.(XD(ND)-XD(1))/2.0)THEN
+                WRITE(*,101) 'ERROR: Delta_X is too large!'
+                WRITE(*,100) '       Delta_X must be < '
+                WRITE(*,*) (XD(ND)-XD(1))/2.0
+                WRITE(*,*)
+              ELSE
+                LOOP_=.FALSE.
+              END IF
+            END DO
+            DO I=1,ND-1
+              IF((XD(I+1)-XD(I)).LE.DELTAX)THEN
+                WRITE(*,100) 'Knots suitable for merging: '
+                WRITE(*,'(I2,2X,I2)') I,I+1
+                LMERGE(I)=.TRUE.
+                LMERGE_ANY=.TRUE.
+              END IF
+            END DO
+            IF(LMERGE_ANY)THEN
+              WRITE(*,100) 'Are you proceeding with merging (y/n) '
+              CMERGE(1:1)=READC_B('y','yn')
+              WRITE(77,112) CMERGE,'# are you proceeding with merging?'
+              IF(CMERGE.EQ.'n') GOTO 21
+              !fusionamos los knots
+              CALL MERGE_KNOTS(ND,XD,YD,LMERGE)
+              LOOP=.FALSE.
+            ELSE
+              WRITE(*,100) 'WARNING: No "touching" knots found!'
+              WRITE(*,100) 'Do you want to modify Delta_X (y/n) '
+              CREPEAT(1:1)=READC_B('y','yn')
+              WRITE(77,112) CREPEAT,'# modify Delta_X?'
+              IF(CREPEAT(1:1).EQ.'n') GOTO 21
+            END IF
+          END DO
+          !continuamos, forzando a iterar (para recalcular con el numero
+          !diferente de knots)
+          CREF='W' !iterate all knots
+        END IF
+C..............................................................................
         NITER=0
         IF(CREF.NE.'W')THEN
 !22        WRITE(*,100)'Knot number to be refined '
@@ -336,10 +405,10 @@ C pintamos con otro color la curva que va a quedar desfasada
         end do
         call pgsci(0)
 C
-        WRITE(CDUMMY,*)YRMSTOL
-        WRITE(*,100)'YRMSTOL for DOWNHILL '
-        YRMSTOL=READF_B(CDUMMY)
-        WRITE(77,*) YRMSTOL,'# YRMSTOL for DOWNHILL'
+!       WRITE(CDUMMY,*)YRMSTOL
+!       WRITE(*,100)'YRMSTOL for DOWNHILL '
+!       YRMSTOL=READF_B(CDUMMY)
+!       WRITE(77,*) YRMSTOL,'# YRMSTOL for DOWNHILL'
 C -> REFINAMOS x e y ----------------------------------------------------------
 24      IF(CREF.EQ.'1')THEN
           WRITE(*,100)'Valor inicial  en X,Y: '

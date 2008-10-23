@@ -35,6 +35,7 @@ FSOURCE = button.f buttqbr.f buttqcf.f buttqch.f buttqex.f \
           factorialpf.f \
           fextrae.f \
           find_nearest.f \
+          findmml.f \
           fitpol.f \
           fitpoley.f \
           fitpoleyb.f \
@@ -55,6 +56,7 @@ FSOURCE = button.f buttqbr.f buttqcf.f buttqch.f buttqex.f \
           linregey.f \
           ludcmp.f \
           lusolv.f \
+          merge_knots.f \
           onlyone.f \
           ordena1f.f \
           ordena1f1i.f \
