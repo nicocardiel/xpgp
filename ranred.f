@@ -31,11 +31,15 @@ C------------------------------------------------------------------------------
           RANRED=RAND()
           RETURN
         ELSEIF(NSEED.LT.0)THEN
-          CALL SRAND(TIME())
+          NSEED=TIME()
+          CALL SRAND(NSEED)
+          WRITE(*,100) 'ranred--> NSEED='
+          WRITE(*,*) NSEED
         ELSEIF(NSEED.GT.0)THEN
           CALL SRAND(NSEED)
         END IF
         NSEED=0
         RANRED=RAND()
 C
+100     FORMAT(A,$)
         END

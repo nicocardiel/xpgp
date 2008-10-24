@@ -93,8 +93,10 @@ C
         INTEGER NITER,NITERT
         INTEGER NNSEED,NRANND(NKNOTSMAX)
         INTEGER I0SPL
+        INTEGER NDELETE
+        INTEGER ND_
         REAL XF(NDATAMAX),YF(NDATAMAX),EYF(NDATAMAX)
-        REAL YD(NKNOTSMAX)
+        REAL YD(NKNOTSMAX),DYD(NKNOTSMAX)
         REAL MEANF,RMSF
         REAL ASPL(NKNOTSMAX),BSPL(NKNOTSMAX),CSPL(NKNOTSMAX)
         REAL SSPL(NKNOTSMAX)
@@ -107,6 +109,7 @@ C
         REAL SIGMA
         REAL YMINP,YMAXP,XMINP,XMAXP
         REAL DELTAX
+        REAL XD_(NKNOTSMAX),YD_(NKNOTSMAX),DYD_(NKNOTSMAX)
         CHARACTER*1 CREF
         CHARACTER*1 CMERGE
         CHARACTER*1 CREPEAT
@@ -216,11 +219,6 @@ C
           J=J+1
         END DO
         NF=I-1
-C
-        NDD=ND
-        DO I=1,ND
-          XDD(I)=XD(I)
-        END DO
 C calculamos media y rms de YD
         MEANF=0.
         DO I=1,ND
@@ -244,12 +242,17 @@ C valores iniciales para DOWNHILL
           END IF
         END DO
 C llamamos a DOWNHILL
+10      NDD=ND           !ND para el COMMON block
+        DO I=1,ND
+          XDD(I)=XD(I)   !XD para el COMMON block
+        END DO
         WRITE(*,100)'Running DOWNHILL...'
         CALL DOWNHILL(ND,XX0,DXX0,YFUNK_SPLFIT,1.0,0.5,2.0,YRMSTOL,
      +   XX,DXX,NEVAL,NEVALMAX)
         WRITE(*,110)'      no. of function evaluations: ',NEVAL
         DO J=1,ND
           YD(J)=XX(J)
+          DYD(J)=DXX(J)
         END DO
         SIGMA=SQRT(YFUNK_SPLFIT(YD))
 20      CALL CUBSPL(XD,YD,ND,1,SSPL,ASPL,BSPL,CSPL)                    !IMODE=1
@@ -270,7 +273,7 @@ c dibujamos ajuste final
           call pgptext(xd(i),yd(i)+(ymaxp-yminp)/25.,0.,0.5,
      +     cdummy(1:k))
         end do
-        write(*,100)'sigma of the fit: '
+        write(*,100)'Sigma of the fit: '
         write(*,*)sigma
 C mostramos los puntos del ajuste
         DO I=1,ND
@@ -280,49 +283,34 @@ C mostramos los puntos del ajuste
           WRITE(*,*) XD(I),YD(I)
           YKNOT(I)=YD(I)
         END DO
-C si el numero de Knots es solo 2 (los extremos) no se permite refinar el
-C ajuste
+C si el numero de Knots es solo 2 (los extremos) no se refina el ajuste
         IF(ND.EQ.2) RETURN
 C Si se quiere refinamos el ajuste
-        WRITE(*,100) 'Refine the fit (y/n) '
-        CREF(1:1)=READC_B('n','yn')
-        WRITE(77,112) CREF,'# Refine the fit (y/n)?'
-        IF(CREF.EQ.'n') RETURN
 21      WRITE(*,101)'(1) Refine X and Y position-> 1 Knot'
         WRITE(*,101)'(2) Refine X-position  -----> 1 Knot'
         WRITE(*,101)'(3) Refine Y-position  -----> 1 Knot'
         WRITE(*,101)'(W) Refine X and Y position-> all Knots'
         IF(ND.GT.2)THEN
           WRITE(*,101)'(M) Merge "touching" knots'
+          WRITE(*,101)'(D) Delete single knot'
         END IF
         WRITE(*,101)'(0) Exit'
         WRITE(*,100)'Option '
         IF(ND.GT.2)THEN
-          CREF(1:1)=READC_B('0','0123WwMm')
+          CREF(1:1)=READC_B('0','0123WwMmDd')
         ELSE
           CREF(1:1)=READC_B('0','0123Ww')
         END IF
         WRITE(77,112) CREF,
-     +   '# Option: 1=X&Y, 2=X, 3=Y, w=all knots, m=merge knots'
+     +   '# Option: 1=X&Y, 2=X, 3=Y, w=all knots, m=merge, d=delete'
         IF(CREF.EQ.'w')CREF='W'
         IF(CREF.EQ.'m')CREF='M'
+        IF(CREF.EQ.'d')CREF='D'
 C..............................................................................
         IF(CREF.EQ.'0')THEN
-          call pgsci(0)
-          call pgslw(3)
-          call pgline(nout,xout,yout)
-          do i=1,nd
-            call pgpoint(1,xd(i),yd(i),17)
-            write(cdummy,*)i
-            call rmblank(cdummy,cdummy,k)
-            call pgptext(xd(i),yd(i)+(ymaxp-yminp)/25.,0.,0.5,
-     +       cdummy(1:k))
-          end do
-          call pgslw(1)
           RETURN
-        END IF
 C..............................................................................
-        IF(CREF.EQ.'M')THEN
+        ELSEIF(CREF.EQ.'M')THEN
           DO I=1,ND
             LMERGE(I)=.FALSE.
           END DO
@@ -358,25 +346,65 @@ C..............................................................................
               CMERGE(1:1)=READC_B('y','yn')
               WRITE(77,112) CMERGE,'# are you proceeding with merging?'
               IF(CMERGE.EQ.'n') GOTO 21
-              !fusionamos los knots
-              CALL MERGE_KNOTS(ND,XD,YD,LMERGE)
+              !fusionamos los knots (nota: LMERGE(ND)=.FALSE. siempre)
+              CALL MERGE_KNOTS(ND,XD,YD,DYD,LMERGE,ND_,XD_,YD_,DYD_)
               LOOP=.FALSE.
             ELSE
-              WRITE(*,100) 'WARNING: No "touching" knots found!'
+              WRITE(*,101) 'WARNING: No "touching" knots found!'
               WRITE(*,100) 'Do you want to modify Delta_X (y/n) '
               CREPEAT(1:1)=READC_B('y','yn')
               WRITE(77,112) CREPEAT,'# modify Delta_X?'
               IF(CREPEAT(1:1).EQ.'n') GOTO 21
             END IF
           END DO
-          !continuamos, forzando a iterar (para recalcular con el numero
-          !diferente de knots)
-          CREF='W' !iterate all knots
-        END IF
 C..............................................................................
+        ELSEIF(CREF.EQ.'D')THEN
+          WRITE(*,100) 'Knot number to be deleted'
+          NDELETE=READILIM_B('@',2,ND-1) !no podemos eliminar los extremos
+          WRITE(77,111) NDELETE,'# knot number to be deleted'
+          ND_=ND-1
+          DO I=1,ND-1
+            IF(I.LT.NDELETE)THEN
+              XD_(I)=XD(I)
+              YD_(I)=YD(I)
+              DYD_(I)=DYD(I)
+            ELSE
+              XD_(I)=XD(I+1)
+              YD_(I)=YD(I+1)
+              DYD_(I)=DYD(I+1)
+            END IF
+          END DO
+        END IF
+C------------------------------------------------------------------------------
+C pintamos con otro color la curva que va a quedar desfasada
+        call pgsci(15)
+        call pgline(nout,xout,yout)
+        do i=1,nd
+          call pgpoint(1,xd(i),yd(i),17)
+          write(cdummy,*)i
+          call rmblank(cdummy,cdummy,k)
+          call pgptext(xd(i),yd(i)+(ymaxp-yminp)/25.,0.,0.5,
+     +     cdummy(1:k))
+        end do
+        call pgsci(0)
+C------------------------------------------------------------------------------
+C si hemos cambiado el numero de knots, repetimos el ajuste
+        IF((CREF.EQ.'M').OR.(CREF.EQ.'D'))THEN
+          ND=ND_
+          DO I=1,ND_
+            XD(I)=XD_(I)
+            YD(I)=YD_(I)
+            DYD(I)=DYD_(I)
+          END DO
+          DO I=1,ND
+            XX0(I)=YD(I)
+            DXX0(I)=DYD(I)
+          END DO
+          GOTO 10
+        END IF
+C------------------------------------------------------------------------------
         NITER=0
         IF(CREF.NE.'W')THEN
-!22        WRITE(*,100)'Knot number to be refined '
           WRITE(*,100)'Knot number to be refined '
           NREF=READILIM_B('@',1,ND)
           WRITE(77,111) NREF,'# Knot number to be refined'
@@ -393,22 +421,7 @@ C..............................................................................
           WRITE(77,111) NITERT,'# Number of iterations'
           NITER=0
         END IF
-C pintamos con otro color la curva que va a quedar desfasada
-        call pgsci(15)
-        call pgline(nout,xout,yout)
-        do i=1,nd
-          call pgpoint(1,xd(i),yd(i),17)
-          write(cdummy,*)i
-          call rmblank(cdummy,cdummy,k)
-          call pgptext(xd(i),yd(i)+(ymaxp-yminp)/25.,0.,0.5,
-     +     cdummy(1:k))
-        end do
-        call pgsci(0)
-C
-!       WRITE(CDUMMY,*)YRMSTOL
-!       WRITE(*,100)'YRMSTOL for DOWNHILL '
-!       YRMSTOL=READF_B(CDUMMY)
-!       WRITE(77,*) YRMSTOL,'# YRMSTOL for DOWNHILL'
+C------------------------------------------------------------------------------
 C -> REFINAMOS x e y ----------------------------------------------------------
 24      IF(CREF.EQ.'1')THEN
           WRITE(*,100)'Valor inicial  en X,Y: '

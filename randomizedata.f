@@ -30,6 +30,7 @@ C
         REAL XMINBUFF(NBUFFMAX),XMAXBUFF(NBUFFMAX)
         REAL YMINBUFF(NBUFFMAX),YMAXBUFF(NBUFFMAX)
         REAL RAN1,RAN2
+        REAL RDUMMY
         CHARACTER*1 CAXIS
         CHARACTER*20 XYNAME(NDATAMAX,NBUFFMAX)
         CHARACTER*50 DATAKEY(NBUFFMAX)
@@ -61,6 +62,7 @@ C
         WRITE(*,100) 'NSEED, negative to call srand(time()) '
         NSEED=READI_B('-1')
         WRITE(77,111) NSEED,'# NSEED for random numbers'
+        IF(NSEED.LT.0) RDUMMY=RANRED(NSEED)
 C
         WRITE(*,100) 'Randomize x, y or both (x/y/b) '
         CAXIS(1:1)=READC_B('b','xyb')

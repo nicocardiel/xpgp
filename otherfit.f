@@ -16,6 +16,7 @@ C
         INTEGER READILIM_B
         REAL READF_B
         REAL FPOLY
+        REAL RANRED
         CHARACTER*255 READC_B
 C
         INTEGER I
@@ -48,6 +49,7 @@ C
         REAL XMIN,XMAX,YMIN,YMAX
         REAL XMIN0,XMAX0,XMINF,XMAXF
         REAL TSIGMA
+        REAL RDUMMY
         CHARACTER*1 CSAVE,CERR
         CHARACTER*50 CDUMMY
         CHARACTER*50 DATAKEY(NBUFFMAX),DATAKEY_
@@ -93,8 +95,9 @@ C ajustes
           NTERMS=READILIM_B('@',0,10)
           WRITE(77,111) NTERMS,'# Polynomial degree'
           NTERMS=NTERMS+1
-          WRITE(*,100) 'WEIGHT for pseudofit (1.0=no pseudofit='//
-     +     'normal polynomial fit) '
+          WRITE(*,101) '(Note: WEIGHT=1.0 is equivalent to a'//
+     +     'normal fit to a polynomial)'
+          WRITE(*,100) 'WEIGHT for pseudofit '
           WEIGHT=READF_B('1000.0')
           WRITE(77,*) WEIGHT,'# WEIGHT for pseudofit (1.0=no pseudofit)'
           WRITE(*,100) 'POWER for pseudofit '
@@ -137,7 +140,7 @@ C..............................................................................
         ELSEIF(IOPC.EQ.2)THEN !................................adaptive splines
           !parametros para el ajuste
           WRITE(*,100) 'Number of knots '
-          NKNOTS=READILIM_B('5',2,20)
+          NKNOTS=READILIM_B('@',2,20)
           WRITE(77,111) NKNOTS,'# Number of knots'
           !como los datos no tienen por que venir ordenados, buscamos
           !los extremos en el eje X para fijar ahi al menos dos knots
@@ -147,8 +150,9 @@ C..............................................................................
             XKNOT(IKNOT+1)=XFMIN+
      +       (XFMAX-XFMIN)*REAL(IKNOT)/REAL(NKNOTS-1)
           END DO
-          WRITE(*,100) 'WEIGHT for pseudofit (1.0=no pseudofit='//
-     +     'normal polynomial fit) '
+          WRITE(*,101) '(Note: WEIGHT=1.0 is equivalent to a'//
+     +     'normal fit by splines)'
+          WRITE(*,100) 'WEIGHT for pseudofit '
           WEIGHT=READF_B('1000.0')
           WRITE(77,*) WEIGHT,'# WEIGHT for pseudofit (1.0=no pseudofit)'
           WRITE(*,100) 'POWER for pseudofit '
@@ -190,6 +194,7 @@ C..............................................................................
           WRITE(*,100) 'NSEED, negative to call srand(time()) '
           NSEED=READI_B('-1')
           WRITE(77,111) NSEED,'# NSEED for random numbers'
+          IF(NSEED.LT.0) RDUMMY=RANRED(NSEED)
           !realizamos el ajuste
           CALL SPLFIT(NF,XF,YF,EYF,NKNOTS,XKNOT,YRMSTOL,NEVALMAX,NSEED,
      +     WEIGHT,POWER,LUP,TSIGMA,
