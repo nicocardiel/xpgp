@@ -333,6 +333,8 @@ C
               XKEY=XKEY+DXKEY
               YKEY=YKEY+DYKEY
 C
+              CALL PGSLW(LWBUFF(NB))
+C
               IF((DATAKEYCHSYMB.EQ.0.0).AND.(NSYMBBUFF(NB).NE.200).
      >         AND.(NSYMBBUFF(NB).NE.100))THEN
                 IF(LPOSTSCRIPT)THEN
@@ -371,6 +373,7 @@ C
               L1=TRUEBEG(DATAKEY(NB))
               L2=TRUELEN(DATAKEY(NB))
 C
+              CALL PGSLW(AXISLW)
               IF(IDATAKEY.EQ.1)THEN
                 CALL PGPTEXT(XKEY+1.5*DXKEYLINE,YKEY,0.,0.,
      >           DATAKEY(NB)(L1:L2))
