@@ -1291,7 +1291,7 @@ C
                   CALL RPGBAND(0,0,0.,0.,XC,YC,CH)
                   CALL IFBUTTON(XC,YC,NB__)
                 END IF
-                WRITE(77,111) NB_,'# Selected CH (button number!)'
+                WRITE(77,111) NB__,'# Selected CH (button number!)'
                 IF(NB__.EQ.17)THEN
                   CHBUFF(NB_)=0.2
                 ELSEIF(NB__.EQ.18)THEN
@@ -1331,7 +1331,7 @@ C
                   WRITE(CDUMMY,*) CHBUFF(NB_)
                   WRITE(*,100) 'New CH for symbols '
                   CHBUFF(NB_)=READF_B(CDUMMY)
-                  WRITE(77,111) CHBUFF(NB_),'# Selected CH'
+                  WRITE(77,111) CHBUFF(NB_),'# Selected CH for symbols'
                 ELSE
                   NB__=0
                 END IF

@@ -25,7 +25,6 @@ C
         INTEGER IKNOT,NKNOTS
         INTEGER NDATABUFF(NBUFFMAX)
         INTEGER NDATA
-        INTEGER ICSAVE
         INTEGER IEXPAND
         INTEGER NF
         INTEGER NB
@@ -50,7 +49,7 @@ C
         REAL XMIN0,XMAX0,XMINF,XMAXF
         REAL TSIGMA
         REAL RDUMMY
-        CHARACTER*1 CSAVE,CERR
+        CHARACTER*1 CSAVE,COPC,CERR
         CHARACTER*50 CDUMMY
         CHARACTER*50 DATAKEY(NBUFFMAX),DATAKEY_
         CHARACTER*50 CXMINF,CXMAXF
@@ -198,7 +197,7 @@ C..............................................................................
           !realizamos el ajuste
           CALL SPLFIT(NF,XF,YF,EYF,NKNOTS,XKNOT,YRMSTOL,NEVALMAX,NSEED,
      +     WEIGHT,POWER,LUP,TSIGMA,
-     +     NPLOTMAX,XP,YP,XF(1),XF(NF),YKNOT,ASPL,BSPL,CSPL)
+     +     NPLOTMAX,XP,YP,XKNOT(1),XKNOT(NKNOTS),YKNOT,ASPL,BSPL,CSPL)
 C..............................................................................
         ELSE !...................................................invalid option
           WRITE(*,100) 'IOPC='
@@ -247,21 +246,25 @@ C dibujamos el ajuste y preguntamos si queremos salvarlo en algun buffer
         CSAVE(1:1)=READC_B('n','yn')
         WRITE(77,112) CSAVE,'# save fit results'
         IF(CSAVE.EQ.'y')THEN
-          ICSAVE=1
-          DO WHILE(ICSAVE.NE.0)
+          COPC=' '
+          DO WHILE(COPC.NE.'0')
             WRITE(*,101) '(1) Save last fit into buffer'
             WRITE(*,101) '(2) Save fit predictions into buffer'
+            IF(IOPC.EQ.2)THEN
+              WRITE(*,101) '(K) Save knots'
+            END IF
             WRITE(*,101) '(0) EXIT'
             WRITE(*,100) 'Option '
-            ICSAVE=READILIM_B('0',0,2)
-            WRITE(77,111) ICSAVE,
-     +       '# 1=save last fit, 2=save fit predictions, 0=EXIT'
-            IF(ICSAVE.NE.0)THEN
+            COPC(1:1)=READC_B('0','012kK')
+            IF(COPC.EQ.'k') COPC='K'
+            WRITE(77,112) COPC,
+     +       '# save: 1=last fit, 2=fit predictions, k=knots, 0=EXIT'
+            IF(COPC.NE.'0')THEN
               !pedimos nuevo buffer (puede ser el mismo NB0)
               WRITE(*,100) 'Buffer # to store new data'
               NB=READILIM_B('@',1,NBUFFMAX)
               WRITE(77,111) NB,'# Selected buffer number'
-              IF(ICSAVE.EQ.1)THEN
+              IF(COPC.EQ.'1')THEN
                 WRITE(*,100) 'Xmin '
                 IF(IOPC.EQ.2)THEN
                   WRITE(CDUMMY,*) XFMIN
@@ -286,26 +289,38 @@ C dibujamos el ajuste y preguntamos si queremos salvarlo en algun buffer
                   XDATA(I,NB)=XMINF+(XMAXF-XMINF)*REAL(I-1)/
      +             REAL(NDATABUFF(NB)-1)
                 END DO
-              ELSE !ICSAVE=2
+              ELSEIF(COPC.EQ.'2')THEN
                 NDATABUFF(NB)=NF
                 DO I=1,NDATABUFF(NB)
                   XDATA(I,NB)=XF(I)
                 END DO
-              END IF
-              IF(IOPC.EQ.1)THEN !...................................pseudofit
+              ELSEIF(COPC.EQ.'K')THEN
+                NDATABUFF(NB)=NKNOTS
                 DO I=1,NDATABUFF(NB)
-                  YDATA(I,NB)=FPOLY(NTERMS-1,A,XDATA(I,NB))
-                END DO
-              ELSEIF(IOPC.EQ.2)THEN !........................adaptive splines
-                I0SPL=1 !comenzar buscando en el inicio de la tabla
-                DO I=1,NDATABUFF(NB)
-                  CALL CUBSPLX(XKNOT,YKNOT,ASPL,BSPL,CSPL,NKNOTS,I0SPL,
-     +             XDATA(I,NB),YDATA(I,NB))
+                  XDATA(I,NB)=XKNOT(I)
+                  YDATA(I,NB)=YKNOT(I)
                 END DO
               ELSE
-                WRITE(*,100) 'IOPC='
-                WRITE(*,*) IOPC
-                STOP 'FATAL ERROR in subroutine otherfit.f'
+                WRITE(*,101) 'FATAL ERROR in subrotine OTHERFIT'
+                WRITE(*,101) 'COPC='//COPC
+                STOP
+              END IF
+              IF(COPC.NE.'K')THEN
+                IF(IOPC.EQ.1)THEN !...................................pseudofit
+                  DO I=1,NDATABUFF(NB)
+                    YDATA(I,NB)=FPOLY(NTERMS-1,A,XDATA(I,NB))
+                  END DO
+                ELSEIF(IOPC.EQ.2)THEN !........................adaptive splines
+                  I0SPL=1 !comenzar buscando en el inicio de la tabla
+                  DO I=1,NDATABUFF(NB)
+                    CALL CUBSPLX(XKNOT,YKNOT,ASPL,BSPL,CSPL,
+     +               NKNOTS,I0SPL,XDATA(I,NB),YDATA(I,NB))
+                  END DO
+                ELSE
+                  WRITE(*,100) 'IOPC='
+                  WRITE(*,*) IOPC
+                  STOP 'FATAL ERROR in subroutine otherfit.f'
+                END IF
               END IF
               DO I=1,NDATABUFF(NB)
                 EXDATA(I,NB)=0.
@@ -314,12 +329,16 @@ C dibujamos el ajuste y preguntamos si queremos salvarlo en algun buffer
               LXERR(NB)=.FALSE.
               LYERR(NB)=.FALSE.
               CALL UPDATELIMITS(NB)
-              NSYMBBUFF(NB)=1001 !linea continua
+              IF(COPC.EQ.'K')THEN
+                NSYMBBUFF(NB)=17   !circulo solido
+              ELSE
+                NSYMBBUFF(NB)=1001 !linea continua
+              END IF
               LDEFBUFF(NB)=.TRUE.
               LUSEBUFF(NB)=.TRUE.
               WRITE(*,100) 'Key label '
               IF(IOPC.EQ.1)THEN
-                DATAKEY_(1:50)=READC_B('pseudofit','@')
+                DATAKEY_(1:50)=READC_B('polynomial pseudofit','@')
               ELSEIF(IOPC.EQ.2)THEN
                 DATAKEY_(1:50)=READC_B('adaptive splines','@')
               END IF

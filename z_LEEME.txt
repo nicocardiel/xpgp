@@ -9,11 +9,16 @@ y el programa termine.
 - Se ha mejorado la posibilidad de incluir etiquetas externas y líneas.
 
 * Cambios 4.6 -> 4.7
-- Incluido ajuste de pseudofits con errores en cada pixel
+- Incluido ajuste a pseudofits polinómicos con errores en cada pixel
 - Incluido ajuste a "adaptive splines"
+- Incluido opción "randomize" para generar datos aleatorios usando los errores
+  en cada punto.
+- Cuando la etiqueta (para la leyenda) de un buffer es "000", aunque los datos
+  del buffer se representen, la leyenda no aparece. De esta forma se pueden
+  dibujar límites superior e inferior con una sola entrada en la lista de la
+  leyenda.
 
 
 * ToDO
 - Salvar buffer en FITS (?)
 - Revisar calculo de errores en la prediccion,... en los ajustes polinomicos.
-- Incluir ajuste mediante splines adaptables.
