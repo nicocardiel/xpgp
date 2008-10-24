@@ -56,6 +56,7 @@ C
         LOGICAL LXYNAME(NBUFFMAX)
         LOGICAL LBATCH
         LOGICAL LLABELS
+        LOGICAL LDISPLAY_THIS_KEY
 C
         COMMON/BLKFACTORCH/FACTORCH
         COMMON/BLKSETTINGS0/LXMINFIX,LXMAXFIX,LYMINFIX,LYMAXFIX
@@ -319,7 +320,15 @@ C si procede, dibujamos KEY
           END IF
 C
           DO NB=1,NBUFFMAX
-            IF(LUSEBUFF(NB))THEN
+            LDISPLAY_THIS_KEY=LUSEBUFF(NB) !1) tiene que estar activo el buffer
+            IF(LDISPLAY_THIS_KEY)THEN      !2) el key no es "000"
+              L1=TRUEBEG(DATAKEY(NB))
+              L2=TRUELEN(DATAKEY(NB))
+              IF(L2-L1+1.EQ.3)THEN
+                LDISPLAY_THIS_KEY=(DATAKEY(NB)(L1:L2).NE.'000')
+              END IF
+            END IF
+            IF(LDISPLAY_THIS_KEY)THEN
               CALL PGSCI(NCOLORBUFF(NB))
               XKEY=XKEY+DXKEY
               YKEY=YKEY+DYKEY

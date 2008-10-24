@@ -209,8 +209,6 @@ C------------------------------------------------------------------------------
 C dibujamos el ajuste y preguntamos si queremos salvarlo en algun buffer
         !determinamos los limites para dibujar el ajuste
         CALL FINDMML(NF,1,NF,XF,XMIN0,XMAX0)
-        print*,xmin,xmax
-        print*,xmin0,xmax0
         IF(XMIN.LT.XMIN0)THEN
           XMINF=XMIN0
         ELSE

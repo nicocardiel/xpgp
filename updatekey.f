@@ -46,6 +46,7 @@ C------------------------------------------------------------------------------
         WRITE(*,100) 'Current height for text in key '
         DATAKEYCH=READF_B(CDUMMY)
         WRITE(77,*) DATAKEYCH,'# Current height for text in key'
+C
         WRITE(CDUMMY,*) DATAKEYCHSYMB
         WRITE(*,100) 'Current height for symbol in key (0=actual size) '
         DATAKEYCHSYMB=READF_B(CDUMMY)
@@ -62,7 +63,7 @@ C------------------------------------------------------------------------------
             IF(LUSEBUFF(NB))THEN
               L1=TRUEBEG(DATAKEY(NB))
               L2=TRUELEN(DATAKEY(NB))
-              WRITE(*,100) 'New key '
+              WRITE(*,100) 'New key (000=do not display) '
               DATAKEY_(1:50)=READC_B(DATAKEY(NB)(L1:L2),'@')
               DATAKEY(NB)=DATAKEY_
               L1=TRUEBEG(DATAKEY(NB))
