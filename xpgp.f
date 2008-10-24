@@ -1984,7 +1984,7 @@ C..............................................................................
             CALL TOLOG77(NB,'Generate PostScript file <PostScript>')
             CALL BUTTON(55,'[P]ostScript',5)
             WRITE(*,100) 'New graphics device '
-            NEWDEV(1:255)=READC_B('/ps','@')
+            NEWDEV(1:255)=READC_B('/cps','@')
             CALL TOLOG77_STRING(NEWDEV(1:TRUELEN(NEWDEV)),
      +       'New graphics device')
             IDNEW=PGOPEN(NEWDEV)

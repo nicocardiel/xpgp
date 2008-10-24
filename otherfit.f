@@ -104,7 +104,7 @@ C ajustes
           POWER=READF_B('2.0')
           WRITE(77,*) POWER,'# POWER for pseudofit'
           WRITE(*,100) 'Which side: 1=upper, 2=lower '
-          ILUP=READILIM_B('1',1,2)
+          ILUP=READILIM_B('@',1,2)
           WRITE(77,111) ILUP,'# side: 1=upper, 2=lower'
           LUP=(ILUP.EQ.1)
           WRITE(*,100) 'Are you considering error bars (y/n) '
@@ -131,7 +131,7 @@ C ajustes
           YRMSTOL=READF_B('1E-5')
           WRITE(77,*) YRMSTOL,'# YRMSTOL for DOWNHILL'
           WRITE(*,100) 'NEVALMAX for DOWNHILL '
-          NEVALMAX=READILIM_B('5000',10,1000000)
+          NEVALMAX=READILIM_B('1000',10,1000000)
           WRITE(77,111) NEVALMAX,'# NEVALMAX for DOWNHILL'
           !realizamos el ajuste
           CALL PSEUDOFIT(XF,YF,EYF,NF,NTERMS,YRMSTOL,NEVALMAX,
@@ -159,7 +159,7 @@ C..............................................................................
           POWER=READF_B('2.0')
           WRITE(77,*) POWER,'# POWER for pseudofit'
           WRITE(*,100) 'Which side: 1=upper, 2=lower '
-          ILUP=READILIM_B('1',1,2)
+          ILUP=READILIM_B('@',1,2)
           WRITE(77,111) ILUP,'# side: 1=upper, 2=lower'
           LUP=(ILUP.EQ.1)
           WRITE(*,100) 'Are you considering error bars (y/n) '
@@ -186,7 +186,7 @@ C..............................................................................
           YRMSTOL=READF_B('1E-5')
           WRITE(77,*) YRMSTOL,'# YRMSTOL for DOWNHILL'
           WRITE(*,100) 'NEVALMAX for DOWNHILL '
-          NEVALMAX=READILIM_B('5000',10,1000000)
+          NEVALMAX=READILIM_B('1000',10,1000000)
           WRITE(77,111) NEVALMAX,'# NEVALMAX for DOWNHILL'
           !semilla para numeros aleatorios
           WRITE(*,101) '(Note: NSEED must be > 0 to make the '//
@@ -208,10 +208,9 @@ C..............................................................................
 C------------------------------------------------------------------------------
 C dibujamos el ajuste y preguntamos si queremos salvarlo en algun buffer
         !determinamos los limites para dibujar el ajuste
-        XMIN0=(1.+REAL(IEXPAND)/100.)*XMIN+REAL(IEXPAND)/100.*XMAX
-        XMIN0=XMIN0/(1.+2.*REAL(IEXPAND)/100.)
-        XMAX0=(1.+REAL(IEXPAND)/100.)*XMAX+REAL(IEXPAND)/100.*XMIN
-        XMAX0=XMAX0/(1.+2.*REAL(IEXPAND)/100.)
+        CALL FINDMML(NF,1,NF,XF,XMIN0,XMAX0)
+        print*,xmin,xmax
+        print*,xmin0,xmax0
         IF(XMIN.LT.XMIN0)THEN
           XMINF=XMIN0
         ELSE
@@ -265,14 +264,20 @@ C dibujamos el ajuste y preguntamos si queremos salvarlo en algun buffer
               NB=READILIM_B('@',1,NBUFFMAX)
               WRITE(77,111) NB,'# Selected buffer number'
               IF(ICSAVE.EQ.1)THEN
-                !ojo: usamos XFMIN y XFMAX (los knots extremos) y no los
-                !valores de CXMINF y CXMAXF (que dependen del plot)
                 WRITE(*,100) 'Xmin '
-                WRITE(CDUMMY,*) XFMIN
+                IF(IOPC.EQ.2)THEN
+                  WRITE(CDUMMY,*) XFMIN
+                ELSE
+                  WRITE(CDUMMY,*) XMINF
+                END IF
                 XMINF=READF_B(CDUMMY)
                 WRITE(77,*) XMINF,'# Xmin'
                 WRITE(*,100) 'Xmax '
-                WRITE(CDUMMY,*) XFMAX
+                IF(IOPC.EQ.2)THEN
+                  WRITE(CDUMMY,*) XFMAX
+                ELSE
+                  WRITE(CDUMMY,*) XMAXF
+                END IF
                 XMAXF=READF_B(CDUMMY)
                 WRITE(77,*) XMAXF,'# Xmax'
                 WRITE(*,100) 'Number of points '
