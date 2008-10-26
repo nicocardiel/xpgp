@@ -63,6 +63,7 @@ C         del ajuste final.
         INTEGER READI_B
         INTEGER READILIM_B
         REAL READF_B
+        REAL FPOLY
         CHARACTER*255 READC_B
 C
         INCLUDE 'nknotsmax.inc'
@@ -95,6 +96,7 @@ C
         INTEGER I0SPL
         INTEGER NDELETE
         INTEGER ND_
+        INTEGER INEW
         REAL XF(NDATAMAX),YF(NDATAMAX),EYF(NDATAMAX)
         REAL YD(NKNOTSMAX),DYD(NKNOTSMAX)
         REAL MEANF,RMSF
@@ -110,6 +112,7 @@ C
         REAL YMINP,YMAXP,XMINP,XMAXP
         REAL DELTAX
         REAL XD_(NKNOTSMAX),YD_(NKNOTSMAX),DYD_(NKNOTSMAX)
+        REAL XNEW,YNEW
         CHARACTER*1 CREF
         CHARACTER*1 CMERGE
         CHARACTER*1 CREPEAT
@@ -149,23 +152,71 @@ C------------------------------------------------------------------------------
           GOTO 900
         END IF
         DO I=1,ND
-          YD(I)=0.
+          YD(I)=0. !vamos a estimar los valores en el eje Y para cada knot
         END DO
         DO I=1,NOUT
           XOUT(I)=XMIN+(XMAX-XMIN)*REAL(I-1)/REAL(NOUT-1)
         END DO
-C ajuste inicial a polinomio de grado 3
-        J=1
-        DO WHILE(X(J).LT.XD(1))
-          J=J+1
+C------------------------------------------------------------------------------
+C ajuste inicial a polinomios de grado 2 a cada region entre cada 2 knots
+        DO I=1,ND-1
+          !determinamos puntos a ajustar en cada intervalo
+          K=0
+          DO J=1,N
+            IF((X(J).GE.XD(I)).AND.(X(J).LE.XD(I+1)))THEN
+              K=K+1
+              IF(K.GT.NDATAMAX)THEN
+                WRITE(*,*)
+                WRITE(*,101)'ERROR in SPLFIT:'
+                WRITE(*,101)'>>> No. of points to fit > NDATAMAX'
+                WRITE(*,*)
+                GOTO 900
+              END IF
+              XF(K)=X(J)
+              YF(K)=Y(J)
+              EYF(K)=EY(J)
+            END IF
+          END DO
+          NF=K
+          !ajustamos cada intervalo
+          IF(NF.EQ.0)THEN !si no hay puntos, algo va mal
+            WRITE(*,101) 'FATAL ERROR in subroutine SPLFIT'
+            WRITE(*,100) '--> No. of points for initial fit=0 between'//
+     +       ' knots: '
+            WRITE(*,*) I,I+1
+            STOP '(note: this must be handled in a future)'
+          ELSEIF(NF.LT.4)THEN       !tomamos el valor medio de los puntos si no
+            FDUMMY=0.               !hay suficientes para el ajuste polinomico
+            DO J=1,NF
+              FDUMMY=FDUMMY+YF(J)
+            END DO
+            FDUMMY=FDUMMY/REAL(NF)
+            YD(I)=YD(I)+FDUMMY
+            YD(I+1)=YD(I+1)+FDUMMY
+          ELSE
+            CALL POLFIT(XF,YF,YF,NF,3,0,A,CHISQR)
+            YD(I)=FPOLY(2,A,XD(I))
+            YD(I+1)=FPOLY(2,A,XD(I+1))
+          END IF
         END DO
-        I=2
-        DO WHILE(I.LE.ND)
-          K=1
-          DO WHILE((X(J).LE.XD(I)).AND.(J.LE.N))
-            XF(K)=X(J)
-            YF(K)=Y(J)
-            EYF(K)=EY(J)
+        DO I=2,ND-1 !en los extremos (I=1, I=ND) solo se ha calculado un valor
+          YD(I)=YD(I)/2. !en el resto hay dos estimaciones que promediamos
+        END DO
+C ajustamos los splines que pasan por los knots iniciales
+        CALL CUBSPL(XD,YD,ND,1,SSPL,ASPL,BSPL,CSPL)                    !IMODE=1
+        I0SPL=1                  !la primera vez busca en el inicio de la tabla
+        DO K=1,NOUT
+          CALL CUBSPLX(XD,YD,ASPL,BSPL,CSPL,ND,I0SPL,XOUT(K),YOUT(K))
+        END DO
+        call pgsci(15)
+        call pgpoint(nd,xd,yd,5)
+        call pgline(nout,xout,yout)
+        call pgsci(1)
+C------------------------------------------------------------------------------
+C definimos todos los datos a ajustar
+        K=0
+        DO J=1,N
+          IF((X(J).GE.XD(1)).AND.(X(J).LE.XD(ND)))THEN
             K=K+1
             IF(K.GT.NDATAMAX)THEN
               WRITE(*,*)
@@ -174,51 +225,13 @@ C ajuste inicial a polinomio de grado 3
               WRITE(*,*)
               GOTO 900
             END IF
-            J=J+1
-          END DO
-          IF(K.LT.4)THEN            !tomamos el valor medio de los puntos si no
-            FDUMMY=0.               !hay suficientes para el ajuste polinomico
-            DO H=NINT(XD(I-1)),NINT(XD(I))
-              FDUMMY=FDUMMY+YF(H)
-            END DO
-            FDUMMY=FDUMMY/REAL(NINT(XD(I))-NINT(XD(I-1))+1)
-            YD(I-1)=YD(I-1)+FDUMMY
-            YD(I)=YD(I)+FDUMMY
-          ELSE
-            NF=K-1
-            CALL POLFIT(XF,YF,YF,NF,4,0,A,CHISQR)
-            YD(I-1)=YD(I-1)+A(1)+A(2)*XD(I-1)+A(3)*XD(I-1)*XD(I-1)+
-     +            A(4)*XD(I-1)*XD(I-1)*XD(I-1)
-            YD(I)=YD(I)+A(1)+A(2)*XD(I)+A(3)*XD(I)*XD(I)+
-     +            A(4)*XD(I)*XD(I)*XD(I)
+            XF(K)=X(J)
+            YF(K)=Y(J)
+            EYF(K)=EY(J)
           END IF
-          I=I+1
-          IF(X(J-1).EQ.XD(I-1)) J=J-1
         END DO
-        DO I=2,ND-1
-          YD(I)=YD(I)/2.
-        END DO
-C
-        J=1
-        DO WHILE(X(J).LT.XD(1))
-          J=J+1
-        END DO
-        I=1
-        DO WHILE((X(J).LE.XD(ND)).AND.(J.LE.N))
-          XF(I)=X(J)
-          YF(I)=Y(J)
-          EYF(I)=EY(J)
-          I=I+1
-          IF(I.GT.NDATAMAX)THEN
-            WRITE(*,*)
-            WRITE(*,101)'ERROR in SPLFIT:'
-            WRITE(*,101)'Please, redim NDATAMAX'
-            WRITE(*,*)
-            GOTO 900
-          END IF
-          J=J+1
-        END DO
-        NF=I-1
+        NF=K
+C------------------------------------------------------------------------------
 C calculamos media y rms de YD
         MEANF=0.
         DO I=1,ND
@@ -230,18 +243,20 @@ C calculamos media y rms de YD
           RMSF=RMSF+(MEANF-YD(I))*(MEANF-YD(I))
         END DO
         RMSF=SQRT(RMSF/REAL(ND-1))
+C------------------------------------------------------------------------------
 C valores iniciales para DOWNHILL
         DO I=1,ND
           XX0(I)=YD(I)
           IF(RMSF.GT.0.0)THEN
             DXX0(I)=RMSF/3.
-          ELSEIF(YD(I).GT.0.0)THEN
-            DXX0(I)=0.05*YD(I)
+          ELSEIF(ABS(YD(I)).GT.0.0)THEN
+            DXX0(I)=0.05*ABS(YD(I))
           ELSE
             DXX0(I)=1.0                        !que remedio; no tenemos ni idea
           END IF
         END DO
-C llamamos a DOWNHILL
+C------------------------------------------------------------------------------
+C llamamos a DOWNHILL y minimizamos la posicion en Y de todos los knots
 10      NDD=ND           !ND para el COMMON block
         DO I=1,ND
           XDD(I)=XD(I)   !XD para el COMMON block
@@ -262,8 +277,7 @@ C llamamos a DOWNHILL
         END DO
 C si estamos iterando seguimos con las iteraciones
         IF((NITERT.NE.0).AND.(NITER.LT.NITERT)) GOTO 24
-C
-c dibujamos ajuste final
+C dibujamos ajuste final
         call pgsci(0)
         call pgline(nout,xout,yout)
         do i=1,nd
@@ -289,26 +303,95 @@ C Si se quiere refinamos el ajuste
 21      WRITE(*,101)'(1) Refine X and Y position-> 1 Knot'
         WRITE(*,101)'(2) Refine X-position  -----> 1 Knot'
         WRITE(*,101)'(3) Refine Y-position  -----> 1 Knot'
-        WRITE(*,101)'(W) Refine X and Y position-> all Knots'
+        WRITE(*,101)'(A) Add a single new knot'
         IF(ND.GT.2)THEN
-          WRITE(*,101)'(M) Merge "touching" knots'
           WRITE(*,101)'(D) Delete single knot'
+          WRITE(*,101)'(M) Merge "touching" knots'
         END IF
+        WRITE(*,101)'(R) Refine X and Y position-> all Knots'
         WRITE(*,101)'(0) Exit'
         WRITE(*,100)'Option '
         IF(ND.GT.2)THEN
-          CREF(1:1)=READC_B('0','0123WwMmDd')
+          CREF(1:1)=READC_B('0','0123AaDdMmRr')
         ELSE
-          CREF(1:1)=READC_B('0','0123Ww')
+          CREF(1:1)=READC_B('0','0123AaRr')
         END IF
         WRITE(77,112) CREF,
-     +   '# Option: 1=X&Y, 2=X, 3=Y, w=all knots, m=merge, d=delete'
-        IF(CREF.EQ.'w')CREF='W'
-        IF(CREF.EQ.'m')CREF='M'
+     +   '# Option: 1=X&Y, 2=X, 3=Y, a=add, d=delete, m=merge, r=refine'
+        IF(CREF.EQ.'a')CREF='A'
         IF(CREF.EQ.'d')CREF='D'
+        IF(CREF.EQ.'m')CREF='M'
+        IF(CREF.EQ.'r')CREF='R'
 C..............................................................................
         IF(CREF.EQ.'0')THEN
           RETURN
+C..............................................................................
+        ELSEIF(CREF.EQ.'A')THEN
+          IF(ND.EQ.NKNOTSMAX)THEN
+            WRITE(*,100) 'Current number of knots: '
+            WRITE(*,*) ND
+            WRITE(*,101) 'ERROR: sorry, the number of knots is '//
+     +       'already the maximum allowed value'
+            GOTO 21
+          END IF
+C
+          WRITE(*,101) 'Enter (x,y) coordinates of the new knot:'
+          WRITE(*,100) 'New x coordinate'
+          XNEW=READF_B('@')
+          !estimamos el valor para X=XNEW en el ultimo ajuste
+          WRITE(*,100) 'New y coordinate '
+          I0SPL=1
+          CALL CUBSPLX(XD,YD,ASPL,BSPL,CSPL,ND,I0SPL,XNEW,YNEW)
+          WRITE(CDUMMY,*) YNEW
+          YNEW=READF_B(CDUMMY)
+C
+          INEW=1
+          CALL BINSEARCH(XD,ND,XNEW,INEW)
+C
+          IF(INEW.EQ.0)THEN !.................XNEW esta a la izquierda de XD(1)
+            XD_(1)=XNEW
+            YD_(1)=YNEW
+            DYD_(1)=DYD(1) !usamos el del knot siguiente
+            DO I=1,ND
+              XD_(I+1)=XD(I)
+              YD_(I+1)=YD(I)
+              DYD_(I+1)=DYD(I)
+            END DO
+          ELSE !................................XNEW esta a la derecha de XD(1)
+            DO I=1,INEW
+              XD_(I)=XD(I)
+              YD_(I)=YD(I)
+              DYD_(I)=DYD(I)
+            END DO
+            XD_(INEW+1)=XNEW
+            YD_(INEW+1)=YNEW
+            DYD_(INEW+1)=DYD(INEW) !usamos el del knot anterior
+            IF(INEW.LT.ND)THEN
+              DO I=INEW+1,ND
+                XD_(I+1)=XD(I)
+                YD_(I+1)=YD(I)
+                DYD_(I+1)=DYD(I)
+              END DO
+            END IF
+          END IF
+          ND_=ND+1
+C..............................................................................
+        ELSEIF(CREF.EQ.'D')THEN
+          WRITE(*,100) 'Knot number to be deleted'
+          NDELETE=READILIM_B('@',2,ND-1) !no podemos eliminar los extremos
+          WRITE(77,111) NDELETE,'# knot number to be deleted'
+          ND_=ND-1
+          DO I=1,ND-1
+            IF(I.LT.NDELETE)THEN
+              XD_(I)=XD(I)
+              YD_(I)=YD(I)
+              DYD_(I)=DYD(I)
+            ELSE
+              XD_(I)=XD(I+1)
+              YD_(I)=YD(I+1)
+              DYD_(I)=DYD(I+1)
+            END IF
+          END DO
 C..............................................................................
         ELSEIF(CREF.EQ.'M')THEN
           DO I=1,ND
@@ -357,23 +440,6 @@ C..............................................................................
               IF(CREPEAT(1:1).EQ.'n') GOTO 21
             END IF
           END DO
-C..............................................................................
-        ELSEIF(CREF.EQ.'D')THEN
-          WRITE(*,100) 'Knot number to be deleted'
-          NDELETE=READILIM_B('@',2,ND-1) !no podemos eliminar los extremos
-          WRITE(77,111) NDELETE,'# knot number to be deleted'
-          ND_=ND-1
-          DO I=1,ND-1
-            IF(I.LT.NDELETE)THEN
-              XD_(I)=XD(I)
-              YD_(I)=YD(I)
-              DYD_(I)=DYD(I)
-            ELSE
-              XD_(I)=XD(I+1)
-              YD_(I)=YD(I+1)
-              DYD_(I)=DYD(I+1)
-            END IF
-          END DO
         END IF
 C------------------------------------------------------------------------------
 C pintamos con otro color la curva que va a quedar desfasada
@@ -389,7 +455,7 @@ C pintamos con otro color la curva que va a quedar desfasada
         call pgsci(0)
 C------------------------------------------------------------------------------
 C si hemos cambiado el numero de knots, repetimos el ajuste
-        IF((CREF.EQ.'M').OR.(CREF.EQ.'D'))THEN
+        IF((CREF.EQ.'A').OR.(CREF.EQ.'D').OR.(CREF.EQ.'M'))THEN
           ND=ND_
           DO I=1,ND_
             XD(I)=XD_(I)
@@ -404,7 +470,7 @@ C si hemos cambiado el numero de knots, repetimos el ajuste
         END IF
 C------------------------------------------------------------------------------
         NITER=0
-        IF(CREF.NE.'W')THEN
+        IF(CREF.NE.'R')THEN
           WRITE(*,100)'Knot number to be refined '
           NREF=READILIM_B('@',1,ND)
           WRITE(77,111) NREF,'# Knot number to be refined'
@@ -498,7 +564,7 @@ C -> REFINAMOS y --------------------------------------------------------------
           WRITE(*,100)'Valor refinado en Y: '
           WRITE(*,*) YD(NREF)
 C -> refinamos todos los nodos-------------------------------------------------
-        ELSEIF(CREF.EQ.'W')THEN
+        ELSEIF(CREF.EQ.'R')THEN
           CALL RANSPL(ND,NRANND)            !ordenamos los Knots aleatoriamente
           NITER=NITER+1
           WRITE(*,109)'>>> ITERATION #',NITER

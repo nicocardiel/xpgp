@@ -69,6 +69,7 @@ FSOURCE = button.f buttqbr.f buttqcf.f buttqch.f buttqex.f \
           ranred.f \
           ranspl.f \
           read_nb.f \
+          selbuffer.f \
           sfitpol.f \
           show_buffers.f \
           show_fitpol.f \

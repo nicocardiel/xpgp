@@ -39,6 +39,7 @@ C
         INTEGER IMODE
         INTEGER ISYSTEM
         INTEGER NDATABUFF(NBUFFMAX)
+        INTEGER IOPCSAVE
         REAL XC,YC,XC1,XC2,YC1,YC2
         REAL XMIN,XMAX,YMIN,YMAX
         REAL AXISCH,FACTORCH
@@ -222,11 +223,11 @@ C distintas formas de cargar datos en los buffers
         CALL BUTTON(13,'# >>> #',0)
         CALL BUTTON(13,'# >>> #',3)
 C edicion de datos de los buffers
-        CALL BUTTON(14,'edit',0)
-        CALL BUTTON(14,'edit',3)
+        CALL BUTTON(14,'edit data',0)
+        CALL BUTTON(14,'edit data',3)
 C ajustes
-        CALL BUTTON(15,'fits',0)
-        CALL BUTTON(15,'fits',3)
+        CALL BUTTON(15,'fit data',0)
+        CALL BUTTON(15,'fit data',3)
 C salvar datos
         CALL BUTTON(16,'save buffer',0)
         CALL BUTTON(16,'save buffer',3)
@@ -396,8 +397,8 @@ C
                   LBUFFER=.TRUE.
                   CALL BUTTON(11,'f(Xij,Yij)',0)
                   CALL BUTTON(13,'# >>> #',0)
-                  CALL BUTTON(14,'edit',0)
-                  CALL BUTTON(15,'fits',0)
+                  CALL BUTTON(14,'edit data',0)
+                  CALL BUTTON(15,'fit data',0)
                   CALL BUTTON(16,'save buffer',0)
                   CALL BUTTON(41,'color index',0)
                   CALL BUTTON(42,'line width',0)
@@ -464,8 +465,8 @@ C
                   LBUFFER=.TRUE.
                   CALL BUTTON(11,'f(Xij,Yij)',0)
                   CALL BUTTON(13,'# >>> #',0)
-                  CALL BUTTON(14,'edit',0)
-                  CALL BUTTON(15,'fits',0)
+                  CALL BUTTON(14,'edit data',0)
+                  CALL BUTTON(15,'fit data',0)
                   CALL BUTTON(16,'save buffer',0)
                   CALL BUTTON(41,'color index',0)
                   CALL BUTTON(42,'line width',0)
@@ -533,8 +534,8 @@ C
                 LBUFFER=.TRUE.
                 CALL BUTTON(11,'f(Xij,Yij)',0)
                 CALL BUTTON(13,'# >>> #',0)
-                CALL BUTTON(14,'edit',0)
-                CALL BUTTON(15,'fits',0)
+                CALL BUTTON(14,'edit data',0)
+                CALL BUTTON(15,'fit data',0)
                 CALL BUTTON(16,'save buffer',0)
                 CALL BUTTON(41,'color index',0)
                 CALL BUTTON(42,'line width',0)
@@ -612,42 +613,12 @@ C
             CALL BUTTON(13,'# >>> #',0)
 C..............................................................................
           ELSEIF(NB.EQ.14)THEN
-            CALL TOLOG77(NB,'Edit data <edit>')
-            CALL BUTTON(14,'edit',5)
+            CALL TOLOG77(NB,'Edit data <edit data>')
+            CALL BUTTON(14,'edit data',5)
 C
-            CALL ONLYONE(NB_)
-            IF(NB_.EQ.-1)THEN
-              WRITE(*,101) 'ERROR: you must activate at least one '//
-     >         'buffer.'
-              WRITE(*,100) 'Press <CR> to continue...'
-              IF(LBATCH)THEN
-                WRITE(*,*)
-              ELSE
-                READ(*,*)
-              END IF
-            ELSE
-              IF(NB_.EQ.0)THEN
-                WRITE(*,100) 'Select buffer...'
-                DO WHILE((NB_.LT.1).OR.(NB_.GT.NBUFFMAX))
-                  IF(LBATCH)THEN
-                    CALL READ_NB(NB_)
-                  ELSE
-                    CALL RPGBAND(0,0,0.,0.,XC,YC,CH)
-                    CALL IFBUTTON(XC,YC,NB_)
-                    NBLOCAL=INDEX('12345678',CH)
-                    IF(NBLOCAL.NE.0)THEN
-                      CALL BUTTQEX(NBLOCAL,LBEXIST)
-                      IF(LBEXIST) NB_=NBLOCAL
-                    END IF
-                  END IF
-                  IF(.NOT.LDEFBUFF(NB_)) NB_=0
-                END DO
-                WRITE(77,111) NB_,'# Selected buffer number'
-                WRITE(*,'(A,I1,A)') '   ...OK! Buffer #',NB_,' selected'
-              ELSE
-                WRITE(*,'(A,I1,A)') 'Buffer #',NB_,' selected'
-              END IF
+            CALL SELBUFFER(NB_)
 C
+            IF(NB_.NE.-1)THEN
               WRITE(*,100) 'Select action...'
               CALL BUTTON(14,'<<< back',0)
               CALL BUTTON(14,'<<< back',-3)
@@ -693,8 +664,8 @@ C
                 CALL BUTTON(56,'[U]pdate',3)
                 CALL BUTTON(11,'f(Xij,Yij)',3)
                 CALL BUTTON(13,'# >>> #',3)
-                CALL BUTTON(14,'edit',3)
-                CALL BUTTON(15,'fits',3)
+                CALL BUTTON(14,'edit data',3)
+                CALL BUTTON(15,'fit data',3)
                 CALL BUTTON(16,'save buffer',3)
                 CALL BUTTON(41,'color index',3)
                 CALL BUTTON(42,'line width',3)
@@ -718,45 +689,14 @@ C
               CALL BUTTON(38,'remove region',-1)
             END IF
 C
-            CALL BUTTON(14,'edit',0)
+            CALL BUTTON(14,'edit data',0)
 C..............................................................................
           ELSEIF(NB.EQ.15)THEN
-            CALL TOLOG77(NB,'Compute fits to data <fits>')
-            CALL BUTTON(15,'fits',5)
+            CALL TOLOG77(NB,'Compute fits to data <fit data>')
+            CALL BUTTON(15,'fit data',5)
 C
-            CALL ONLYONE(NB_)
-            IF(NB_.EQ.-1)THEN
-              WRITE(*,101) 'ERROR: you must activate at least one '//
-     >         'buffer.'
-              WRITE(*,100) 'Press <CR> to continue...'
-              IF(LBATCH)THEN
-                WRITE(*,*)
-              ELSE
-                READ(*,*)
-              END IF
-            ELSE
-              IF(NB_.EQ.0)THEN
-                WRITE(*,100) 'Select buffer...'
-                DO WHILE((NB_.LT.1).OR.(NB_.GT.NBUFFMAX))
-                  IF(LBATCH)THEN
-                    CALL READ_NB(NB_)
-                  ELSE
-                    CALL RPGBAND(0,0,0.,0.,XC,YC,CH)
-                    CALL IFBUTTON(XC,YC,NB_)
-                    NBLOCAL=INDEX('12345678',CH)
-                    IF(NBLOCAL.NE.0)THEN
-                      CALL BUTTQEX(NBLOCAL,LBEXIST)
-                      IF(LBEXIST) NB_=NBLOCAL
-                    END IF
-                  END IF
-                  IF(.NOT.LDEFBUFF(NB_)) NB_=0
-                END DO
-                WRITE(77,111) NB_,'# Selected buffer number'
-                WRITE(*,'(A,I1,A)') '   ...OK! Buffer #',NB_,' selected'
-              ELSE
-                WRITE(*,'(A,I1,A)') 'Buffer #',NB_,' selected'
-              END IF
-C
+            CALL SELBUFFER(NB_)
+            IF(NB_.NE.-1)THEN
               IF(LUSEBUFF(NB_))THEN
                 WRITE(*,100) 'Select type of fit...'
                 CALL BUTTON(15,'<<< back',0)
@@ -809,69 +749,74 @@ C
               END IF
             END IF
 C
-            CALL BUTTON(15,'fits',0)
+            CALL BUTTON(15,'fit data',0)
 C..............................................................................
           ELSEIF(NB.EQ.16)THEN
             CALL TOLOG77(NB,'Save data in buffer <save buffer>')
             CALL BUTTON(16,'save buffer',5)
             WRITE(*,100) 'Select buffer...'
-            CALL ONLYONE(NB_)
-            IF(NB_.EQ.-1)THEN
-              WRITE(*,101) 'ERROR: you must activate at least one '//
-     >         'buffer.'
-              WRITE(*,100) 'Press <CR> to continue...'
-              IF(LBATCH)THEN
-                WRITE(*,*)
-              ELSE
-                READ(*,*)
-              END IF
-            ELSE
-              IF(NB_.EQ.0)THEN
-                DO WHILE((NB_.LT.1).OR.(NB_.GT.NBUFFMAX))
-                  IF(LBATCH)THEN
-                    CALL READ_NB(NB_)
-                  ELSE
-                    CALL RPGBAND(0,0,0.,0.,XC,YC,CH)
-                    CALL IFBUTTON(XC,YC,NB_)
-                    NBLOCAL=INDEX('12345678',CH)
-                    IF(NBLOCAL.NE.0)THEN
-                      CALL BUTTQEX(NBLOCAL,LBEXIST)
-                      IF(LBEXIST) NB_=NBLOCAL
-                    END IF
-                  END IF
-                END DO
-                WRITE(77,111) NB_,'# Selected buffer number'
-                WRITE(*,'(A,I1,A)') '   ...OK! Buffer #',NB_,' selected'
-              ELSE
-                WRITE(*,'(A,I1,A)') 'Buffer #',NB_,' selected'
-              END IF
-C
+            CALL SELBUFFER(NB_)
+            IF(NB_.NE.-1)THEN
               WRITE(*,100) 'Output file name'
               OUTFILE(1:255)=READC_B('@','@')
               L1=TRUEBEG(OUTFILE)
               L2=TRUELEN(OUTFILE)
               CALL TOLOG77_STRING(OUTFILE(L1:L2),'Output file name')
-              WRITE(*,100) 'Saving file...'
               OPEN(10,FILE=OUTFILE,STATUS='UNKNOWN',FORM='FORMATTED')
               IF(LXYNAME(NB_))THEN
-                LMAX=0          !determinamos la longitud maxima de las cadenas
-                DO I=1,NDATABUFF(NB_)
-                  L1=TRUEBEG(XYNAME(I,NB_))
-                  L2=TRUELEN(XYNAME(I,NB_))
-                  IF(L2-L1+1.GT.LMAX) LMAX=L2-L1+1
-                END DO
-                DO I=1,NDATABUFF(NB_)
-                  L1=TRUEBEG(XYNAME(I,NB_))
-                  WRITE(10,100) XYNAME(I,NB_)(L1:L1+LMAX-1)
-                  WRITE(10,100) '  '
-                  WRITE(10,*)XDATA(I,NB_),EXDATA(I,NB_),
-     >             YDATA(I,NB_),EYDATA(I,NB_)
-                END DO
+                WRITE(*,101) '1) NAME X EX Y EY'
+                WRITE(*,101) '2) NAME X Y'
+                WRITE(*,101) '3) X EX Y EY'
+                WRITE(*,101) '4) X Y'
+                WRITE(*,100) 'Option '
+                IOPCSAVE=READILIM_B('1',1,4)
+                WRITE(*,100) 'Saving file...'
+                WRITE(77,111) IOPCSAVE,'# Selection of NAME X EX Y EY'
+                IF((IOPCSAVE.EQ.1).OR.(IOPCSAVE.EQ.2))THEN
+                  LMAX=0        !determinamos la longitud maxima de las cadenas
+                  DO I=1,NDATABUFF(NB_)
+                    L1=TRUEBEG(XYNAME(I,NB_))
+                    L2=TRUELEN(XYNAME(I,NB_))
+                    IF(L2-L1+1.GT.LMAX) LMAX=L2-L1+1
+                  END DO
+                  DO I=1,NDATABUFF(NB_)
+                    L1=TRUEBEG(XYNAME(I,NB_))
+                    WRITE(10,100) XYNAME(I,NB_)(L1:L1+LMAX-1)
+                    WRITE(10,100) '  '
+                    IF(IOPCSAVE.EQ.1)THEN
+                      WRITE(10,*)XDATA(I,NB_),EXDATA(I,NB_),
+     +                 YDATA(I,NB_),EYDATA(I,NB_)
+                    ELSE
+                      WRITE(10,*)XDATA(I,NB_),YDATA(I,NB_)
+                    END IF
+                  END DO
+                ELSE
+                  DO I=1,NDATABUFF(NB_)
+                    IF(IOPCSAVE.EQ.3)THEN
+                      WRITE(10,*)XDATA(I,NB_),EXDATA(I,NB_),
+     +                 YDATA(I,NB_),EYDATA(I,NB_)
+                    ELSE
+                      WRITE(10,*)XDATA(I,NB_),YDATA(I,NB_)
+                    END IF
+                  END DO
+                END IF
               ELSE
-                DO I=1,NDATABUFF(NB_)
-                  WRITE(10,*) XDATA(I,NB_),EXDATA(I,NB_),
-     >             YDATA(I,NB_),EYDATA(I,NB_)
-                END DO
+                WRITE(*,101) '1) X EX Y EY'
+                WRITE(*,101) '2) X Y'
+                WRITE(*,100) 'Option '
+                IOPCSAVE=READILIM_B('1',1,2)
+                WRITE(77,111) IOPCSAVE,'# Selection of X EX Y EY'
+                WRITE(*,100) 'Saving file...'
+                IF(IOPCSAVE.EQ.1)THEN
+                  DO I=1,NDATABUFF(NB_)
+                    WRITE(10,*) XDATA(I,NB_),EXDATA(I,NB_),
+     +               YDATA(I,NB_),EYDATA(I,NB_)
+                  END DO
+                ELSE
+                  DO I=1,NDATABUFF(NB_)
+                    WRITE(10,*) XDATA(I,NB_),YDATA(I,NB_)
+                  END DO
+                END IF
               END IF
               CLOSE(10)
               WRITE(*,101) '...OK! File saved and closed.'
@@ -883,39 +828,8 @@ C..............................................................................
             CALL TOLOG77(NB,'Change color <color index>')
             CALL BUTTON(41,'color index',5)
 C
-            CALL ONLYONE(NB_)
-            IF(NB_.EQ.-1)THEN
-              WRITE(*,101) 'ERROR: you must activate at least one '//
-     >         'buffer.'
-              WRITE(*,100) 'Press <CR> to continue...'
-              IF(LBATCH)THEN
-                WRITE(*,*)
-              ELSE
-                READ(*,*)
-              END IF
-            ELSE
-              IF(NB_.EQ.0)THEN
-                WRITE(*,100) 'Select buffer...'
-                DO WHILE((NB_.LT.1).OR.(NB_.GT.NBUFFMAX))
-                  IF(LBATCH)THEN
-                    CALL READ_NB(NB_)
-                  ELSE
-                    CALL RPGBAND(0,0,0.,0.,XC,YC,CH)
-                    CALL IFBUTTON(XC,YC,NB_)
-                    NBLOCAL=INDEX('12345678',CH)
-                    IF(NBLOCAL.NE.0)THEN
-                      CALL BUTTQEX(NBLOCAL,LBEXIST)
-                      IF(LBEXIST) NB_=NBLOCAL
-                    END IF
-                  END IF
-                  IF(.NOT.LDEFBUFF(NB_)) NB_=0
-                END DO
-                WRITE(77,111) NB_,'# Selected buffer number'
-                WRITE(*,'(A,I1,A)') '   ...OK! Buffer #',NB_,' selected'
-              ELSE
-                WRITE(*,'(A,I1,A)') 'Buffer #',NB_,' selected'
-              END IF
-C
+            CALL SELBUFFER(NB_)
+            IF(NB_.NE.-1)THEN
               WRITE(*,100) 'Select color...'
               CALL BUTTON(17,'color 2',0)
               CALL BUTTON(18,'color 3',0)
@@ -995,7 +909,8 @@ C
                   NB__=0
                 END IF
               END DO
-              WRITE(*,*)
+              WRITE(*,100) '--> CI set to '
+              WRITE(*,*) NCOLORBUFF(NB_)
               CALL BUTTON(55,'[P]ostScript',3)
               CALL BUTTON(56,'[U]pdate',-5)
 C
@@ -1020,39 +935,8 @@ C..............................................................................
             CALL TOLOG77(NB,'Change line width <line width>')
             CALL BUTTON(42,'line width',5)
 C
-            CALL ONLYONE(NB_)
-            IF(NB_.EQ.-1)THEN
-              WRITE(*,101) 'ERROR: you must activate at least one '//
-     >         'buffer.'
-              WRITE(*,100) 'Press <CR> to continue...'
-              IF(LBATCH)THEN
-                WRITE(*,*)
-              ELSE
-                READ(*,*)
-              END IF
-            ELSE
-              IF(NB_.EQ.0)THEN
-                WRITE(*,100) 'Select buffer...'
-                DO WHILE((NB_.LT.1).OR.(NB_.GT.NBUFFMAX))
-                  IF(LBATCH)THEN
-                    CALL READ_NB(NB_)
-                  ELSE
-                    CALL RPGBAND(0,0,0.,0.,XC,YC,CH)
-                    CALL IFBUTTON(XC,YC,NB_)
-                    NBLOCAL=INDEX('12345678',CH)
-                    IF(NBLOCAL.NE.0)THEN
-                      CALL BUTTQEX(NBLOCAL,LBEXIST)
-                      IF(LBEXIST) NB_=NBLOCAL
-                    END IF
-                  END IF
-                  IF(.NOT.LDEFBUFF(NB_)) NB_=0
-                END DO
-                WRITE(77,111) NB_,'# Selected buffer number'
-                WRITE(*,'(A,I1,A)') '   ...OK! Buffer #',NB_,' selected'
-              ELSE
-                WRITE(*,'(A,I1,A)') 'Buffer #',NB_,' selected'
-              END IF
-C
+            CALL SELBUFFER(NB_)
+            IF(NB_.NE.-1)THEN
               WRITE(*,100) 'Select line width...'
               CALL BUTTON(17,'width 1',0)
               CALL BUTTON(18,'width 2',0)
@@ -1163,7 +1047,8 @@ C
                   NB__=0
                 END IF
               END DO
-              WRITE(*,*)
+              WRITE(*,100) '--> LW set to '
+              WRITE(*,*) LWBUFF(NB_)
               CALL BUTTON(55,'[P]ostScript',3)
               CALL BUTTON(56,'[U]pdate',-5)
 C
@@ -1194,39 +1079,8 @@ C..............................................................................
             CALL TOLOG77(NB,'Change current height <height>')
             CALL BUTTON(43,'height',5)
 C
-            CALL ONLYONE(NB_)
-            IF(NB_.EQ.-1)THEN
-              WRITE(*,101) 'ERROR: you must activate at least one '//
-     >         'buffer.'
-              WRITE(*,100) 'Press <CR> to continue...'
-              IF(LBATCH)THEN
-                WRITE(*,*)
-              ELSE
-                READ(*,*)
-              END IF
-            ELSE
-              IF(NB_.EQ.0)THEN
-                WRITE(*,100) 'Select buffer...'
-                DO WHILE((NB_.LT.1).OR.(NB_.GT.NBUFFMAX))
-                  IF(LBATCH)THEN
-                    CALL READ_NB(NB_)
-                  ELSE
-                    CALL RPGBAND(0,0,0.,0.,XC,YC,CH)
-                    CALL IFBUTTON(XC,YC,NB_)
-                    NBLOCAL=INDEX('12345678',CH)
-                    IF(NBLOCAL.NE.0)THEN
-                      CALL BUTTQEX(NBLOCAL,LBEXIST)
-                      IF(LBEXIST) NB_=NBLOCAL
-                    END IF
-                  END IF
-                  IF(.NOT.LDEFBUFF(NB_)) NB_=0
-                END DO
-                WRITE(77,111) NB_,'# Selected buffer number'
-                WRITE(*,'(A,I1,A)') '   ...OK! Buffer #',NB_,' selected'
-              ELSE
-                WRITE(*,'(A,I1,A)') 'Buffer #',NB_,' selected'
-              END IF
-C
+            CALL SELBUFFER(NB_)
+            IF(NB_.NE.-1)THEN
               WRITE(*,100) 'Select height...'
               CALL BUTTON(17,'0.2',0)
               CALL BUTTON(18,'0.4',0)
@@ -1336,7 +1190,8 @@ C
                   NB__=0
                 END IF
               END DO
-              WRITE(*,*)
+              WRITE(*,100) '--> CH set to '
+              WRITE(*,*) CHBUFF(NB_)
               CALL BUTTON(55,'[P]ostScript',3)
               CALL BUTTON(56,'[U]pdate',-5)
 C
@@ -1367,39 +1222,8 @@ C..............................................................................
             CALL TOLOG77(NB,'Change current symbol <symbols>')
             CALL BUTTON(44,'symbols',5)
 C
-            CALL ONLYONE(NB_)
-            IF(NB_.EQ.-1)THEN
-              WRITE(*,101) 'ERROR: you must activate at least one '//
-     >         'buffer.'
-              WRITE(*,100) 'Press <CR> to continue...'
-              IF(LBATCH)THEN
-                WRITE(*,*)
-              ELSE
-                READ(*,*)
-              END IF
-            ELSE
-              IF(NB_.EQ.0)THEN
-                WRITE(*,100) 'Select buffer...'
-                DO WHILE((NB_.LT.1).OR.(NB_.GT.NBUFFMAX))
-                  IF(LBATCH)THEN
-                    CALL READ_NB(NB_)
-                  ELSE
-                    CALL RPGBAND(0,0,0.,0.,XC,YC,CH)
-                    CALL IFBUTTON(XC,YC,NB_)
-                    NBLOCAL=INDEX('12345678',CH)
-                    IF(NBLOCAL.NE.0)THEN
-                      CALL BUTTQEX(NBLOCAL,LBEXIST)
-                      IF(LBEXIST) NB_=NBLOCAL
-                    END IF
-                  END IF
-                  IF(.NOT.LDEFBUFF(NB_)) NB_=0
-                END DO
-                WRITE(77,111) NB_,'# Selected buffer number'
-                WRITE(*,'(A,I1,A)') '   ...OK! Buffer #',NB_,' selected'
-              ELSE
-                WRITE(*,'(A,I1,A)') 'Buffer #',NB_,' selected'
-              END IF
-C
+            CALL SELBUFFER(NB_)
+            IF(NB_.NE.-1)THEN
               WRITE(*,100) 'Select current symbol number...'
               CALL BUTTON(17,CHAR(01),0)
               CALL BUTTON(18,CHAR(02),0)
@@ -1509,7 +1333,8 @@ C
                   NB__=0
                 END IF
               END DO
-              WRITE(*,*)
+              WRITE(*,100) '--> NSYMB set to '
+              WRITE(*,*) NSYMBBUFF(NB_)
               CALL BUTTON(55,'[P]ostScript',3)
               CALL BUTTON(56,'[U]pdate',-5)
 C
@@ -1540,39 +1365,8 @@ C..............................................................................
             CALL TOLOG77(NB,'Change current line <line type>')
             CALL BUTTON(45,'line type',5)
 C
-            CALL ONLYONE(NB_)
-            IF(NB_.EQ.-1)THEN
-              WRITE(*,101) 'ERROR: you must activate at least one '//
-     >         'buffer.'
-              WRITE(*,100) 'Press <CR> to continue...'
-              IF(LBATCH)THEN
-                WRITE(*,*)
-              ELSE
-                READ(*,*)
-              END IF
-            ELSE
-              IF(NB_.EQ.0)THEN
-                WRITE(*,100) 'Select buffer...'
-                DO WHILE((NB_.LT.1).OR.(NB_.GT.NBUFFMAX))
-                  IF(LBATCH)THEN
-                    CALL READ_NB(NB_)
-                  ELSE
-                    CALL RPGBAND(0,0,0.,0.,XC,YC,CH)
-                    CALL IFBUTTON(XC,YC,NB_)
-                    NBLOCAL=INDEX('12345678',CH)
-                    IF(NBLOCAL.NE.0)THEN
-                      CALL BUTTQEX(NBLOCAL,LBEXIST)
-                      IF(LBEXIST) NB_=NBLOCAL
-                    END IF
-                  END IF
-                  IF(.NOT.LDEFBUFF(NB_)) NB_=0
-                END DO
-                WRITE(77,111) NB_,'# Selected buffer number'
-                WRITE(*,'(A,I1,A)') '   ...OK! Buffer #',NB_,' selected'
-              ELSE
-                WRITE(*,'(A,I1,A)') 'Buffer #',NB_,' selected'
-              END IF
-C
+            CALL SELBUFFER(NB_)
+            IF(NB_.NE.-1)THEN
               WRITE(*,100) 'Select current line type or special'
               WRITE(*,100) ' symbol...'
               CALL BUTTON(17, '\(796)\(796)\(796)\(796)',0)
@@ -1673,39 +1467,8 @@ C..............................................................................
             CALL TOLOG77(NB,'<errors>')
             CALL BUTTON(47,'errors',5)
 C
-            CALL ONLYONE(NB_)
-            IF(NB_.EQ.-1)THEN
-              WRITE(*,101) 'ERROR: you must activate at least one '//
-     >         'buffer.'
-              WRITE(*,100) 'Press <CR> to continue...'
-              IF(LBATCH)THEN
-                WRITE(*,*)
-              ELSE
-                READ(*,*)
-              END IF
-            ELSE
-              IF(NB_.EQ.0)THEN
-                WRITE(*,100) 'Select buffer...'
-                DO WHILE((NB_.LT.1).OR.(NB_.GT.NBUFFMAX))
-                  IF(LBATCH)THEN
-                    CALL READ_NB(NB_)
-                  ELSE
-                    CALL RPGBAND(0,0,0.,0.,XC,YC,CH)
-                    CALL IFBUTTON(XC,YC,NB_)
-                    NBLOCAL=INDEX('12345678',CH)
-                    IF(NBLOCAL.NE.0)THEN
-                      CALL BUTTQEX(NBLOCAL,LBEXIST)
-                      IF(LBEXIST) NB_=NBLOCAL
-                    END IF
-                  END IF
-                  IF(.NOT.LDEFBUFF(NB_)) NB_=0
-                END DO
-                WRITE(77,111) NB_,'# Selected buffer number'
-                WRITE(*,'(A,I1,A)') '   ...OK! Buffer #',NB_,' selected'
-              ELSE
-                WRITE(*,'(A,I1,A)') 'Buffer #',NB_,' selected'
-              END IF
-C
+            CALL SELBUFFER(NB_)
+            IF(NB_.NE.-1)THEN
               CALL GIVE_ERRORS(NB_,LERRXNULL,LERRYNULL)
 C
               NB__=0
@@ -2258,39 +2021,8 @@ C..............................................................................
             CALL TOLOG77(NB,'Perform statistical analysis <statistics>')
             CALL BUTTON(159,'statistics',5)
 C
-            CALL ONLYONE(NB_)
-            IF(NB_.EQ.-1)THEN
-              WRITE(*,101) 'ERROR: you must activate at least one '//
-     >         'buffer.'
-              WRITE(*,100) 'Press <CR> to continue...'
-              IF(LBATCH)THEN
-                WRITE(*,*)
-              ELSE
-                READ(*,*)
-              END IF
-            ELSE
-              IF(NB_.EQ.0)THEN
-                WRITE(*,100) 'Select buffer...'
-                DO WHILE((NB_.LT.1).OR.(NB_.GT.NBUFFMAX))
-                  IF(LBATCH)THEN
-                    CALL READ_NB(NB_)
-                  ELSE
-                    CALL RPGBAND(0,0,0.,0.,XC,YC,CH)
-                    CALL IFBUTTON(XC,YC,NB_)
-                    NBLOCAL=INDEX('12345678',CH)
-                    IF(NBLOCAL.NE.0)THEN
-                      CALL BUTTQEX(NBLOCAL,LBEXIST)
-                      IF(LBEXIST) NB_=NBLOCAL
-                    END IF
-                  END IF
-                  IF(.NOT.LDEFBUFF(NB_)) NB_=0
-                END DO
-                WRITE(77,111) NB_,'# Selected buffer number'
-                WRITE(*,'(A,I1,A)') '   ...OK! Buffer #',NB_,' selected'
-              ELSE
-                WRITE(*,'(A,I1,A)') 'Buffer #',NB_,' selected'
-              END IF
-C
+            CALL SELBUFFER(NB_)
+            IF(NB_.NE.-1)THEN
               CALL GIVE_STATISTICS(NB_)
             END IF
 C
@@ -2347,39 +2079,8 @@ C..............................................................................
             CALL TOLOG77(NB,'Generate X data histogram <X histogram>')
             CALL BUTTON(167,'X histogram',5)
 C
-            CALL ONLYONE(NB_)
-            IF(NB_.EQ.-1)THEN
-              WRITE(*,101) 'ERROR: you must activate at least one '//
-     >         'buffer.'
-              WRITE(*,100) 'Press <CR> to continue...'
-              IF(LBATCH)THEN
-                WRITE(*,*)
-              ELSE
-                READ(*,*)
-              END IF
-            ELSE
-              IF(NB_.EQ.0)THEN
-                WRITE(*,100) 'Select buffer...'
-                DO WHILE((NB_.LT.1).OR.(NB_.GT.NBUFFMAX))
-                  IF(LBATCH)THEN
-                    CALL READ_NB(NB_)
-                  ELSE
-                    CALL RPGBAND(0,0,0.,0.,XC,YC,CH)
-                    CALL IFBUTTON(XC,YC,NB_)
-                    NBLOCAL=INDEX('12345678',CH)
-                    IF(NBLOCAL.NE.0)THEN
-                      CALL BUTTQEX(NBLOCAL,LBEXIST)
-                      IF(LBEXIST) NB_=NBLOCAL
-                    END IF
-                  END IF
-                  IF(.NOT.LDEFBUFF(NB_)) NB_=0
-                END DO
-                WRITE(77,111) NB_,'# Selected buffer number'
-                WRITE(*,'(A,I1,A)') '   ...OK! Buffer #',NB_,' selected'
-              ELSE
-                WRITE(*,'(A,I1,A)') 'Buffer #',NB_,' selected'
-              END IF
-C
+            CALL SELBUFFER(NB_)
+            IF(NB_.NE.-1)THEN
               CALL HISTOGRAM('X',NB_)
               CALL BUTTON(56,'[U]pdate',-5)
               CALL BUTTON(55,'[P]ostScript',3)
@@ -2391,39 +2092,8 @@ C..............................................................................
             CALL TOLOG77(NB,'Generate Y data histogram <Y histogram>')
             CALL BUTTON(168,'Y histogram',5)
 C
-            CALL ONLYONE(NB_)
-            IF(NB_.EQ.-1)THEN
-              WRITE(*,101) 'ERROR: you must activate at least one '//
-     >         'buffer.'
-              WRITE(*,100) 'Press <CR> to continue...'
-              IF(LBATCH)THEN
-                WRITE(*,*)
-              ELSE
-                READ(*,*)
-              END IF
-            ELSE
-              IF(NB_.EQ.0)THEN
-                WRITE(*,100) 'Select buffer...'
-                DO WHILE((NB_.LT.1).OR.(NB_.GT.NBUFFMAX))
-                  IF(LBATCH)THEN
-                    CALL READ_NB(NB_)
-                  ELSE
-                    CALL RPGBAND(0,0,0.,0.,XC,YC,CH)
-                    CALL IFBUTTON(XC,YC,NB_)
-                    NBLOCAL=INDEX('12345678',CH)
-                    IF(NBLOCAL.NE.0)THEN
-                      CALL BUTTQEX(NBLOCAL,LBEXIST)
-                      IF(LBEXIST) NB_=NBLOCAL
-                    END IF
-                  END IF
-                  IF(.NOT.LDEFBUFF(NB_)) NB_=0
-                END DO
-                WRITE(77,111) NB_,'# Selected buffer number'
-                WRITE(*,'(A,I1,A)') '   ...OK! Buffer #',NB_,' selected'
-              ELSE
-                WRITE(*,'(A,I1,A)') 'Buffer #',NB_,' selected'
-              END IF
-C
+            CALL SELBUFFER(NB_)
+            IF(NB_.NE.-1)THEN
               CALL HISTOGRAM('Y',NB_)
               CALL BUTTON(56,'[U]pdate',-5)
               CALL BUTTON(55,'[P]ostScript',3)
