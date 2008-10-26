@@ -229,8 +229,8 @@ C ajustes
         CALL BUTTON(15,'fit data',0)
         CALL BUTTON(15,'fit data',3)
 C salvar datos
-        CALL BUTTON(16,'save buffer',0)
-        CALL BUTTON(16,'save buffer',3)
+        CALL BUTTON(16,'sa[v]e buffer',0)
+        CALL BUTTON(16,'sa[v]e buffer',3)
 C caracteristicas de los simbolos
         CALL BUTTON(41,'color index',0)
         CALL BUTTON(41,'color index',3)
@@ -314,7 +314,7 @@ C Bucle principal
             CALL CHUPPER(CH)
 C..........................0000000001111
 C..........................1234567890123
-            NBLOCAL=INDEX('12345678PUZWQF',CH)
+            NBLOCAL=INDEX('12345678PUZWQFV',CH)
             IF(NBLOCAL.EQ.9)THEN
               NBLOCAL=55
             ELSEIF(NBLOCAL.EQ.10)THEN
@@ -327,6 +327,8 @@ C..........................1234567890123
               NBLOCAL=200
             ELSEIF(NBLOCAL.EQ.14)THEN
               NBLOCAL=9
+            ELSEIF(NBLOCAL.EQ.15)THEN
+              NBLOCAL=16
             END IF
             IF(NBLOCAL.NE.0)THEN
               CALL BUTTQEX(NBLOCAL,LBEXIST)
@@ -399,7 +401,7 @@ C
                   CALL BUTTON(13,'# >>> #',0)
                   CALL BUTTON(14,'edit data',0)
                   CALL BUTTON(15,'fit data',0)
-                  CALL BUTTON(16,'save buffer',0)
+                  CALL BUTTON(16,'sa[v]e buffer',0)
                   CALL BUTTON(41,'color index',0)
                   CALL BUTTON(42,'line width',0)
                   CALL BUTTON(43,'height',0)
@@ -467,7 +469,7 @@ C
                   CALL BUTTON(13,'# >>> #',0)
                   CALL BUTTON(14,'edit data',0)
                   CALL BUTTON(15,'fit data',0)
-                  CALL BUTTON(16,'save buffer',0)
+                  CALL BUTTON(16,'sa[v]e buffer',0)
                   CALL BUTTON(41,'color index',0)
                   CALL BUTTON(42,'line width',0)
                   CALL BUTTON(43,'height',0)
@@ -536,7 +538,7 @@ C
                 CALL BUTTON(13,'# >>> #',0)
                 CALL BUTTON(14,'edit data',0)
                 CALL BUTTON(15,'fit data',0)
-                CALL BUTTON(16,'save buffer',0)
+                CALL BUTTON(16,'sa[v]e buffer',0)
                 CALL BUTTON(41,'color index',0)
                 CALL BUTTON(42,'line width',0)
                 CALL BUTTON(43,'height',0)
@@ -666,7 +668,7 @@ C
                 CALL BUTTON(13,'# >>> #',3)
                 CALL BUTTON(14,'edit data',3)
                 CALL BUTTON(15,'fit data',3)
-                CALL BUTTON(16,'save buffer',3)
+                CALL BUTTON(16,'sa[v]e buffer',3)
                 CALL BUTTON(41,'color index',3)
                 CALL BUTTON(42,'line width',3)
                 CALL BUTTON(43,'height',3)
@@ -753,7 +755,7 @@ C
 C..............................................................................
           ELSEIF(NB.EQ.16)THEN
             CALL TOLOG77(NB,'Save data in buffer <save buffer>')
-            CALL BUTTON(16,'save buffer',5)
+            CALL BUTTON(16,'sa[v]e buffer',5)
             WRITE(*,100) 'Select buffer...'
             CALL SELBUFFER(NB_)
             IF(NB_.NE.-1)THEN
@@ -822,7 +824,7 @@ C..............................................................................
               WRITE(*,101) '...OK! File saved and closed.'
             END IF
 C
-            CALL BUTTON(16,'save buffer',0)
+            CALL BUTTON(16,'sa[v]e buffer',0)
 C..............................................................................
           ELSEIF(NB.EQ.41)THEN
             CALL TOLOG77(NB,'Change color <color index>')
@@ -1778,7 +1780,7 @@ C..............................................................................
               CALL BUTTON(56,'[U]pdate',-5)
             ELSE
               CALL PLOT_SETTINGS
-              CALL BUTTON(16,'save buffer',0)
+              CALL BUTTON(16,'sa[v]e buffer',0)
               CALL BUTTON(56,'[U]pdate',0)
               CALL BUTTON(56,'[U]pdate',3)
               CALL BUTTON(55,'[P]ostScript',-4)
