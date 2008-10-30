@@ -94,7 +94,7 @@ FSOURCE = button.f buttqbr.f buttqcf.f buttqch.f buttqex.f \
 FOBJECT = $(FSOURCE:.f=.o)
 # Default rule to create program
 xpgp:  $(FOBJECT)
-	gfortran -Wall -o $@ $(FOBJECT) -L$(PGPLOTDIR) -L$(FIODIR) -L$(X11DIR) -lpgplot -lcfitsio -lX11
+	gfortran -O3 -Wall -o $@ $(FOBJECT) -L$(PGPLOTDIR) -L$(FIODIR) -L$(X11DIR) -lpgplot -lcfitsio -lX11
 # Target to clean object modules
 clean:    $(FOBJECT)
 	rm -f $(FOBJECT)
@@ -119,6 +119,6 @@ include:
 	touch $(FSOURCE)
 # second level dependencies
 .f.o: $(FSOURCE)
-	gfortran -Wall -c $?
+	gfortran -O3 -Wall -c $?
 # definitions
 .PRECIOUS: xpgp

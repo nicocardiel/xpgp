@@ -63,6 +63,8 @@ C------------------------------------------------------------------------------
             !considerando las barras de error
             W1=1.0
             W2=WEIGHT
+            F=0.D0
+            I0=1                 !la primera vez busca en el inicio de la tabla
             DO I=1,NF
               CALL CUBSPLX(XDD,YD,A,B,C,ND,I0,XF(I),YF0)
               IF(YF0.GE.YF(I)-TSIGMA*EYF(I))THEN !........aqui usamos signo "-"
@@ -74,6 +76,8 @@ C------------------------------------------------------------------------------
           ELSE
             W1=WEIGHT
             W2=1.0
+            F=0.D0
+            I0=1                 !la primera vez busca en el inicio de la tabla
             DO I=1,NF
               CALL CUBSPLX(XDD,YD,A,B,C,ND,I0,XF(I),YF0)
               IF(YF0.GE.YF(I)+TSIGMA*EYF(I))THEN !........aqui usamos signo "+"

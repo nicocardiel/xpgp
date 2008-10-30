@@ -14,7 +14,7 @@ C
 C
         INTEGER NCOL,NEXT
         INTEGER L1,L2
-        CHARACTER*255 RESTO
+        CHARACTER*10000 RESTO
 C------------------------------------------------------------------------------
         ISTATUS=0                          !salvo que se demuestre lo contrario
 C caso trivial (linea vacia)

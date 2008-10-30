@@ -53,7 +53,9 @@ C
         CHARACTER*50 FITS_COMMENT
         CHARACTER*255 INFILE
         CHARACTER*255 REDUCEME_CDUMMY,FITS_OBJECT
-        CHARACTER*1000 CLINEA
+        !la siguiente variable (CLINEA) tiene que tener el mismo tamaño que la
+        !variable RESTO en las subrutinas CEXTRAE y FEXTRAE
+        CHARACTER*10000 CLINEA
         LOGICAL LOGFILE
         LOGICAL LXERR(NBUFFMAX),LYERR(NBUFFMAX)
         LOGICAL LXYNAME(NBUFFMAX)
@@ -63,6 +65,7 @@ C
         LOGICAL LCRPIX1,LCRVAL1,LCDELT1
         LOGICAL LSP(NDATAMAX)
         LOGICAL ANYNULL
+        LOGICAL LREPEAT
 C
         COMMON/BLKBUFFERS3/NSYMBBUFF,LWBUFF
         COMMON/BLKINFILE/INFILE
@@ -75,6 +78,14 @@ C
         COMMON/BLKLXYNAME/LXYNAME
         COMMON/BLKLBATCH/LBATCH
         COMMON/BLKSETTINGS8B/DATAKEY
+C------------------------------------------------------------------------------
+        IF((IMODE.NE.1).AND.(IMODE.NE.2))THEN
+          WRITE(*,100) 'IMODE='
+          WRITE(*,*) IMODE
+          WRITE(*,101) 'FATAL ERROR in subroutine LEENEWFILE: '//
+     +     'IMODE must be 1 or 2'
+          STOP
+        END IF
 C------------------------------------------------------------------------------
         ISTATUS=0                          !salvo que se demuestre lo contrario
         LUNREAD=.FALSE.                    !indica si algun dato no se ha leido
@@ -464,7 +475,7 @@ C------------------------------------------------------------------------------
           RETURN
         END IF
 C..............................................................................
-        IF(IMODE.EQ.1)THEN
+        IF(IMODE.EQ.1)THEN !Y,EY
           LXERR(NB)=.FALSE.
           WRITE(*,100) 'Column No. for Y data.......................'
           NY=READI_B('@')
@@ -480,7 +491,7 @@ C..............................................................................
           END IF
           LYERR(NB)=(NEY.GT.0)
 C..............................................................................
-        ELSEIF(IMODE.EQ.2)THEN
+        ELSE !X,EX,Y,EY,NAME
           WRITE(*,100) 'Column No. for X data.......................'
           NX=READI_B('@')
           WRITE(77,111) NX,'# Column No. for X data'
@@ -546,6 +557,7 @@ C------------------------------------------------------------------------------
         NCOMMENTS=0
         I=0
 10      READ(10,101,END=902) CLINEA
+        IF(TRUELEN(CLINEA).EQ.0) GOTO 10 !saltamos lineas en blanco
         !sustituimos tabuladores por espacios en blanco
         IF(INDEX(CLINEA,CHAR(9)).NE.0) CALL CLEANTAB(CLINEA)
         IF(CLINEA(1:1).EQ.'#')THEN !ignora lineas con comentarios
@@ -569,7 +581,13 @@ C leemos variable Y
           END IF
 C leemos error en variable Y (si procede)
           IF(NEY.GT.0)THEN
-            IF(LNEXTROW) READ(10,101,END=904) CLINEA
+            IF(LNEXTROW)THEN !leemos siguiente linea (no en blanco)
+              LREPEAT=.TRUE.
+              DO WHILE(LREPEAT)
+                READ(10,101,END=904) CLINEA
+                IF(TRUELEN(CLINEA).NE.0) LREPEAT=.FALSE.
+              END DO
+            END IF
             EYDATA(I,NB)=FEXTRAE(CLINEA,NEY,ISTATUSEXTRAE)
             IF(ISTATUSEXTRAE.EQ.0) GOTO 903
             IF(ISTATUSEXTRAE.EQ.-1)THEN
@@ -607,7 +625,13 @@ C leemos el nombre (si procede)
           END IF
 C leemos error en variable X (si procede)
           IF(NEX.GT.0)THEN
-            IF(LNEXTROW) READ(10,101,END=904) CLINEA
+            IF(LNEXTROW)THEN !leemos siguiente linea (no en blanco)
+              LREPEAT=.TRUE.
+              DO WHILE(LREPEAT)
+                READ(10,101,END=904) CLINEA
+                IF(TRUELEN(CLINEA).NE.0) LREPEAT=.FALSE.
+              END DO
+            END IF
             EXDATA(I,NB)=FEXTRAE(CLINEA,NEX,ISTATUSEXTRAE)
             IF(ISTATUSEXTRAE.EQ.0) GOTO 903
             IF(ISTATUSEXTRAE.EQ.-1)THEN
@@ -620,8 +644,14 @@ C leemos error en variable X (si procede)
           END IF
 C leemos error en variable Y (si procede)
           IF(NEY.GT.0)THEN
-            IF(LNEXTROW)THEN
-              IF(NEX.EQ.0) READ(10,101,END=904) CLINEA
+            IF(LNEXTROW)THEN !leemos siguiente linea (no en blanco)
+              IF(NEX.EQ.0)THEN
+                LREPEAT=.TRUE.
+                DO WHILE(LREPEAT)
+                  READ(10,101,END=904) CLINEA
+                  IF(TRUELEN(CLINEA).NE.0) LREPEAT=.FALSE.
+                END DO
+              END IF
             END IF
             EYDATA(I,NB)=FEXTRAE(CLINEA,NEY,ISTATUSEXTRAE)
             IF(ISTATUSEXTRAE.EQ.0) GOTO 903

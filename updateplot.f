@@ -317,6 +317,12 @@ C si procede, dibujamos KEY
             YKEY=YMIN+2.*DATAKEYCH/40.*(YMAX-YMIN)
             DYKEY=2.*AXISCH/40.*(YMAX-YMIN)
             DHKEY=0.7*DATAKEYCH/40.*(YMAX-YMIN)
+          ELSE
+            WRITE(*,100) 'IDATAKEY='
+            WRITE(*,*) IDATAKEY
+            WRITE(*,101) 'FATAL ERROR in subroutine UPDATEPLOT: '//
+     +       'invalid IDATAKEY'
+            STOP
           END IF
 C
           DO NB=1,NBUFFMAX

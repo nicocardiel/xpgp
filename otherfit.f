@@ -34,6 +34,7 @@ C
         INTEGER NEVALMAX
         INTEGER NSEED
         INTEGER I0SPL
+        INTEGER MODE
         REAL YRMSTOL
         REAL WEIGHT
         REAL POWER
@@ -49,11 +50,13 @@ C
         REAL XMIN0,XMAX0,XMINF,XMAXF
         REAL TSIGMA
         REAL RDUMMY
-        CHARACTER*1 CSAVE,COPC,CERR
+        REAL CHISQR
+        CHARACTER*1 CSAVE,COPC,CERR,CNOR
         CHARACTER*50 CDUMMY
         CHARACTER*50 DATAKEY(NBUFFMAX),DATAKEY_
         CHARACTER*50 CXMINF,CXMAXF
         LOGICAL LUP
+        LOGICAL LNOR
         LOGICAL LOOP
         LOGICAL LXERR(NBUFFMAX),LYERR(NBUFFMAX)
         LOGICAL LDEFBUFF(NBUFFMAX),LUSEBUFF(NBUFFMAX)
@@ -72,9 +75,11 @@ C tipos de ajuste
         WRITE(*,*)
         WRITE(*,101) '(1) upper/lower boundary (pseudofit)'
         WRITE(*,101) '(2) adaptive splines'
+        WRITE(*,101) '(3) normal polynomials with POLFIT '//
+     +   '(Bevington 1969)'
         WRITE(*,101) '(0) EXIT'
         WRITE(*,100) 'Option '
-        IOPC=READILIM_B('0',0,2)
+        IOPC=READILIM_B('0',0,3)
         WRITE(77,111) IOPC,
      +   '# 1=pseudofit, 2=adaptive splines, 0=EXIT'
         IF(IOPC.EQ.0) RETURN
@@ -199,6 +204,32 @@ C..............................................................................
      +     WEIGHT,POWER,LUP,TSIGMA,
      +     NPLOTMAX,XP,YP,XKNOT(1),XKNOT(NKNOTS),YKNOT,ASPL,BSPL,CSPL)
 C..............................................................................
+        ELSEIF(IOPC.EQ.3)THEN !................polinomios "normales" con POLFIT
+          !parametros para el ajuste
+          WRITE(*,100) 'Polynomial degree'
+          NTERMS=READILIM_B('@',0,10)
+          WRITE(77,111) NTERMS,'# Polynomial degree'
+          NTERMS=NTERMS+1
+          WRITE(*,100) 'MODE for POLFIT (0=no weighting) '
+          MODE=READILIM_B('0',-1,1)
+          WRITE(77,111) MODE,'# MODE for POLFIT (0=no weighting)'
+          IF(MODE.EQ.0)THEN
+            WRITE(*,100) 'Re-normalize X & Y ranges (y/n) '
+            CNOR(1:1)=READC_B('y','yn')
+            WRITE(77,112) CNOR,'# Re-normalize X & Y ranges?'
+            LNOR=(CNOR.EQ.'y')
+          ELSE
+            LNOR=.FALSE.
+          END IF
+          !realizamos el ajuste
+          CALL POLFIT(XF,YF,EYF,NF,NTERMS,MODE,A,CHISQR,LNOR)
+          DO I=1,NTERMS
+            WRITE(*,'(A2,I2.2,A2,$)') 'a(',I,')='
+            WRITE(*,*) A(I)
+          END DO
+          WRITE(*,100) 'POLFIT> CHISQR: '
+          WRITE(*,*) CHISQR
+C..............................................................................
         ELSE !...................................................invalid option
           WRITE(*,100) 'IOPC='
           WRITE(*,*) IOPC
@@ -233,6 +264,10 @@ C dibujamos el ajuste y preguntamos si queremos salvarlo en algun buffer
           DO I=1,NPLOTMAX
             CALL CUBSPLX(XKNOT,YKNOT,ASPL,BSPL,CSPL,NKNOTS,I0SPL,
      +       XP(I),YP(I))
+          END DO
+        ELSEIF(IOPC.EQ.3)THEN !...................normal polynomial with POLFIT
+          DO I=1,NPLOTMAX
+            YP(I)=FPOLY(NTERMS-1,A,XP(I))
           END DO
         ELSE
           WRITE(*,100) 'IOPC='
@@ -306,7 +341,7 @@ C dibujamos el ajuste y preguntamos si queremos salvarlo en algun buffer
                 STOP
               END IF
               IF(COPC.NE.'K')THEN
-                IF(IOPC.EQ.1)THEN !...................................pseudofit
+                IF((IOPC.EQ.1).OR.(IOPC.EQ.3))THEN !..................pseudofit
                   DO I=1,NDATABUFF(NB)
                     YDATA(I,NB)=FPOLY(NTERMS-1,A,XDATA(I,NB))
                   END DO
@@ -315,6 +350,10 @@ C dibujamos el ajuste y preguntamos si queremos salvarlo en algun buffer
                   DO I=1,NDATABUFF(NB)
                     CALL CUBSPLX(XKNOT,YKNOT,ASPL,BSPL,CSPL,
      +               NKNOTS,I0SPL,XDATA(I,NB),YDATA(I,NB))
+                  END DO
+                ELSEIF(IOPC.EQ.3)THEN !..........normal polynomials with POLFIT
+                  DO I=1,NDATABUFF(NB)
+                    YDATA(I,NB)=FPOLY(NTERMS-1,A,XDATA(I,NB))
                   END DO
                 ELSE
                   WRITE(*,100) 'IOPC='
@@ -341,6 +380,8 @@ C dibujamos el ajuste y preguntamos si queremos salvarlo en algun buffer
                 DATAKEY_(1:50)=READC_B('polynomial pseudofit','@')
               ELSEIF(IOPC.EQ.2)THEN
                 DATAKEY_(1:50)=READC_B('adaptive splines','@')
+              ELSEIF(IOPC.EQ.3)THEN
+                DATAKEY_(1:50)=READC_B('polynomial (POLFIT)','@')
               END IF
               DATAKEY(NB)=DATAKEY_
               L1=TRUEBEG(DATAKEY(NB))

@@ -54,6 +54,8 @@ C------------------------------------------------------------------------------
             IF(CDEF.EQ.'@')THEN
               GOTO 10
             END IF
+            L1=TRUEBEG(CDEF)
+            L2=TRUELEN(CDEF)
             CADENA=CDEF(L1:L2)
           END IF
         ELSE
@@ -61,6 +63,8 @@ C------------------------------------------------------------------------------
             IF(CDEF.EQ.'@')THEN
               GOTO 10
             END IF
+            L1=TRUEBEG(CDEF)
+            L2=TRUELEN(CDEF)
             CADENA=CDEF(L1:L2)
           ELSE
             DO I=1,TRUELEN(CADENA)

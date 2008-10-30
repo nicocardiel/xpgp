@@ -621,6 +621,7 @@ C si se desea, podemos almacenar los ajustes en buffers
             WRITE(77,111) NDATA,'# No. of points'
             DO I=1,NDATA
               X0=XMINF+(XMAXF-XMINF)*REAL(I-1)/REAL(NDATA-1)
+              Y0=0 !avoid compilation warning
               IF(CWHICH.EQ.'a')THEN
                 Y0=A(NPLOT)+B(NPLOT)*X0
               ELSEIF(CWHICH.EQ.'b')THEN
@@ -641,6 +642,11 @@ C si se desea, podemos almacenar los ajustes en buffers
                 ELSEIF(NPLOT.EQ.4)THEN
                   Y0=AVEA_EXYS+AVEB_EXYS*X0
                 END IF
+              ELSE
+                WRITE(*,101) 'CWHICH='//CWHICH
+                WRITE(*,101) 'FATAL ERROR in subroutine SLINREG: '//
+     +           'invalid CWHICH option'
+                STOP
               END IF
               XDATA(I,NB)=X0
               EXDATA(I,NB)=0.
@@ -684,6 +690,7 @@ C si se desea podemos tambien almacenar los residuos en otro buffer
             NDATABUFF(NB)=NDATABUFF(NB0)
             DO I=1,NDATABUFF(NB)
               X0=XDATA(I,NB0)
+              Y0=0 !avoid compilation warning
               IF(CWHICH.EQ.'a')THEN
                 Y0=A(NPLOT)+B(NPLOT)*X0
               ELSEIF(CWHICH.EQ.'b')THEN
@@ -704,6 +711,11 @@ C si se desea podemos tambien almacenar los residuos en otro buffer
                 ELSEIF(NPLOT.EQ.4)THEN
                   Y0=AVEA_EXYS+AVEB_EXYS*X0
                 END IF
+              ELSE
+                WRITE(*,101) 'CWHICH='//CWHICH
+                WRITE(*,101) 'FATAL ERROR in subroutine SLINREG: '//
+     +           'invalid CWHICH option'
+                STOP
               END IF
               XDATA(I,NB)=X0
               EXDATA(I,NB)=0.

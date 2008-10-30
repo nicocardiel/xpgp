@@ -100,6 +100,8 @@ C------------------------------------------------------------------------------
      +   25,26,27,28,29,30,
      +   33,34,35,36,37/
 C
+        NCOEF=0 !avoid compilation warning
+        LFITOK=.FALSE. !avoid compilation warning
         NSEED=-1
         NF=NDATABUFF(NB0)
 C
@@ -222,6 +224,7 @@ C permitimos refinar el numero de coeficientes a ajustar
         WRITE(*,*)
 C------------------------------------------------------------------------------
 C determinamos grado final del polinomio
+        NDEGUP=0
         DO K=1,NDEGMAX+1
           IF(IFCOEF(K)) NDEGUP=K-1
         END DO

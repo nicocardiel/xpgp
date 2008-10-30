@@ -229,8 +229,8 @@ C ajustes
         CALL BUTTON(15,'fit data',0)
         CALL BUTTON(15,'fit data',3)
 C salvar datos
-        CALL BUTTON(16,'sa[v]e buffer',0)
-        CALL BUTTON(16,'sa[v]e buffer',3)
+        CALL BUTTON(16,'sa[v]e buff.',0)
+        CALL BUTTON(16,'sa[v]e buff.',3)
 C caracteristicas de los simbolos
         CALL BUTTON(41,'color index',0)
         CALL BUTTON(41,'color index',3)
@@ -401,7 +401,7 @@ C
                   CALL BUTTON(13,'# >>> #',0)
                   CALL BUTTON(14,'edit data',0)
                   CALL BUTTON(15,'fit data',0)
-                  CALL BUTTON(16,'sa[v]e buffer',0)
+                  CALL BUTTON(16,'sa[v]e buff.',0)
                   CALL BUTTON(41,'color index',0)
                   CALL BUTTON(42,'line width',0)
                   CALL BUTTON(43,'height',0)
@@ -469,7 +469,7 @@ C
                   CALL BUTTON(13,'# >>> #',0)
                   CALL BUTTON(14,'edit data',0)
                   CALL BUTTON(15,'fit data',0)
-                  CALL BUTTON(16,'sa[v]e buffer',0)
+                  CALL BUTTON(16,'sa[v]e buff.',0)
                   CALL BUTTON(41,'color index',0)
                   CALL BUTTON(42,'line width',0)
                   CALL BUTTON(43,'height',0)
@@ -538,7 +538,7 @@ C
                 CALL BUTTON(13,'# >>> #',0)
                 CALL BUTTON(14,'edit data',0)
                 CALL BUTTON(15,'fit data',0)
-                CALL BUTTON(16,'sa[v]e buffer',0)
+                CALL BUTTON(16,'sa[v]e buff.',0)
                 CALL BUTTON(41,'color index',0)
                 CALL BUTTON(42,'line width',0)
                 CALL BUTTON(43,'height',0)
@@ -668,7 +668,7 @@ C
                 CALL BUTTON(13,'# >>> #',3)
                 CALL BUTTON(14,'edit data',3)
                 CALL BUTTON(15,'fit data',3)
-                CALL BUTTON(16,'sa[v]e buffer',3)
+                CALL BUTTON(16,'sa[v]e buff.',3)
                 CALL BUTTON(41,'color index',3)
                 CALL BUTTON(42,'line width',3)
                 CALL BUTTON(43,'height',3)
@@ -755,7 +755,7 @@ C
 C..............................................................................
           ELSEIF(NB.EQ.16)THEN
             CALL TOLOG77(NB,'Save data in buffer <save buffer>')
-            CALL BUTTON(16,'sa[v]e buffer',5)
+            CALL BUTTON(16,'sa[v]e buff.',5)
             WRITE(*,100) 'Select buffer...'
             CALL SELBUFFER(NB_)
             IF(NB_.NE.-1)THEN
@@ -824,7 +824,7 @@ C..............................................................................
               WRITE(*,101) '...OK! File saved and closed.'
             END IF
 C
-            CALL BUTTON(16,'sa[v]e buffer',0)
+            CALL BUTTON(16,'sa[v]e buff.',0)
 C..............................................................................
           ELSEIF(NB.EQ.41)THEN
             CALL TOLOG77(NB,'Change color <color index>')
@@ -1780,7 +1780,7 @@ C..............................................................................
               CALL BUTTON(56,'[U]pdate',-5)
             ELSE
               CALL PLOT_SETTINGS
-              CALL BUTTON(16,'sa[v]e buffer',0)
+              CALL BUTTON(16,'sa[v]e buff.',0)
               CALL BUTTON(56,'[U]pdate',0)
               CALL BUTTON(56,'[U]pdate',3)
               CALL BUTTON(55,'[P]ostScript',-4)
@@ -2106,11 +2106,11 @@ C..............................................................................
           ELSEIF(NB.EQ.200)THEN
             CALL BUTTON(200,'[Q]UIT',5)
             WRITE(*,100) 'Do you really want to end this session'//
-     >       '........(y/n) '
+     +       '........(y/n) '
             CSURE(1:1)=READC_B('y','yn')
             IF(CSURE.EQ.'y')THEN
-              WRITE(77,101) '#Uncomment next 3 lines to execute the'//
-     +         ' log file and stop the program:'
+              WRITE(77,101) '#Remove comments in next 3 lines '//
+     +         'to execute the log file and stop the program:'
               WRITE(77,101) '#200         # <QUIT>'
               WRITE(77,101) '#y           # really want to leave?' 
               WRITE(77,101) '#n           # save log file?'

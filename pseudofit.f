@@ -91,7 +91,7 @@ C poder pasar la información mediante COMMON blocks a la funcion a minimizar)
 C------------------------------------------------------------------------------
 C Primero hacemos un ajuste tradicional para obtener una primera estimacion 
 C (aunque pasamos array de errores en Y, el ajuste lo hacemos sin pesar)
-        CALL POLFIT(XF,YF,EYF,NF,NTERMS,0,A,CHISQR)
+        CALL POLFIT(XF,YF,EYF,NF,NTERMS,0,A,CHISQR,.TRUE.)
 C------------------------------------------------------------------------------
 C Usamos DOWNHILL para calcular el ajuste final
         DO K=1,NTERMS

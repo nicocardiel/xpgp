@@ -20,6 +20,10 @@ y el programa termine.
   leyenda.
 - Nuevo menu para decidir qué se quiere salvar al exportar un buffer a un
   fichero ASCII: 1) NAME X EX Y EY, 2) NAME X Y, 3) X EX Y EY, 4) X Y.
+- Ahora puede leer ficheros de datos con 10000 de hasta caracteres/línea, en
+  lugar del límite actual que era de 255 caracteres/línea.
+- Ahora el programa ignora líneas en blanco en el fichero de datos a leer
+  (aunque no tenga un símbolo de comentario).
 
 
 * ToDO
