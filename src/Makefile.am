@@ -12,7 +12,7 @@ plot_settings.f probks.f sfitpol.f show_buffers.f show_fitpol.f slinreg.f \
 spearman.f statistic.f truebeg.f truelen.f updatekey.f updatelimits.f \
 updateplot.f xpgp.f yfunkd_linregexy.f ranred_.c redsystem_.c \
 ndatamax.inc  nsimul.inc  xpgpdir.inc 
-xpgp_LDADD = $(top_builddir)/button/libbutton.la
+xpgp_LDADD = $(top_builddir)/button/src/libbutton.la
 
 dist_pkgdata_DATA = iofunctions.f statistic.f truebeg.f truelen.f fextrae.f \
 downhill.f

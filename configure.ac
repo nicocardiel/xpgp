@@ -30,11 +30,11 @@ AC_ARG_VAR(XPGP_DIR,[Description])
 
 AC_CONFIG_FILES([Makefile 
 		m4/Makefile
-		button/Makefile
 		src/nsimul.inc
 		src/xpgpdir.inc
 		src/ndatamax.inc
 		src/exec_function1.f
 		src/exec_function2.f
 		src/Makefile])
+AC_CONFIG_SUBDIRS([button])
 AC_OUTPUT

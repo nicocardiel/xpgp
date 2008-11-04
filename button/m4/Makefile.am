@@ -2,9 +2,4 @@
 
 ## $Id$
 
-SUBDIRS = src m4
-
-ACLOCAL_AMFLAGS = -I m4
-
-EXTRA_DIST = autogen.sh
-
+EXTRA_DIST = pgplot.m4
