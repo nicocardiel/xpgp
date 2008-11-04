@@ -11,14 +11,8 @@ linregey.f ludcmp.f lusolv.f onlyone.f ordena1f.f ordena1f1i.f \
 plot_settings.f probks.f sfitpol.f show_buffers.f show_fitpol.f slinreg.f \
 spearman.f statistic.f truebeg.f truelen.f updatekey.f updatelimits.f \
 updateplot.f xpgp.f yfunkd_linregexy.f ranred_.c redsystem_.c \
-ndatamax.inc  nsimul.inc  xpgpdir.inc \
-button.inc  \
- button.f buttqbr.f buttqcf.f buttqch.f buttqex.f \
-          buttqit.f buttqpr.f buttqxb.f buttqyb.f buttqytext.f buttsbr.f \
-          buttscf.f buttsch.f buttsex.f buttsit.f buttspr.f buttsxb.f \
-          buttsyb.f buttsytext.f ifbutton.f rpgband.f rpgbegin.f rpgbegok.f \
-          rpgenv.f rpgeras.f rpgerasb.f rpgerasw.f
-
+ndatamax.inc  nsimul.inc  xpgpdir.inc 
+xpgp_LDADD = $(top_builddir)/button/libbutton.la
 
 dist_pkgdata_DATA = iofunctions.f statistic.f truebeg.f truelen.f fextrae.f \
 downhill.f

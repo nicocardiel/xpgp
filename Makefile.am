@@ -2,7 +2,7 @@
 
 ## $Id$
 
-SUBDIRS = src m4
+SUBDIRS = m4 button src
 
 ACLOCAL_AMFLAGS = -I m4
 

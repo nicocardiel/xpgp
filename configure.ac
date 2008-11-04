@@ -6,8 +6,9 @@ AM_INIT_AUTOMAKE([foreign])
 
 AC_REVISION($Revision$)
 # Checks for programs.
-AC_PROG_CC
+##AC_PROG_CC
 AC_PROG_FC
+AC_PROG_LIBTOOL
 
 # Checks for libraries.
 STTL_LIB_PGPLOT
@@ -29,6 +30,7 @@ AC_ARG_VAR(XPGP_DIR,[Description])
 
 AC_CONFIG_FILES([Makefile 
 		m4/Makefile
+		button/Makefile
 		src/nsimul.inc
 		src/xpgpdir.inc
 		src/ndatamax.inc
