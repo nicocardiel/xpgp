@@ -99,12 +99,15 @@ xpgp:  $(FOBJECT)
 # Target to clean object modules
 clean:    $(FOBJECT)
 	rm -f $(FOBJECT)
-	rm -f xpgpdir.inc nsimul.inc ndatamax.inc
+	rm -f fcompil.f xpgpdir.inc nsimul.inc ndatamax.inc
 # Target to touch source modules
 touch:
 	touch $(FSOURCE)
-# Target to create the file xpgpdir.inc
+# Target to create included files
 include:
+	rm -f fcompil.inc
+	echo "        CHARACTER*255 FCOMPIL" > fcompil.inc
+	echo "        PARAMETER(FCOMPIL='$(FCOMPIL)')" >> fcompil.inc
 	rm -f xpgpdir.inc
 	echo "        CHARACTER*255 XPGPDIR" > xpgpdir.inc
 	echo "        PARAMETER(XPGPDIR='`pwd`')" >> xpgpdir.inc

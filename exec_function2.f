@@ -7,6 +7,7 @@ C ISTATUS retorna 0 si falla algo y 1 si funciona bien.
         IMPLICIT NONE
         INTEGER ISTATUS
 C
+        INCLUDE 'fcompil.inc'
         INCLUDE 'nbuffmax.inc'
         INCLUDE 'ndatamax.inc'
 C
@@ -19,6 +20,7 @@ C
         INTEGER I,NB
         INTEGER NF
         INTEGER L,L1,L2,NC
+        INTEGER LF1,LF2
         INTEGER LND1,LND2
         INTEGER NDATABUFF(NBUFFMAX)
         INTEGER ISYSTEM
@@ -37,6 +39,7 @@ C
         CHARACTER*255 CFUNCTIONY
         CHARACTER*255 CFUNCTIONEX
         CHARACTER*255 CFUNCTIONEY
+        CHARACTER*255 FCOMPIL_
         LOGICAL LDEFBUFF(NBUFFMAX),LUSEBUFF(NBUFFMAX)
         LOGICAL LXERR(NBUFFMAX),LYERR(NBUFFMAX)
         LOGICAL LBUFFER
@@ -54,6 +57,7 @@ C
         COMMON/BLKSETTINGS7/IEXPAND
         COMMON/BLKLBATCH/LBATCH
 C------------------------------------------------------------------------------
+        FCOMPIL_=FCOMPIL
         ISTATUS=0                          !salvo que se demuestre lo contrario
         WRITE(*,100) 'Function:  y='
         CFUNCTIONY=READC_B('@','@')
@@ -113,7 +117,7 @@ C creamos el fichero con la funcion
         WRITE(10,101) '       IMPLICIT NONE'
         WRITE(10,101) 'C'
         WRITE(10,101) '       INTEGER I,N'
-        WRITE(10,101) '       REAL XMIN,XMAX,YMIN,YMAX'
+        WRITE(10,101) '       REAL XMIN,XMAX'
         WRITE(10,101) '       REAL X,Y,EX,EY'
         WRITE(10,101) 'C'
         WRITE(10,101) '       N='//CNDATABUFF(LND1:LND2)
@@ -199,7 +203,10 @@ C..............................................................................
         CLOSE(10)
 C------------------------------------------------------------------------------
 C compilamos el fichero con la funcion
-        ISYSTEM=SYSTEMFUNCTION('gfortran -o funct_xpgp funct_xpgp.f')
+        LF1=TRUEBEG(FCOMPIL_)
+        LF2=TRUELEN(FCOMPIL_)
+        ISYSTEM=SYSTEMFUNCTION(FCOMPIL_(LF1:LF2)//
+     +   ' -o funct_xpgp funct_xpgp.f')
         IF((ISYSTEM.EQ.127.OR.ISYSTEM.EQ.-1))THEN
           WRITE(*,101) 'ERROR: while calling system function.'
           WRITE(*,100) 'Press <CR> to continue...'

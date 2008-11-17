@@ -6,6 +6,7 @@ C ISTATUS retorna 0 si falla algo, y 1 si funciona bien.
         IMPLICIT NONE
         INTEGER ISTATUS
 C
+        INCLUDE 'fcompil.inc'
         INCLUDE 'nbuffmax.inc'
         INCLUDE 'ndatamax.inc'
 C
@@ -15,6 +16,7 @@ C
 C
         INTEGER I,NB,NB_,NBNEW
         INTEGER L,L1,L2,NC
+        INTEGER LF1,LF2
         INTEGER LND1,LND2
         INTEGER NDATABUFF(NBUFFMAX)
         INTEGER ISYSTEM
@@ -25,6 +27,7 @@ C
         CHARACTER*1 CNEW,CNEXT
         CHARACTER*50 CNDATABUFF
         CHARACTER*255 CFUNCTION
+        CHARACTER*255 FCOMPIL_
         LOGICAL LOK
         LOGICAL LDEFBUFF(NBUFFMAX),LUSEBUFF(NBUFFMAX)
         LOGICAL LXERR(NBUFFMAX),LYERR(NBUFFMAX)
@@ -38,6 +41,7 @@ C
         COMMON/BLKMINMAXBUFF/XMINBUFF,XMAXBUFF,YMINBUFF,YMAXBUFF
         COMMON/BLKLBATCH/LBATCH
 C------------------------------------------------------------------------------
+        FCOMPIL_=FCOMPIL
         ISTATUS=0                          !salvo que se demuestre lo contrario
         WRITE(*,100) 'Function'
         CFUNCTION=READC_B('@','@')
@@ -311,7 +315,10 @@ C..............................................................................
         CLOSE(10)
 C------------------------------------------------------------------------------
 C compilamos el fichero con la funcion
-        ISYSTEM=SYSTEMFUNCTION('gfortran -o funct_xpgp funct_xpgp.f')
+        LF1=TRUEBEG(FCOMPIL_)
+        LF2=TRUELEN(FCOMPIL_)
+        ISYSTEM=SYSTEMFUNCTION(FCOMPIL_(LF1:LF2)//
+     +   ' -o funct_xpgp funct_xpgp.f')
         IF((ISYSTEM.EQ.127.OR.ISYSTEM.EQ.-1))THEN
           WRITE(*,101) 'ERROR: while calling system function.'
           WRITE(*,100) 'Press <CR> to continue...'

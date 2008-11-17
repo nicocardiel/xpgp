@@ -5,6 +5,7 @@ C Prepara los datos para los ajustes polinomicos a los datos del buffer NB0
         IMPLICIT NONE
         INTEGER NB0
 C
+        INCLUDE 'fcompil.inc'
         INCLUDE 'xpgpdir.inc'
         INCLUDE 'nsimul.inc'
 C
@@ -33,6 +34,7 @@ C
 C
         INTEGER I,J,K,KK,N,II,JJ
         INTEGER L1,L2,LL1,LL2
+        INTEGER LF1,LF2
         INTEGER N1,N2
         INTEGER NF
         INTEGER NB,NBDEG(NDEGMAX+1)
@@ -74,6 +76,7 @@ C
         CHARACTER*50 DATAKEY(NBUFFMAX),DATAKEY_
         CHARACTER*255 FORTRAN_FILE
         CHARACTER*255 COMANDO
+        CHARACTER*255 FCOMPIL_
         LOGICAL LXERR(NBUFFMAX),LYERR(NBUFFMAX)
         LOGICAL LDEFBUFF(NBUFFMAX),LUSEBUFF(NBUFFMAX)
         LOGICAL LBATCH
@@ -99,6 +102,7 @@ C------------------------------------------------------------------------------
      +   25,26,27,28,29,30,
      +   33,34,35,36,37/
 C
+        FCOMPIL_=FCOMPIL
         NCOEF=0 !avoid compilation warning
         LFITOK=.FALSE. !avoid compilation warning
         NSEED=-1
@@ -1534,7 +1538,9 @@ C unimos todos los subficheros en un fichero unico
               END IF
 C compilamos el programa
               IF(LOK)THEN
-                COMANDO='gfortran -o '
+                LF1=TRUEBEG(FCOMPIL_)
+                LF2=TRUELEN(FCOMPIL_)
+                COMANDO=FCOMPIL_(LF1:LF2)//' -o '
                 LL1=TRUEBEG(FORTRAN_FILE)
                 LL2=TRUELEN(FORTRAN_FILE)
                 COMANDO(8:)=FORTRAN_FILE(LL1:LL2-2)
