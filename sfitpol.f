@@ -10,8 +10,7 @@ C
 C
         INCLUDE 'nbuffmax.inc'
         INCLUDE 'ndatamax.inc'
-        INTEGER NDEGMAX         !grado maximo del polinomio que puede ajustarse
-        PARAMETER (NDEGMAX=16)
+        INCLUDE 'ndegmax.inc'
         INTEGER NPLOTMAX
         PARAMETER (NPLOTMAX=1000)  !numero maximo de puntos para dibujar ajuste
         DOUBLE PRECISION PI

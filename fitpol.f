@@ -5,8 +5,7 @@ C Ajusta un polinomio generico por minimos cuadrados (sin errores)
         IMPLICIT NONE
 C
         INCLUDE 'ndatamax.inc'
-        INTEGER NDEGMAX         !grado maximo del polinomio que puede ajustarse
-        PARAMETER (NDEGMAX=16)
+        INCLUDE 'ndegmax.inc'
 C
         INTEGER N
         DOUBLE PRECISION X(N),Y(N)

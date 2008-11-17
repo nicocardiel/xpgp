@@ -23,8 +23,8 @@ C INTEGER       N -> button number in the range of available buttons (which
 C               runs from 1 to MAX_XBUTT x MAX_YBUTT)
 C CHARACTER*(*) TEXT -> the text that will appear in the button
 C INTEGER       MODE -> determine the button mode:
-C               MODE=-2,-3,...: only text is plotted with PGPLOT color=-NMODE-1
-C               (i.e. 1,2,3...)
+C               MODE=-2,-3,-4... only text is plotted with PGPLOT color=-NMODE-1
+C               (i.e. 1, 2, 3...)
 C               MODE=-1 erase the button
 C               MODE=0 whole button is plotted (text in black)
 C               MODE=1 only text is plotted (white)

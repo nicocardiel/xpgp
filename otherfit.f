@@ -4,10 +4,10 @@
 C
         INCLUDE 'nbuffmax.inc'
         INCLUDE 'ndatamax.inc'
+        INCLUDE 'nfixedmax.inc'
         INCLUDE 'nknotsmax.inc'
+        INCLUDE 'ndegmax.inc'
 C
-        INTEGER NDEGMAX
-        PARAMETER (NDEGMAX=16)
         INTEGER NPLOTMAX
         PARAMETER (NPLOTMAX=1000)
 C
@@ -22,6 +22,7 @@ C
         INTEGER I
         INTEGER IOPC
         INTEGER NTERMS
+        INTEGER NFIXED
         INTEGER IKNOT,NKNOTS
         INTEGER NDATABUFF(NBUFFMAX)
         INTEGER NDATA
@@ -44,6 +45,7 @@ C
         REAL XDATA(NDATAMAX,NBUFFMAX),YDATA(NDATAMAX,NBUFFMAX)
         REAL EXDATA(NDATAMAX,NBUFFMAX),EYDATA(NDATAMAX,NBUFFMAX)
         REAL XF(NDATAMAX),YF(NDATAMAX),EYF(NDATAMAX)
+        REAL XFIXED(NFIXEDMAX),YFIXED(NFIXEDMAX)
         REAL XFMIN,XFMAX
         REAL XP(NPLOTMAX),YP(NPLOTMAX)
         REAL XMIN,XMAX,YMIN,YMAX
@@ -51,6 +53,7 @@ C
         REAL TSIGMA
         REAL RDUMMY
         REAL CHISQR
+        REAL XMINFIT,XMAXFIT,YMINFIT,YMAXFIT
         CHARACTER*1 CSAVE,COPC,CERR,CNOR
         CHARACTER*50 CDUMMY
         CHARACTER*50 DATAKEY(NBUFFMAX),DATAKEY_
@@ -70,6 +73,8 @@ C
         COMMON/BLKNDATABUFF/NDATABUFF
         COMMON/BLKXYDATA/XDATA,YDATA
         COMMON/BLKEXYDATA/EXDATA,EYDATA
+        COMMON/BLKFIXED1/NFIXED
+        COMMON/BLKFIXED2/XFIXED,YFIXED
 C------------------------------------------------------------------------------
 C tipos de ajuste
         WRITE(*,*)
@@ -92,15 +97,41 @@ C datos a ajustar
           EYF(I)=EYDATA(I,NB0)
         END DO
 C------------------------------------------------------------------------------
+        IF((IOPC.EQ.1).OR.(IOPC.EQ.2))THEN
+          WRITE(*,100) 'Number of fixed points '
+          NFIXED=READI_B('0')
+          IF(NFIXED.GT.NFIXEDMAX)THEN
+            WRITE(*,100) 'NFIXEDMAX: '
+            WRITE(*,*) NFIXEDMAX
+            WRITE(*,100) 'NFIXED...: '
+            WRITE(*,*) NFIXED
+            WRITE(*,101) 'FATAL ERROR: NFIXED.GT.NFIXEDMAX'
+            STOP
+          END IF
+          WRITE(77,111) NFIXED,'# Number of fixed points'
+          IF(NFIXED.LT.0)THEN
+            NFIXED=0
+          ELSEIF(NFIXED.GT.0)THEN
+            DO I=1,NFIXED
+              WRITE(*,'(A,I2,$)') 'X-coordinate of point #',I
+              XFIXED(I)=READF_B('@')
+              WRITE(77,*) XFIXED(I),'# X-coordinate of point #',I
+              WRITE(*,'(A,I2,$)') 'Y-coordinate of point #',I
+              YFIXED(I)=READF_B('@')
+              WRITE(77,*) YFIXED(I),'# Y-coordinate of point #',I
+            END DO
+          END IF
+        END IF
+C------------------------------------------------------------------------------
 C ajustes
-        IF(IOPC.EQ.1)THEN !...........................................pseudofit
+        IF(IOPC.EQ.1)THEN !...................................simple polynomial
           !parametros para el ajuste
           WRITE(*,100) 'Polynomial degree'
           NTERMS=READILIM_B('@',0,10)
           WRITE(77,111) NTERMS,'# Polynomial degree'
           NTERMS=NTERMS+1
-          WRITE(*,101) '(Note: WEIGHT=1.0 is equivalent to a'//
-     +     'normal fit to a polynomial)'
+          WRITE(*,101) '(Note: WEIGHT=1.0 is equivalent to a '//
+     +     'normal fit to a simple polynomial)'
           WRITE(*,100) 'WEIGHT for pseudofit '
           WEIGHT=READF_B('1000.0')
           WRITE(77,*) WEIGHT,'# WEIGHT for pseudofit (1.0=no pseudofit)'
@@ -154,7 +185,7 @@ C..............................................................................
             XKNOT(IKNOT+1)=XFMIN+
      +       (XFMAX-XFMIN)*REAL(IKNOT)/REAL(NKNOTS-1)
           END DO
-          WRITE(*,101) '(Note: WEIGHT=1.0 is equivalent to a'//
+          WRITE(*,101) '(Note: WEIGHT=1.0 is equivalent to a '//
      +     'normal fit by splines)'
           WRITE(*,100) 'WEIGHT for pseudofit '
           WEIGHT=READF_B('1000.0')
@@ -207,7 +238,7 @@ C..............................................................................
         ELSEIF(IOPC.EQ.3)THEN !................polinomios "normales" con POLFIT
           !parametros para el ajuste
           WRITE(*,100) 'Polynomial degree'
-          NTERMS=READILIM_B('@',0,10)
+          NTERMS=READILIM_B('@',0,19)
           WRITE(77,111) NTERMS,'# Polynomial degree'
           NTERMS=NTERMS+1
           WRITE(*,100) 'MODE for POLFIT (0=no weighting) '
@@ -221,8 +252,28 @@ C..............................................................................
           ELSE
             LNOR=.FALSE.
           END IF
+          IF(LNOR)THEN
+            WRITE(*,100) 'Xmin for fit '
+            XMINFIT=READF_B('-1.0')
+            WRITE(77,*) XMINFIT,'# Xmin for fit'
+            WRITE(*,100) 'Xmax for fit '
+            XMAXFIT=READF_B('+1.0')
+            WRITE(77,*) XMAXFIT,'# Xmax for fit'
+            WRITE(*,100) 'Ymin for fit '
+            YMINFIT=READF_B('-1.0')
+            WRITE(77,*) YMINFIT,'# Ymin for fit'
+            WRITE(*,100) 'Ymax for fit '
+            YMAXFIT=READF_B('+1.0')
+            WRITE(77,*) YMAXFIT,'# Ymax for fit'
+          ELSE
+            XMINFIT=0.0
+            XMAXFIT=1.0
+            YMINFIT=0.0
+            YMAXFIT=1.0
+          END IF
           !realizamos el ajuste
-          CALL POLFIT(XF,YF,EYF,NF,NTERMS,MODE,A,CHISQR,LNOR)
+          CALL POLFIT(XF,YF,EYF,NF,NTERMS,MODE,A,CHISQR,
+     +     LNOR,XMINFIT,XMAXFIT,YMINFIT,YMAXFIT)
           DO I=1,NTERMS
             WRITE(*,'(A2,I2.2,A2,$)') 'a(',I,')='
             WRITE(*,*) A(I)

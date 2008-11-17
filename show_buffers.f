@@ -19,10 +19,18 @@ C------------------------------------------------------------------------------
           IF(LDEFBUFF(NB))THEN
             IF(LUSEBUFF(NB))THEN
               CALL BUTTON(NB,CBUTTON,5)
-              CALL BUTTON(NB,CBUTTON,-NCOLORBUFF(NB)-1)
+              IF(NCOLORBUFF(NB).NE.0)THEN
+                CALL BUTTON(NB,CBUTTON,-NCOLORBUFF(NB)-1)
+              ELSE
+                CALL BUTTON(NB,CBUTTON,2)
+              END IF
             ELSE
               CALL BUTTON(NB,CBUTTON,0)
-              CALL BUTTON(NB,CBUTTON,-NCOLORBUFF(NB)-1)
+              IF(NCOLORBUFF(NB).NE.0)THEN
+                CALL BUTTON(NB,CBUTTON,-NCOLORBUFF(NB)-1)
+              ELSE
+                CALL BUTTON(NB,CBUTTON,2)
+              END IF
             END IF
           ELSE
             CALL BUTTON(NB,CBUTTON,0)

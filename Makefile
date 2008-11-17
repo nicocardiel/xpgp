@@ -13,6 +13,7 @@ X11DIR  = /usr/lib64
 FIODIR  = /usr/local/cfitsio
 NSIMUL  = 100
 NDATAMAX= 100000
+FCOMPIL = gfortran -g -O3 -Wall
 # macro definitions
 FSOURCE = button.f buttqbr.f buttqcf.f buttqch.f buttqex.f \
           buttqit.f buttqpr.f buttqxb.f buttqyb.f buttqytext.f buttsbr.f \
@@ -94,7 +95,7 @@ FSOURCE = button.f buttqbr.f buttqcf.f buttqch.f buttqex.f \
 FOBJECT = $(FSOURCE:.f=.o)
 # Default rule to create program
 xpgp:  $(FOBJECT)
-	gfortran -O3 -Wall -o $@ $(FOBJECT) -L$(PGPLOTDIR) -L$(FIODIR) -L$(X11DIR) -lpgplot -lcfitsio -lX11
+	$(FCOMPIL) -o $@ $(FOBJECT) -L$(PGPLOTDIR) -L$(FIODIR) -L$(X11DIR) -lpgplot -lcfitsio -lX11
 # Target to clean object modules
 clean:    $(FOBJECT)
 	rm -f $(FOBJECT)
@@ -119,6 +120,6 @@ include:
 	touch $(FSOURCE)
 # second level dependencies
 .f.o: $(FSOURCE)
-	gfortran -O3 -Wall -c $?
+	$(FCOMPIL) -c $?
 # definitions
 .PRECIOUS: xpgp

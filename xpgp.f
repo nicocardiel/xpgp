@@ -376,7 +376,11 @@ C..............................................................................
             WRITE(*,'(A,I1,A)') '   ...OK! Buffer #',NB_,' selected'
 C
             WRITE(CBUTTON,'(A10,I1,A1)') 'buffer # [',NB_,']'
-            CALL BUTTON(NB_,CBUTTON,-NCOLORBUFF(NB_)-1)
+            IF(NCOLORBUFF(NB_).NE.0)THEN
+              CALL BUTTON(NB_,CBUTTON,-NCOLORBUFF(NB_)-1)
+            ELSE
+              CALL BUTTON(NB_,CBUTTON,2)
+            END IF
 C
             IF(LDEFBUFF(NB_))THEN
               WRITE(*,100) 'WARNING: this buffer has already '
@@ -444,7 +448,11 @@ C..............................................................................
             WRITE(*,'(A,I1,A)') '   ...OK! Buffer #',NB_,' selected'
 C
             WRITE(CBUTTON,'(A10,I1,A1)') 'buffer # [',NB_,']'
-            CALL BUTTON(NB_,CBUTTON,-NCOLORBUFF(NB_)-1)
+            IF(NCOLORBUFF(NB_).NE.0)THEN
+              CALL BUTTON(NB_,CBUTTON,-NCOLORBUFF(NB_)-1)
+            ELSE
+              CALL BUTTON(NB_,CBUTTON,2)
+            END IF
 C
             IF(LDEFBUFF(NB_))THEN
               WRITE(*,100) 'WARNING: this buffer has already '
@@ -520,7 +528,11 @@ C
                 IF(.NOT.LDEFBUFF(NB_))THEN
                   WRITE(CBUTTON,'(A10,I1,A1)') 'buffer # [',NB_,']'
                   CALL BUTTON(NB_,CBUTTON,5)
-                  CALL BUTTON(NB_,CBUTTON,-NCOLORBUFF(NB_)-1)
+                  IF(NCOLORBUFF(NB_).NE.0)THEN
+                    CALL BUTTON(NB_,CBUTTON,-NCOLORBUFF(NB_)-1)
+                  ELSE
+                    CALL BUTTON(NB_,CBUTTON,2)
+                  END IF
                   LDEFBUFF(NB_)=.TRUE.
                   LUSEBUFF(NB_)=.TRUE.
                 END IF
@@ -590,7 +602,11 @@ C
             WRITE(77,111) NB__,'# Destination buffer'
             WRITE(*,'(A,I1,A)') '   ...OK! Buffer #',NB__,' selected'
             WRITE(CBUTTON,'(A10,I1,A1)') 'buffer # [',NB__,']'
-            CALL BUTTON(NB__,CBUTTON,-NCOLORBUFF(NB__)-1)
+            IF(NCOLORBUFF(NB__).NE.0)THEN
+              CALL BUTTON(NB__,CBUTTON,-NCOLORBUFF(NB__)-1)
+            ELSE
+              CALL BUTTON(NB__,CBUTTON,2)
+            END IF
 C
             IF(LDEFBUFF(NB__))THEN
               IF(NDATABUFF(NB_)+NDATABUFF(NB__).LE.NDATAMAX)THEN
@@ -893,20 +909,10 @@ C
                   WRITE(*,*)
                   NCOLORBUFF_=NCOLORBUFF(NB_)
                   WRITE(CDUMMY,*) NCOLORBUFF_
-                  WRITE(*,100) 'New CI for symbols (minimum 2) '
+                  WRITE(*,100) 'New CI for symbols '
                   NCOLORBUFF_=READI_B(CDUMMY)
                   WRITE(77,111) NCOLORBUFF_,'# Selected color number'
-                  IF(NCOLORBUFF_.LT.2)THEN
-                    WRITE(*,101) 'ERROR: invalid colour. Must be >=2.'
-                    WRITE(*,100) 'Press <CR> to continue...'
-                    IF(LBATCH)THEN
-                      WRITE(*,*)
-                    ELSE
-                      READ(*,*)
-                    END IF
-                  ELSE
-                    NCOLORBUFF(NB_)=NCOLORBUFF_
-                  END IF
+                  NCOLORBUFF(NB_)=NCOLORBUFF_
                 ELSE
                   NB__=0
                 END IF
@@ -2062,7 +2068,11 @@ C
             WRITE(77,111) NB__,'# Destination buffer'
             WRITE(*,'(A,I1,A)') '   ...OK! Buffer #',NB__,' selected'
             WRITE(CBUTTON,'(A10,I1,A1)') 'buffer # [',NB__,']'
-            CALL BUTTON(NB__,CBUTTON,-NCOLORBUFF(NB__)-1)
+            IF(NCOLORBUFF(NB__).NE.0)THEN
+              CALL BUTTON(NB__,CBUTTON,-NCOLORBUFF(NB__)-1)
+            ELSE
+              CALL BUTTON(NB__,CBUTTON,2)
+            END IF
 C
             IF(LDEFBUFF(NB__))THEN
               WRITE(*,101) 'WARNING: last buffer will be overwritten'

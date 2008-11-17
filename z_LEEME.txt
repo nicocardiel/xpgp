@@ -27,5 +27,6 @@ y el programa termine.
 
 
 * ToDO
+- Eliminar referencia explícita a gfortran.
 - Salvar buffer en FITS (?)
 - Revisar calculo de errores en la prediccion,... en los ajustes polinomicos.

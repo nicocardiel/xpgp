@@ -451,7 +451,7 @@ C Miramos si tiene formato FITS
 C------------------------------------------------------------------------------
 ! No es un fichero con formato REDUCEME o FITS. Suponemos que es ASCII.
         OPEN(10,FILE=INFILE,STATUS='OLD',FORM='FORMATTED')
-        WRITE(*,100) 'No. of initial rows to be skipped...'
+        WRITE(*,100) 'No. of initial rows to be skipped.......'
         NSKIP=READI_B('0')
         IF(NSKIP.LT.0) NSKIP=0
         WRITE(77,111) NSKIP,'# No. of initial rows to be skipped'
@@ -460,10 +460,10 @@ C------------------------------------------------------------------------------
             READ(10,*,END=901)
           END DO
         END IF
-        WRITE(*,100) 'No. of rows to be read (0=ALL)......'
+        WRITE(*,100) 'No. of rows to be read (0=ALL)..........'
         NDATA=READI_B('0')
         WRITE(77,111) NDATA,'# No. of rows to be read (0=ALL)'
-        IF(NSKIP+NDATA.GT.NDATAMAX)THEN
+        IF(NDATA.GT.NDATAMAX)THEN
           WRITE(*,101) 'ERROR: this number of data is too large.'
           WRITE(*,101) 'You must modify the parameter NDATAMAX.'
           WRITE(*,100) 'Press <CR> to continue...'
@@ -497,7 +497,7 @@ C..............................................................................
           WRITE(77,111) NX,'# Column No. for X data'
           WRITE(*,100) 'Column No. for err(X) data (0=NONE, -N) '
           NEX=READI_B('0')
-          WRITE(77,111) NEX,'# Column No. for err(Y) data (0=none, -N)'
+          WRITE(77,111) NEX,'# Column No. for err(X) data (0=none, -N)'
           IF(NEX.LT.0)THEN
             NEX=-NEX
             LNEXTROW=.TRUE.

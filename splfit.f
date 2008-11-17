@@ -59,14 +59,15 @@ C         del ajuste final.
      +   WEIGHT,POWER,LUP,TSIGMA,
      +   NOUT,XOUT,YOUT,XMIN,XMAX,YKNOT,ASPL,BSPL,CSPL)
         IMPLICIT NONE
+C
         INCLUDE 'ndatamax.inc'
+        INCLUDE 'nknotsmax.inc'
+C
         INTEGER READI_B
         INTEGER READILIM_B
         REAL READF_B
         REAL FPOLY
         CHARACTER*255 READC_B
-C
-        INCLUDE 'nknotsmax.inc'
 C
         INTEGER N
         REAL X(N),Y(N),EY(N)
@@ -194,7 +195,7 @@ C ajuste inicial a polinomios de grado 2 a cada region entre cada 2 knots
             YD(I)=YD(I)+FDUMMY
             YD(I+1)=YD(I+1)+FDUMMY
           ELSE
-            CALL POLFIT(XF,YF,YF,NF,3,0,A,CHISQR,.TRUE.)
+            CALL POLFIT(XF,YF,YF,NF,3,0,A,CHISQR,.TRUE.,-1.,1.,-1.,1.)
             YD(I)=YD(I)+FPOLY(2,A,XD(I))
             YD(I+1)=YD(I+1)+FPOLY(2,A,XD(I+1))
           END IF
@@ -261,13 +262,17 @@ C llamamos a DOWNHILL y minimizamos la posicion en Y de todos los knots
         DO I=1,ND
           XDD(I)=XD(I)   !XD para el COMMON block
         END DO
-        WRITE(*,100)'Running DOWNHILL...'
+        do i=1,nd
+          print*,'downhill_1> ',i,xx0(i),dxx0(i)
+        end do
+        WRITE(*,100) 'Running DOWNHILL...'
         CALL DOWNHILL(ND,XX0,DXX0,YFUNK_SPLFIT,1.0,0.5,2.0,YRMSTOL,
      +   XX,DXX,NEVAL,NEVALMAX)
-        WRITE(*,110)'      no. of function evaluations: ',NEVAL
+        WRITE(*,110) ' NEVAL: ',NEVAL
         DO J=1,ND
           YD(J)=XX(J)
           DYD(J)=DXX(J)
+          print*,'downhill_2> ',j,xx(j),dxx(j)
         END DO
         SIGMA=SQRT(YFUNK_SPLFIT(YD))
 20      CALL CUBSPL(XD,YD,ND,1,SSPL,ASPL,BSPL,CSPL)                    !IMODE=1
@@ -287,9 +292,18 @@ C dibujamos ajuste final
           call pgptext(xd(i),yd(i)+(ymaxp-yminp)/25.,0.,0.5,
      +     cdummy(1:k))
         end do
-        write(*,100)'Sigma of the fit: '
-        write(*,*)sigma
-C mostramos los puntos del ajuste
+        WRITE(*,*)
+        WRITE(*,100)'Chi^2 of the fit: '
+        WRITE(*,*) SIGMA
+        WRITE(*,*)
+C mostramos los coeficientes del ajuste
+        DO I=1,ND-1
+          WRITE(*,100) '>>> A,B,C coeff. #'
+          WRITE(*,'(I2.2,A1,I2.2,A2,$)') I,'-',I+1,': '
+          WRITE(*,*) ASPL(I),BSPL(I),CSPL(I)
+        END DO
+        WRITE(*,*)
+C mostramos los knots del ajuste
         DO I=1,ND
           WRITE(*,100) '>>> Knot #'
           WRITE(*,'(I2.2,$)') I
@@ -300,7 +314,8 @@ C mostramos los puntos del ajuste
 C si el numero de Knots es solo 2 (los extremos) no se refina el ajuste
         IF(ND.EQ.2) RETURN
 C Si se quiere refinamos el ajuste
-21      WRITE(*,101)'(1) Refine X and Y position-> 1 Knot'
+21      WRITE(*,*)
+        WRITE(*,101)'(1) Refine X and Y position-> 1 Knot'
         WRITE(*,101)'(2) Refine X-position  -----> 1 Knot'
         WRITE(*,101)'(3) Refine Y-position  -----> 1 Knot'
         WRITE(*,101)'(A) Add a single new knot'
@@ -309,7 +324,7 @@ C Si se quiere refinamos el ajuste
           WRITE(*,101)'(M) Merge "touching" knots'
         END IF
         WRITE(*,101)'(R) Refine X and Y position-> all Knots'
-        WRITE(*,101)'(0) Exit'
+        WRITE(*,101)'(0) EXIT'
         WRITE(*,100)'Option '
         IF(ND.GT.2)THEN
           CREF(1:1)=READC_B('0','0123AaDdMmRr')
@@ -490,34 +505,31 @@ C------------------------------------------------------------------------------
 C------------------------------------------------------------------------------
 C -> REFINAMOS x e y ----------------------------------------------------------
 24      IF(CREF.EQ.'1')THEN
-          WRITE(*,100)'Valor inicial  en X,Y: '
-          WRITE(*,*) XD(NREF),YD(NREF)
           XX0(1)=XD(NREF)                      !valores iniciales para DOWNHILL
-          IF(XD(NREF-1).NE.XD(NREF))THEN
-            DXX0(1)=(XD(NREF)-XD(NREF-1))*0.05
-          ELSEIF(XD(NREF+1).NE.XD(NREF))THEN
-            DXX0(1)=(XD(NREF)-XD(NREF+1))*0.05
+          IF(XD(NREF-1).NE.XD(NREF+1))THEN
+            DXX0(1)=(XD(NREF+1)-XD(NREF-1))*0.5
           ELSE
             DXX0(1)=1. !que remedio
           END IF
           XX0(2)=YD(NREF)
-          IF(YD(NREF).NE.0.0)THEN
+          IF(YD(NREF-1).NE.YD(NREF+1))THEN
+            DXX0(2)=(YD(NREF+1)-YD(NREF-1))*0.5
+          ELSEIF(YD(NREF).NE.0.0)THEN
             DXX0(2)=YD(NREF)*0.05
-          ELSEIF(YD(NREF-1).NE.YD(NREF))THEN
-            DXX0(2)=(YD(NREF)-YD(NREF-1))*0.2
-          ELSEIF(YD(NREF+1).NE.YD(NREF))THEN
-            DXX0(2)=(YD(NREF)-YD(NREF+1))*0.2
           ELSE
             DXX0(2)=1. !que remedio
           END IF
-          WRITE(*,100)'Running DOWNHILL...'
+          WRITE(*,130) 'knot#',NREF,'> '
+          WRITE(*,100) 'Initial values X,Y: '
+          WRITE(*,*) XX0(1),XX0(2)
           CALL DOWNHILL(2,XX0,DXX0,YFUNK_SPLFIT3,1.0,0.5,2.0,YRMSTOL,
      +     XX,DXX,NEVAL)
-          WRITE(*,110)'      no. of function evaluations: ',NEVAL
+          WRITE(*,131) 'knot#',NREF,'> NEVAL: ',NEVAL
           XD(NREF)=XX(1)
           YD(NREF)=XX(2)
-          WRITE(*,100)'Valor refinado en X,Y: '
-          WRITE(*,*) XD(NREF),YD(NREF)
+          WRITE(*,130) 'knot#',NREF,'> '
+          WRITE(*,100) 'Refined values X,Y: '
+          WRITE(*,*) XX(1),XX(2)
           SIGMA=SQRT(YFUNK_SPLFIT3(XX))
           DO I=1,ND            !actualizamos XDD para futuras llamadas a FUNK's
             XDD(I)=XD(I)
@@ -527,18 +539,21 @@ C -> REFINAMOS x --------------------------------------------------------------
           WRITE(*,100)'Valor inicial  en X: '
           WRITE(*,*) XD(NREF)
           XX0(1)=XD(NREF)                      !valores iniciales para DOWNHILL
-          IF(XD(NREF-1).NE.XD(NREF))THEN
-            DXX0(1)=(XD(NREF)-XD(NREF-1))*0.05
-          ELSEIF(XD(NREF+1).NE.XD(NREF))THEN
-            DXX0(1)=(XD(NREF)-XD(NREF+1))*0.05
+          IF(XD(NREF-1).NE.XD(NREF+1))THEN
+            DXX0(1)=(XD(NREF+1)-XD(NREF-1))*0.5
           ELSE
             DXX0(1)=1. !que remedio
           END IF
-          WRITE(*,100)'Running DOWNHILL...'
+          WRITE(*,130) 'knot#',NREF,'> '
+          WRITE(*,100) 'Initial value X: '
+          WRITE(*,*) XX0(1)
           CALL DOWNHILL(1,XX0,DXX0,YFUNK_SPLFIT1,1.0,0.5,2.0,YRMSTOL,
      +     XX,DXX,NEVAL)
-          WRITE(*,110)'      no. of function evaluations: ',NEVAL
+          WRITE(*,131) 'knot#',NREF,'> NEVAL: ',NEVAL
           XD(NREF)=XX(1)
+          WRITE(*,130) 'knot#',NREF,'> '
+          WRITE(*,100) 'Refined value X: '
+          WRITE(*,*) XX(1)
           SIGMA=SQRT(YFUNK_SPLFIT1(XX))
           DO I=1,ND            !actualizamos XDD para futuras llamadas a FUNK's
             XDD(I)=XD(I)
@@ -555,11 +570,16 @@ C -> REFINAMOS y --------------------------------------------------------------
           ELSE
             DXX0(1)=1. !que remedio
           END IF
-          WRITE(*,100)'Running DOWNHILL...'
+          WRITE(*,130) 'knot#',NREF,'> '
+          WRITE(*,100) 'Initial value Y: '
+          WRITE(*,*) XX0(1)
           CALL DOWNHILL(1,XX0,DXX0,YFUNK_SPLFIT2,1.0,0.5,2.0,YRMSTOL,
      +     XX,DXX,NEVAL)
-          WRITE(*,110)'      no. of function evaluations: ',NEVAL
+          WRITE(*,131) 'knot#',NREF,'> NEVAL: ',NEVAL
           YD(NREF)=XX(1)
+          WRITE(*,130) 'knot#',NREF,'> '
+          WRITE(*,100) 'Refined value Y: '
+          WRITE(*,*) XX(1)
           SIGMA=SQRT(YFUNK_SPLFIT2(XX))
           WRITE(*,100)'Valor refinado en Y: '
           WRITE(*,*) YD(NREF)
@@ -567,8 +587,9 @@ C -> refinamos todos los nodos-------------------------------------------------
         ELSEIF(CREF.EQ.'R')THEN
           CALL RANSPL(ND,NRANND)            !ordenamos los Knots aleatoriamente
           NITER=NITER+1
+          WRITE(*,*)
           WRITE(*,109)'>>> ITERATION #',NITER
-          WRITE(*,100)'     --> '
+          WRITE(*,100)' --> '
           DO I=1,ND-1                !mostramos el orden aleatorio de los Knots
             WRITE(CDUMMY,*)NRANND(I)
             CALL RMBLANK(CDUMMY,CDUMMY,L)
@@ -578,6 +599,7 @@ C -> refinamos todos los nodos-------------------------------------------------
           CALL RMBLANK(CDUMMY,CDUMMY,L)
           WRITE(*,101)CDUMMY(1:L)
           DO H=1,ND
+            WRITE(*,*)
             NREF=NRANND(H)
             IF((NREF.EQ.1).OR.(NREF.EQ.ND))THEN            !refinamos solo en Y
               XX0(1)=YD(NREF)
@@ -588,35 +610,43 @@ C -> refinamos todos los nodos-------------------------------------------------
               ELSE
                 DXX0(1)=1. !que remedio
               END IF
+              WRITE(*,130) 'knot#',NREF,'> '
+              WRITE(*,100) 'Initial value Y: '
+              WRITE(*,*) XX0(1)
               CALL DOWNHILL(1,XX0,DXX0,YFUNK_SPLFIT2,1.0,0.5,2.0,
      +         YRMSTOL,XX,DXX,NEVAL)
+              WRITE(*,131) 'knot#',NREF,'> NEVAL: ',NEVAL
               YD(NREF)=XX(1)
+              WRITE(*,130) 'knot#',NREF,'> '
+              WRITE(*,100) 'Refined value Y: '
+              WRITE(*,*) XX(1)
               SIGMA=SQRT(YFUNK_SPLFIT2(XX))
             ELSE                                            !refinamos en X e Y
               XX0(1)=XD(NREF)                  !valores iniciales para DOWNHILL
-              IF(XD(NREF-1).NE.XD(NREF))THEN
-                DXX0(1)=(XD(NREF)-XD(NREF-1))*0.05
-              ELSEIF(XD(NREF+1).NE.XD(NREF))THEN
-                DXX0(1)=(XD(NREF)-XD(NREF+1))*0.05
+              IF(XD(NREF-1).NE.XD(NREF+1))THEN
+                DXX0(1)=(XD(NREF+1)-XD(NREF-1))*0.5
               ELSE
                 DXX0(1)=1. !que remedio
               END IF
               XX0(2)=YD(NREF)
-              IF(YD(NREF).NE.0.0)THEN
+              IF(YD(NREF-1).NE.YD(NREF+1))THEN
+                DXX0(2)=(YD(NREF+1)-YD(NREF-1))*0.5
+              ELSEIF(YD(NREF).NE.0.0)THEN
                 DXX0(2)=YD(NREF)*0.05
-              ELSEIF(YD(NREF-1).NE.YD(NREF))THEN
-                DXX0(2)=(YD(NREF)-YD(NREF-1))*0.2
-              ELSEIF(YD(NREF+1).NE.YD(NREF))THEN
-                DXX0(2)=(YD(NREF)-YD(NREF+1))*0.2
               ELSE
                 DXX0(2)=1. !que remedio
               END IF
-              WRITE(*,100)'Running DOWNHILL...'
+              WRITE(*,130) 'knot#',NREF,'> '
+              WRITE(*,100) 'Initial values X,Y: '
+              WRITE(*,*) XX0(1),XX0(2)
               CALL DOWNHILL(2,XX0,DXX0,YFUNK_SPLFIT3,1.0,0.5,2.0,
      +         YRMSTOL,XX,DXX,NEVAL)
-              WRITE(*,110)'      no. of function evaluations: ',NEVAL
+              WRITE(*,131) 'knot#',NREF,'> NEVAL: ',NEVAL
               XD(NREF)=XX(1)
               YD(NREF)=XX(2)
+              WRITE(*,130) 'knot#',NREF,'> '
+              WRITE(*,100) 'Refined values X,Y: '
+              WRITE(*,*) XX(1),XX(2)
               SIGMA=SQRT(YFUNK_SPLFIT3(XX))
               DO I=1,ND        !actualizamos XDD para futuras llamadas a FUNK's
                 XDD(I)=XD(I)
@@ -637,4 +667,6 @@ C------------------------------------------------------------------------------
 110     FORMAT(A,I6)
 111     FORMAT(I12,1X,A)
 112     FORMAT(11X,A1,1X,A)
+130     FORMAT(A5,I2.2,A2,$)
+131     FORMAT(A5,I2.2,A9,I8)
         END

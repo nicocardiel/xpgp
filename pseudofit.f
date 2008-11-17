@@ -28,6 +28,8 @@ C------------------------------------------------------------------------------
         IMPLICIT NONE
 C
         INCLUDE 'ndatamax.inc'
+        INCLUDE 'nfixedmax.inc'
+        INCLUDE 'ndegmax.inc'
 C
         INTEGER NF
         REAL XF(NF),YF(NF),EYF(NF)
@@ -39,9 +41,6 @@ C
         LOGICAL LUP
         REAL TSIGMA
         REAL A(NTERMS)
-C
-        INTEGER NDEGMAX
-        PARAMETER (NDEGMAX=16)
 C
         EXTERNAL YFUNK_PSEUDO
         REAL YFUNK_PSEUDO
@@ -91,7 +90,7 @@ C poder pasar la información mediante COMMON blocks a la funcion a minimizar)
 C------------------------------------------------------------------------------
 C Primero hacemos un ajuste tradicional para obtener una primera estimacion 
 C (aunque pasamos array de errores en Y, el ajuste lo hacemos sin pesar)
-        CALL POLFIT(XF,YF,EYF,NF,NTERMS,0,A,CHISQR,.TRUE.)
+        CALL POLFIT(XF,YF,EYF,NF,NTERMS,0,A,CHISQR,.TRUE.,-1.,1.,-1.,1.)
 C------------------------------------------------------------------------------
 C Usamos DOWNHILL para calcular el ajuste final
         DO K=1,NTERMS

@@ -1,9 +1,7 @@
         REAL FUNCTION YFUNK_PSEUDO(X)
         IMPLICIT NONE
         INCLUDE 'ndatamax.inc'
-C
-        INTEGER NDEGMAX
-        PARAMETER (NDEGMAX=16)
+        INCLUDE 'ndegmax.inc'
 C
         REAL X(NDEGMAX+1)
 C

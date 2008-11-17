@@ -1,6 +1,6 @@
 Comment
 C
-C SUBROUTINE  POLFIT(X,Y,SIGMAY,NPTS,NTERMS,MODE,A,CHISQR,LNOR)
+C SUBROUTINE POLFIT(X,Y,SIGMAY,NPTS,NTERMS,MODE,A,CHISQR,LNOR,X1,X2,Y1,Y2)
 C
 C >>> This subroutine is based on the subroutine from Data Reduction and 
 C Error Analysis for the Physical Sciences (Bevington, 1969) <<<
@@ -16,6 +16,7 @@ C                        +1 (INSTRUMENTAL) WEIGHT(I)=1./SIGMAY(I)**2
 C                         0 (NO WEIGHTING) WEIGHT(I)=1.
 C                        -1 (STATISTICAL)  WEIGTH(I)=1./Y(I)
 C               LNOR - if .TRUE., renormalize X and Y ranges
+C               X1,X2,Y1,Y2 - new data ranges for fit
 C        OUTPUT:A  - ARRAY OF COEFFICIENTS
 C               CHISQR  -  REDUCED CHI SQUARE FOR FIT
 C
@@ -27,11 +28,13 @@ Comment
 C------------------------------------------------------------------------------
 C Nota: en la llamada a esta subrutina no introducir un "0" en CHISQR aunque
 C no nos interese el valor de esta variable a la salida de la subrutina
-        SUBROUTINE POLFIT(X,Y,SIGMAY,NPTS,NTERMS,MODE,A,CHISQR,LNOR)
+        SUBROUTINE POLFIT(X,Y,SIGMAY,NPTS,NTERMS,MODE,A,CHISQR,
+     +   LNOR,X1,X2,Y1,Y2)
         implicit none
         integer npts,nterms,mode
         real chisqr
         logical lnor
+        real x1,x2,y1,y2
 C
         integer i,n,nmax,j,k,l
         real xi,yi,weight,free
@@ -77,8 +80,8 @@ c cuando MODE=0
             cx1=1.
             cx2=0.
           else
-            cx1=2./(xmax-xmin)
-            cx2=(xmax+xmin)/(xmax-xmin)
+            cx1=(x2-x1)/(xmax-xmin)
+            cx2=(-x1*xmax+x2*xmin)/(xmax-xmin)
           end if
           !como medida de precaucion, evitamos el caso xmax=xmin
           if(cx1.eq.0.0)then
@@ -92,8 +95,8 @@ c cuando MODE=0
             cy1=1.
             cy2=0.
           else
-            cy1=2./(ymax-ymin)
-            cy2=(ymax+ymin)/(ymax-ymin)
+            cy1=(y2-y1)/(ymax-ymin)
+            cy2=(-y1*ymax+y2*ymin)/(ymax-ymin)
           end if
           !como medida de precaucion, evitamos el caso ymax=ymin
           if(cy1.eq.0.0)then
@@ -109,6 +112,10 @@ c cuando MODE=0
           cy1=1.0
           cy2=0.0
         end if
+        write(*,100) 'polfit> cx1,cx2: '
+        write(*,*) cx1,cx2
+        write(*,100) 'polfit> cy1,cy2: '
+        write(*,*) cy1,cy2
 C------------------------------------------------------------------------------
 C        ACCUMULATE WEIGHTED SUMS
 C
@@ -217,8 +224,8 @@ c deshacemos el cambio de variable
               end do
             end do
           end if
-            a(1)=a(1)+cy2
-           do k=0,nterms-1
+          a(1)=a(1)+cy2
+          do k=0,nterms-1
             a(k+1)=a(k+1)/cy1
           end do
 c
