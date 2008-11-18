@@ -2,4 +2,4 @@
 # $Id$
 #
 xpgpdir = $(AUXDIR)
-xpgp_DATA = compute_polinomial.1
+dist_xpgp_DATA = compute_polynomial.1

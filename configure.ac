@@ -21,9 +21,9 @@ STTL_LIB_PGPLOT
 LIBS="$LIBS $PGPLOT_LIBS"
 
 # Definitions
-DEFAULT_AUXDIR="/usr/local/share/xpgp/auxdir"
+DEFAULT_AUXDIR="/usr/local/share/xpgp"
 AUXDIR=${AUXDIR="$DEFAULT_AUXDIR"}
-AC_ARG_VAR(AUXDIR,[Directory to install auxiliary files])
+AC_ARG_VAR(AUXDIR,[Directory to install auxiliary xpgp files])
 
 DEFAULT_NDATAMAX="100000"
 NDATAMAX=${NDATAMAX="$DEFAULT_NDATAMAX"}
