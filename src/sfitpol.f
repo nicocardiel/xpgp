@@ -7,7 +7,7 @@ C Prepara los datos para los ajustes polinomicos a los datos del buffer NB0
 C
         INCLUDE 'fcompil.inc'
         INCLUDE 'xpgpdir.inc'
-        INCLUDE 'nsimul.inc'
+        INCLUDE 'nsimulmax.inc'
 C
         INCLUDE 'nbuffmax.inc'
         INCLUDE 'ndatamax.inc'

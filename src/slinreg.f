@@ -17,7 +17,7 @@ C
         IMPLICIT NONE
         INTEGER NB0
 C
-        INCLUDE 'nsimul.inc'
+        INCLUDE 'nsimulmax.inc'
 C
         INTEGER TRUEBEG
         INTEGER TRUELEN
