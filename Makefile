@@ -99,7 +99,7 @@ xpgp:  $(FOBJECT)
 # Target to clean object modules
 clean:    $(FOBJECT)
 	rm -f $(FOBJECT)
-	rm -f fcompil.f xpgpdir.inc nsimul.inc ndatamax.inc
+	rm -f fcompil.inc xpgpdir.inc nsimul.inc ndatamax.inc
 # Target to touch source modules
 touch:
 	touch $(FSOURCE)
