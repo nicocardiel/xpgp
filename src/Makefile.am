@@ -48,7 +48,6 @@ fitpol.f \
 fits_printerror.f \
 fmean0.f \
 fpoly.f \
-gammp.f \
 give_errors.f \
 give_statistics.f \
 histogram.f \
