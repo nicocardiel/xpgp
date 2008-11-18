@@ -8,7 +8,7 @@ y el programa termine.
   (antes el programa recordaba los límites iniciales).
 - Se ha mejorado la posibilidad de incluir etiquetas externas y líneas.
 
-* Cambios 4.6 -> 4.7
+* Cambios 4.6 -> 5.0
 - Incluido ajuste a pseudofits polinómicos con errores en cada pixel
 - Incluido ajuste a "adaptive splines", con posibilidad de fusionar knots,
   añadir y eliminar knots, ademas de refinar el ajuste.
@@ -24,9 +24,10 @@ y el programa termine.
   lugar del límite actual que era de 255 caracteres/línea.
 - Ahora el programa ignora líneas en blanco en el fichero de datos a leer
   (aunque no tenga un símbolo de comentario).
+- Eliminada la referencia explícita a gfortran.
+- Desarrollo en autotools. Este es un cambio importante.
 
 
 * ToDO
-- Eliminar referencia explícita a gfortran.
 - Salvar buffer en FITS (?)
 - Revisar calculo de errores en la prediccion,... en los ajustes polinomicos.
