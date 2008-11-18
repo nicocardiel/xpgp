@@ -1,5 +1,5 @@
 #! /bin/sh 
 # $Id$
 
-# autoreconf --install
+# To restart from scratch use: autoreconf --install
 autoreconf -s -i -m -f

@@ -1360,7 +1360,7 @@ C copiamos cuerpo del programa principal desde el directorio de xpgp
                 L1=TRUEBEG(XPGPDIR_)
                 L2=TRUELEN(XPGPDIR_)
                 COMANDO(7:L2-L1+7)=XPGPDIR_(L1:L2)
-                COMANDO(L2-L1+8:)='/compute_polynomial.1'
+                COMANDO(L2-L1+8:)='/compute_polynomial.1 .'
                 ISYSTEM=SYSTEMFUNCTION(COMANDO)
                 IF((ISYSTEM.EQ.127.OR.ISYSTEM.EQ.-1))THEN
                   WRITE(*,101) 'ERROR: while calling system function.'
@@ -1573,8 +1573,15 @@ C compilamos el programa
                 L2=TRUELEN(COMANDO)
                 COMANDO(L2+2:)=XPGPDIR_(LL1:LL2)
                 L2=TRUELEN(COMANDO)
-                COMANDO(L2+1:)='/downhill.f'
-                ISYSTEM=SYSTEMFUNCTION(COMANDO)
+                COMANDO(L2+1:)='/downhill.f '
+                L2=TRUELEN(COMANDO)
+                COMANDO(L2+2:)=XPGPDIR_(LL1:LL2)
+                L2=TRUELEN(COMANDO)
+                COMANDO(L2+1:)='/indexr.f'
+                L2=TRUELEN(COMANDO)
+                WRITE(*,101) 'Executing:'
+                WRITE(*,101) COMANDO(1:L2)
+                ISYSTEM=SYSTEMFUNCTION(COMANDO(1:L2))
                 WRITE(*,*)
                 IF((ISYSTEM.EQ.127.OR.ISYSTEM.EQ.-1))THEN
                   WRITE(*,101) 'ERROR: while calling system function.'
