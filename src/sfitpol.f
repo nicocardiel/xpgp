@@ -1543,7 +1543,7 @@ C compilamos el programa
                 COMANDO=FCOMPIL_(LF1:LF2)//' -o '
                 LL1=TRUEBEG(FORTRAN_FILE)
                 LL2=TRUELEN(FORTRAN_FILE)
-                COMANDO(8:)=FORTRAN_FILE(LL1:LL2-2)
+                COMANDO(LF2+5:)=FORTRAN_FILE(LL1:LL2-2)
                 L2=TRUELEN(COMANDO)
                 COMANDO(L2+1:L2+1)=' '
                 COMANDO(L2+2:)=FORTRAN_FILE(LL1:LL2)

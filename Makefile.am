@@ -3,7 +3,7 @@
 # $Id$
 #
 
-SUBDIRS = src m4
+SUBDIRS = auxdir src m4
 
 ACLOCAL_AMFLAGS = -I m4
 
