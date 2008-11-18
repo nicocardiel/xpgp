@@ -35,8 +35,13 @@ AC_ARG_VAR(NSIMULMAX,[Maximum number of numerical simulations])
 
 # Output files
 AC_CONFIG_FILES([Makefile
+                 src/button.inc
                  src/fcompil.inc
+                 src/nbuffmax.inc
                  src/ndatamax.inc
+                 src/ndegmax.inc
+                 src/nfixedmax.inc
+                 src/nknotsmax.inc
                  src/nsimulmax.inc
                  src/version.inc
                  src/xpgpdir.inc
