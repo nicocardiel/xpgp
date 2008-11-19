@@ -4,7 +4,7 @@
 #
 
 # Prelude
-AC_INIT(xpgp,05.2,[ncl@astrax.fis.ucm.es])
+AC_INIT(xpgp,05.03,[ncl@astrax.fis.ucm.es])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_SRCDIR([config.h.in])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
