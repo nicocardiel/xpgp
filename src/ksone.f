@@ -1,3 +1,4 @@
+C Modified version o KSONE
       SUBROUTINE KSONE(DATA,N,FUNC,D,PROB)
       DIMENSION DATA(N)
       CALL ordena1f(N,DATA)

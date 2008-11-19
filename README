@@ -1,0 +1,8 @@
+This is xpgp, a program that plots 2D diagrams and perform basic statistical
+analysis and fits.
+
+This software is distributed under GPL , either version 3 of the License, or
+(at your option) any later version. See the file COPYING for details.
+
+Maintainer: ncl@astrax.fis.ucm.es
+Webpage: http://guaix.fis.ucm.es/projects/xpgp

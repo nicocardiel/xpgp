@@ -1,5 +1,21 @@
+C------------------------------------------------------------------------------
+C Copyright 2008 Nicolas Cardiel
 C
-C******************************************************************************
+C This file is part of xpgp.
+C 
+C Xpgp is free software: you can redistribute it and/or modify
+C it under the terms of the GNU General Public License as published by
+C the Free Software Foundation, either version 3 of the License, or
+C (at your option) any later version.
+C 
+C Xpgp is distributed in the hope that it will be useful,
+C but WITHOUT ANY WARRANTY; without even the implied warranty of
+C MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+C GNU General Public License for more details.
+C 
+C You should have received a copy of the GNU General Public License
+C along with xpgp. If not, see <http://www.gnu.org/licenses/>.
+C------------------------------------------------------------------------------
 C Carga un nuevo fichero en el buffer NB. Si el fichero se lee correctamente,
 C ISTATUS retorna 1. En caso contrario retorna 0. La variable IMODE indica el
 C tipo de lectura a realizar:
@@ -11,6 +27,7 @@ C IMODE=2: se leen X,errX,Y,errY,name
 C
         INCLUDE 'nbuffmax.inc'
         INCLUDE 'ndatamax.inc'
+        INCLUDE 'lenlinea.inc'
 C
         INTEGER READI_B
         INTEGER SYSTEMFUNCTION
@@ -53,9 +70,7 @@ C
         CHARACTER*50 FITS_COMMENT
         CHARACTER*255 INFILE
         CHARACTER*255 REDUCEME_CDUMMY,FITS_OBJECT
-        !la siguiente variable (CLINEA) tiene que tener el mismo tamaño que la
-        !variable RESTO en las subrutinas CEXTRAE y FEXTRAE
-        CHARACTER*10000 CLINEA
+        CHARACTER*(LENLINEA) CLINEA
         LOGICAL LOGFILE
         LOGICAL LXERR(NBUFFMAX),LYERR(NBUFFMAX)
         LOGICAL LXYNAME(NBUFFMAX)

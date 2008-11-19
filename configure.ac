@@ -4,7 +4,7 @@
 #
 
 # Prelude
-AC_INIT(xpgp,05.0,[ncl@astrax.fis.ucm.es])
+AC_INIT(xpgp,05.2,[ncl@astrax.fis.ucm.es])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_SRCDIR([config.h.in])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
@@ -29,6 +29,10 @@ DEFAULT_NDATAMAX="100000"
 NDATAMAX=${NDATAMAX="$DEFAULT_NDATAMAX"}
 AC_ARG_VAR(NDATAMAX,[Maximum number of data points per buffer])
 
+DEFAULT_LENLINEA="1000"
+LENLINEA=${LENLINEA="$DEFAULT_LENLINEA"}
+AC_ARG_VAR(LENLINEA,[Maximum number of characters/line in input file])
+
 DEFAULT_NSIMULMAX="1000"
 NSIMULMAX=${NSIMULMAX="$DEFAULT_NSIMULMAX"}
 AC_ARG_VAR(NSIMULMAX,[Maximum number of numerical simulations])
@@ -37,6 +41,7 @@ AC_ARG_VAR(NSIMULMAX,[Maximum number of numerical simulations])
 AC_CONFIG_FILES([Makefile
                  src/button.inc
                  src/fcompil.inc
+                 src/lenlinea.inc
                  src/nbuffmax.inc
                  src/ndatamax.inc
                  src/ndegmax.inc
