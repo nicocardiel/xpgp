@@ -359,12 +359,14 @@ C
           WRITE(*,101) 'Enter (x,y) coordinates of the new knot:'
           WRITE(*,100) 'New x coordinate'
           XNEW=READF_B('@')
+          WRITE(77,*) XNEW,'# New x coordinate'
           !estimamos el valor para X=XNEW en el ultimo ajuste
           WRITE(*,100) 'New y coordinate '
           I0SPL=1
           CALL CUBSPLX(XD,YD,ASPL,BSPL,CSPL,ND,I0SPL,XNEW,YNEW)
           WRITE(CDUMMY,*) YNEW
           YNEW=READF_B(CDUMMY)
+          WRITE(77,*) YNEW,'# New y coordinate'
 C
           INEW=1
           CALL BINSEARCH(XD,ND,XNEW,INEW)

@@ -19,6 +19,7 @@ C------------------------------------------------------------------------------
         REAL FUNCTION YFUNK_PSEUDO(X)
         IMPLICIT NONE
         INCLUDE 'ndatamax.inc'
+        INCLUDE 'nfixedmax.inc'
         INCLUDE 'ndegmax.inc'
 C
         REAL X(NDEGMAX+1)
@@ -28,7 +29,10 @@ C
         INTEGER J
         INTEGER NF,NTERMS
         INTEGER NDEG
+        INTEGER NFIXED
         REAL XF(NDATAMAX),YF(NDATAMAX),EYF(NDATAMAX)
+        REAL XFIXED(NFIXEDMAX),YFIXED(NFIXEDMAX)
+        REAL FIXEDWEIGHT
         REAL WEIGHT,POWER
         REAL W1,W2
         REAL YPOL
@@ -40,6 +44,9 @@ C
         COMMON/BLKFUNKPSEUDO1/XF,YF,EYF
         COMMON/BLKFUNKPSEUDO2/WEIGHT,POWER,TSIGMA
         COMMON/BLKFUNKPSEUDO3/LUP
+        COMMON/BLKFIXED1/NFIXED
+        COMMON/BLKFIXED2/XFIXED,YFIXED
+        COMMON/BLKFIXED3/FIXEDWEIGHT
 C------------------------------------------------------------------------------
 C comprobacion inicial
         IF(TSIGMA.LT.0.0)THEN
@@ -68,6 +75,12 @@ C------------------------------------------------------------------------------
               DSUM=DSUM+W2*((YF(J)-YPOL)**POWER)
             END IF
           END DO
+          IF(NFIXED.GT.0)THEN
+            DO J=1,NFIXED
+              YPOL=FPOLY(NDEG,X,XFIXED(J))
+              DSUM=DSUM+FIXEDWEIGHT*ABS(YFIXED(J)-YPOL)**POWER
+            END DO
+          END IF
         ELSE !......................................................con errores
           IF(LUP)THEN
             !aqui tenemos que usar ABS() porque podemos tener argumentos
@@ -93,6 +106,12 @@ C------------------------------------------------------------------------------
               ELSE
                 DSUM=DSUM+W2*(ABS(YF(J)-YPOL)**POWER)
               END IF
+            END DO
+          END IF
+          IF(NFIXED.GT.0)THEN
+            DO J=1,NFIXED
+              YPOL=FPOLY(NDEG,X,XFIXED(J))
+              DSUM=DSUM+FIXEDWEIGHT*ABS(YFIXED(J)-YPOL)**POWER
             END DO
           END IF
         END IF

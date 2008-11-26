@@ -20,13 +20,17 @@ C Funcion para minimizar las coordenadas Y de todos los Knots
         REAL FUNCTION YFUNK_SPLFIT(X)
         IMPLICIT NONE
         INCLUDE 'ndatamax.inc'
+        INCLUDE 'nfixedmax.inc'
         INCLUDE 'nknotsmax.inc'
         REAL X(NKNOTSMAX)
 C
         INTEGER I
         INTEGER NF,ND
         INTEGER I0
+        INTEGER NFIXED
         REAL XF(NDATAMAX),YF(NDATAMAX),EYF(NDATAMAX),YF0
+        REAL XFIXED(NFIXEDMAX),YFIXED(NFIXEDMAX)
+        REAL FIXEDWEIGHT
         REAL XDD(NKNOTSMAX)
         REAL S(NKNOTSMAX),A(NKNOTSMAX),B(NKNOTSMAX),C(NKNOTSMAX)
         REAL WEIGHT,POWER,TSIGMA
@@ -40,6 +44,9 @@ C
         COMMON/BLKSPLFUNK4/XDD
         COMMON/BLKSPLFUNK7/WEIGHT,POWER,TSIGMA
         COMMON/BLKSPLFUNK8/LUP
+        COMMON/BLKFIXED1/NFIXED
+        COMMON/BLKFIXED2/XFIXED,YFIXED
+        COMMON/BLKFIXED3/FIXEDWEIGHT
 c------------------------------------------------------------------------------
 C comprobacion inicial
         IF(TSIGMA.LT.0.0)THEN
@@ -100,6 +107,14 @@ C------------------------------------------------------------------------------
               END IF
             END DO
           END IF
+        END IF
+C------------------------------------------------------------------------------
+        I0=1
+        IF(NFIXED.GT.0)THEN
+          DO I=1,NFIXED
+            CALL CUBSPLX(XDD,X,A,B,C,ND,I0,XFIXED(I),YF0)
+            F=F+DBLE(FIXEDWEIGHT)*DBLE(ABS(YFIXED(I)-YF0)**POWER)
+          END DO
         END IF
 C------------------------------------------------------------------------------
         F=F/DBLE(NF)

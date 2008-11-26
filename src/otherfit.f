@@ -64,6 +64,7 @@ C
         REAL EXDATA(NDATAMAX,NBUFFMAX),EYDATA(NDATAMAX,NBUFFMAX)
         REAL XF(NDATAMAX),YF(NDATAMAX),EYF(NDATAMAX)
         REAL XFIXED(NFIXEDMAX),YFIXED(NFIXEDMAX)
+        REAL FIXEDWEIGHT
         REAL XFMIN,XFMAX
         REAL XP(NPLOTMAX),YP(NPLOTMAX)
         REAL XMIN,XMAX,YMIN,YMAX
@@ -93,6 +94,7 @@ C
         COMMON/BLKEXYDATA/EXDATA,EYDATA
         COMMON/BLKFIXED1/NFIXED
         COMMON/BLKFIXED2/XFIXED,YFIXED
+        COMMON/BLKFIXED3/FIXEDWEIGHT
 C------------------------------------------------------------------------------
 C tipos de ajuste
         WRITE(*,*)
@@ -128,8 +130,12 @@ C------------------------------------------------------------------------------
           END IF
           WRITE(77,111) NFIXED,'# Number of fixed points'
           IF(NFIXED.LT.0)THEN
+            WRITE(*,101) 'WARNING: invalid number. NFIXED set to 0.'
             NFIXED=0
           ELSEIF(NFIXED.GT.0)THEN
+            WRITE(*,100) 'WEIGHT for fixed points '
+            FIXEDWEIGHT=READF_B('1.E6')
+            WRITE(77,*) FIXEDWEIGHT,'# WEIGHT for fixed points'
             DO I=1,NFIXED
               WRITE(*,'(A,I2,$)') 'X-coordinate of point #',I
               XFIXED(I)=READF_B('@')
