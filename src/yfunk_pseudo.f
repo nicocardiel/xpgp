@@ -34,8 +34,8 @@ C
         REAL XFIXED(NFIXEDMAX),YFIXED(NFIXEDMAX)
         REAL FIXEDWEIGHT
         REAL WEIGHT,POWER
-        REAL W1,W2
         REAL YPOL
+        DOUBLE PRECISION W1,W2
         DOUBLE PRECISION DSUM
         LOGICAL LUP
         REAL TSIGMA
@@ -61,24 +61,25 @@ C------------------------------------------------------------------------------
 C------------------------------------------------------------------------------
         IF(TSIGMA.EQ.0.0)THEN !.....................................sin errores
           IF(LUP)THEN
-            W1=1.0
-            W2=WEIGHT
+            W1=1.0D0
+            W2=DBLE(WEIGHT)
           ELSE
-            W1=WEIGHT
-            W2=1.0
+            W1=DBLE(WEIGHT)
+            W2=1.0D0
           END IF
           DO J=1,NF
             YPOL=FPOLY(NDEG,X,XF(J))
             IF(YPOL.GE.YF(J))THEN
-              DSUM=DSUM+W1*((YPOL-YF(J))**POWER)
+              DSUM=DSUM+W1*(DBLE(YPOL-YF(J))**DBLE(POWER))
             ELSE
-              DSUM=DSUM+W2*((YF(J)-YPOL)**POWER)
+              DSUM=DSUM+W2*(DBLE(YF(J)-YPOL)**DBLE(POWER))
             END IF
           END DO
           IF(NFIXED.GT.0)THEN
             DO J=1,NFIXED
               YPOL=FPOLY(NDEG,X,XFIXED(J))
-              DSUM=DSUM+FIXEDWEIGHT*ABS(YFIXED(J)-YPOL)**POWER
+              DSUM=DSUM+
+     +         DBLE(FIXEDWEIGHT)*DABS(DBLE(YFIXED(J)-YPOL))**DBLE(POWER)
             END DO
           END IF
         ELSE !......................................................con errores
@@ -86,36 +87,38 @@ C------------------------------------------------------------------------------
             !aqui tenemos que usar ABS() porque podemos tener argumentos
             !negativos debido a que el IF() lo estamos calculando
             !considerando las barras de error
-            W1=1.0
-            W2=WEIGHT
+            W1=1.0D0
+            W2=DBLE(WEIGHT)
             DO J=1,NF
               YPOL=FPOLY(NDEG,X,XF(J))
               IF(YPOL.GE.YF(J)-TSIGMA*EYF(J))THEN !.......aqui usamos signo "-"
-                DSUM=DSUM+W1*(ABS(YPOL-YF(J))**POWER)
+                DSUM=DSUM+W1*(DABS(DBLE(YPOL-YF(J)))**DBLE(POWER))
               ELSE
-                DSUM=DSUM+W2*(ABS(YF(J)-YPOL)**POWER)
+                DSUM=DSUM+W2*(DABS(DBLE(YF(J)-YPOL))**DBLE(POWER))
               END IF
             END DO
           ELSE
-            W1=WEIGHT
-            W2=1.0
+            W1=DBLE(WEIGHT)
+            W2=1.0D0
             DO J=1,NF
               YPOL=FPOLY(NDEG,X,XF(J))
               IF(YPOL.GE.YF(J)+TSIGMA*EYF(J))THEN !.......aqui usamos signo "+"
-                DSUM=DSUM+W1*(ABS(YPOL-YF(J))**POWER)
+                DSUM=DSUM+W1*(DABS(DBLE(YPOL-YF(J)))**DBLE(POWER))
               ELSE
-                DSUM=DSUM+W2*(ABS(YF(J)-YPOL)**POWER)
+                DSUM=DSUM+W2*(DABS(DBLE(YF(J)-YPOL))**DBLE(POWER))
               END IF
             END DO
           END IF
           IF(NFIXED.GT.0)THEN
             DO J=1,NFIXED
               YPOL=FPOLY(NDEG,X,XFIXED(J))
-              DSUM=DSUM+FIXEDWEIGHT*ABS(YFIXED(J)-YPOL)**POWER
+              DSUM=DSUM+
+     +         DBLE(FIXEDWEIGHT)*DABS(DBLE(YFIXED(J)-YPOL))**DBLE(POWER)
             END DO
           END IF
         END IF
 C
+        DSUM=DSUM/DBLE(NF)
         YFUNK_PSEUDO=REAL(DSUM)
 C------------------------------------------------------------------------------
 100     FORMAT(A,$)

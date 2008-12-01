@@ -36,7 +36,7 @@ C
         REAL S(NKNOTSMAX),A(NKNOTSMAX),B(NKNOTSMAX),C(NKNOTSMAX)
         REAL YD(NKNOTSMAX)
         REAL WEIGHT,POWER,TSIGMA
-        REAL W1,W2
+        DOUBLE PRECISION W1,W2
         DOUBLE PRECISION F
         LOGICAL LUP
 C
@@ -69,20 +69,20 @@ C
 C------------------------------------------------------------------------------
         IF(TSIGMA.EQ.0.0)THEN !.....................................sin errores
           IF(LUP)THEN
-            W1=1.0
-            W2=WEIGHT
+            W1=1.0D0
+            W2=DBLE(WEIGHT)
           ELSE
-            W1=WEIGHT
-            W2=1.0
+            W1=DBLE(WEIGHT)
+            W2=1.0D0
           END IF
           F=0.D0
           I0=1                   !la primera vez busca en el inicio de la tabla
           DO I=1,NF
             CALL CUBSPLX(XDD,YD,A,B,C,ND,I0,XF(I),YF0)
             IF(YF0.GE.YF(I))THEN
-              F=F+W1*((DBLE(YF0)-DBLE(YF(I)))**POWER)
+              F=F+W1*((DBLE(YF0)-DBLE(YF(I)))**DBLE(POWER))
             ELSE
-              F=F+W2*((DBLE(YF(I))-DBLE(YF0))**POWER)
+              F=F+W2*((DBLE(YF(I))-DBLE(YF0))**DBLE(POWER))
             END IF
           END DO
         ELSE !......................................................con errores
@@ -90,29 +90,29 @@ C------------------------------------------------------------------------------
             !aqui tenemos que usar ABS() porque podemos tener argumentos
             !negativos debido a que el IF() lo estamos calculando
             !considerando las barras de error
-            W1=1.0
-            W2=WEIGHT
+            W1=1.0D0
+            W2=DBLE(WEIGHT)
             F=0.D0
             I0=1                 !la primera vez busca en el inicio de la tabla
             DO I=1,NF
               CALL CUBSPLX(XDD,YD,A,B,C,ND,I0,XF(I),YF0)
               IF(YF0.GE.YF(I)-TSIGMA*EYF(I))THEN !........aqui usamos signo "-"
-                F=F+DBLE(W1)*(ABS(DBLE(YF0)-DBLE(YF(I)))**DBLE(POWER))
+                F=F+W1*(DABS(DBLE(YF0)-DBLE(YF(I)))**DBLE(POWER))
               ELSE
-                F=F+DBLE(W2)*(ABS(DBLE(YF(I))-DBLE(YF0))**DBLE(POWER))
+                F=F+W2*(DABS(DBLE(YF(I))-DBLE(YF0))**DBLE(POWER))
               END IF
             END DO
           ELSE
-            W1=WEIGHT
-            W2=1.0
+            W1=DBLE(WEIGHT)
+            W2=1.0D0
             F=0.D0
             I0=1                 !la primera vez busca en el inicio de la tabla
             DO I=1,NF
               CALL CUBSPLX(XDD,YD,A,B,C,ND,I0,XF(I),YF0)
               IF(YF0.GE.YF(I)+TSIGMA*EYF(I))THEN !........aqui usamos signo "+"
-                F=F+DBLE(W1)*(ABS(DBLE(YF0)-DBLE(YF(I)))**DBLE(POWER))
+                F=F+W1*(DABS(DBLE(YF0)-DBLE(YF(I)))**DBLE(POWER))
               ELSE
-                F=F+DBLE(W2)*(ABS(DBLE(YF(I))-DBLE(YF0))**DBLE(POWER))
+                F=F+W2*(DABS(DBLE(YF(I))-DBLE(YF0))**DBLE(POWER))
               END IF
             END DO
           END IF
@@ -122,7 +122,7 @@ C------------------------------------------------------------------------------
         IF(NFIXED.GT.0)THEN
           DO I=1,NFIXED
             CALL CUBSPLX(XDD,YD,A,B,C,ND,I0,XFIXED(I),YF0)
-            F=F+DBLE(FIXEDWEIGHT)*DBLE(ABS(YFIXED(I)-YF0)**POWER)
+            F=F+DBLE(FIXEDWEIGHT)*DBLE(ABS(YFIXED(I)-YF0))**DBLE(POWER)
           END DO
         END IF
 C------------------------------------------------------------------------------
