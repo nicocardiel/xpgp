@@ -151,7 +151,8 @@ C ajustes
         IF(IOPC.EQ.1)THEN !...................................simple polynomial
           !parametros para el ajuste
           WRITE(*,100) 'Polynomial degree'
-          NTERMS=READILIM_B('@',0,10)
+          WRITE(CDUMMY,*) NFIXED
+          NTERMS=READILIM_B(CDUMMY,0,10)
           WRITE(77,111) NTERMS,'# Polynomial degree'
           NTERMS=NTERMS+1
           WRITE(*,101) '(Note: WEIGHT=1.0 is equivalent to a '//
@@ -190,7 +191,7 @@ C ajustes
           YRMSTOL=READF_B('1E-5')
           WRITE(77,*) YRMSTOL,'# YRMSTOL for DOWNHILL'
           WRITE(*,100) 'NEVALMAX for DOWNHILL '
-          NEVALMAX=READILIM_B('1000',10,1000000)
+          NEVALMAX=READILIM_B('1000',1,1000000)
           WRITE(77,111) NEVALMAX,'# NEVALMAX for DOWNHILL'
           !realizamos el ajuste
           CALL PSEUDOFIT(XF,YF,EYF,NF,NTERMS,YRMSTOL,NEVALMAX,
@@ -245,7 +246,7 @@ C..............................................................................
           YRMSTOL=READF_B('1E-5')
           WRITE(77,*) YRMSTOL,'# YRMSTOL for DOWNHILL'
           WRITE(*,100) 'NEVALMAX for DOWNHILL '
-          NEVALMAX=READILIM_B('1000',10,1000000)
+          NEVALMAX=READILIM_B('1000',1,1000000)
           WRITE(77,111) NEVALMAX,'# NEVALMAX for DOWNHILL'
           !semilla para numeros aleatorios
           WRITE(*,101) '(Note: NSEED must be > 0 to make the '//
