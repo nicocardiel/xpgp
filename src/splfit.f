@@ -505,9 +505,10 @@ C------------------------------------------------------------------------------
             END IF
           END IF
         ELSE
-          WRITE(*,100)'How many iterations '
-          NITERT=READI_B('1')
+          WRITE(*,100)'How many iterations (0=none) '
+          NITERT=READILIM_B('1',0,1000)
           WRITE(77,111) NITERT,'# Number of iterations'
+          IF(NITERT.EQ.0) GOTO 21
           NITER=0
         END IF
 C------------------------------------------------------------------------------
