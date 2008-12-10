@@ -57,6 +57,7 @@ C
         REAL YRMSTOL
         REAL WEIGHT
         REAL POWER
+        REAL EPOWER
         REAL A(NDEGMAX+1)
         REAL XKNOT(NKNOTSMAX),YKNOT(NKNOTSMAX)
         REAL ASPL(NKNOTSMAX),BSPL(NKNOTSMAX),CSPL(NKNOTSMAX)
@@ -163,6 +164,9 @@ C ajustes
           WRITE(*,100) 'POWER for pseudofit '
           POWER=READF_B('2.0')
           WRITE(77,*) POWER,'# POWER for pseudofit'
+          WRITE(*,100) 'EPOWER for pseudofit '
+          EPOWER=READF_B('2.0')
+          WRITE(77,*) EPOWER,'# EPOWER for pseudofit'
           WRITE(*,100) 'Which side: 1=upper, 2=lower '
           ILUP=READILIM_B('@',1,2)
           WRITE(77,111) ILUP,'# side: 1=upper, 2=lower'
@@ -195,7 +199,7 @@ C ajustes
           WRITE(77,111) NEVALMAX,'# NEVALMAX for DOWNHILL'
           !realizamos el ajuste
           CALL PSEUDOFIT(XF,YF,EYF,NF,NTERMS,YRMSTOL,NEVALMAX,
-     +     WEIGHT,POWER,LUP,TSIGMA,A)
+     +     WEIGHT,POWER,EPOWER,LUP,TSIGMA,A)
 C..............................................................................
         ELSEIF(IOPC.EQ.2)THEN !................................adaptive splines
           !parametros para el ajuste
@@ -218,6 +222,9 @@ C..............................................................................
           WRITE(*,100) 'POWER for pseudofit '
           POWER=READF_B('2.0')
           WRITE(77,*) POWER,'# POWER for pseudofit'
+          WRITE(*,100) 'EPOWER for pseudofit '
+          EPOWER=READF_B('2.0')
+          WRITE(77,*) EPOWER,'# EPOWER for pseudofit'
           WRITE(*,100) 'Which side: 1=upper, 2=lower '
           ILUP=READILIM_B('@',1,2)
           WRITE(77,111) ILUP,'# side: 1=upper, 2=lower'
@@ -257,7 +264,7 @@ C..............................................................................
           IF(NSEED.LT.0) RDUMMY=RANRED(NSEED)
           !realizamos el ajuste
           CALL SPLFIT(NF,XF,YF,EYF,NKNOTS,XKNOT,YRMSTOL,NEVALMAX,NSEED,
-     +     WEIGHT,POWER,LUP,TSIGMA,
+     +     WEIGHT,POWER,EPOWER,LUP,TSIGMA,
      +     NPLOTMAX,XP,YP,XKNOT(1),XKNOT(NKNOTS),YKNOT,ASPL,BSPL,CSPL)
 C..............................................................................
         ELSEIF(IOPC.EQ.3)THEN !................polinomios "normales" con POLFIT
