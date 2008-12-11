@@ -165,8 +165,13 @@ C ajustes
           POWER=READF_B('2.0')
           WRITE(77,*) POWER,'# POWER for pseudofit'
           WRITE(*,100) 'EPOWER for pseudofit '
-          EPOWER=READF_B('2.0')
+          EPOWER=READF_B('0.0')
           WRITE(77,*) EPOWER,'# EPOWER for pseudofit'
+          IF(EPOWER.EQ.0.0)THEN
+            DO I=1,NF
+              EYF(I)=1.0 !para que las formulas sirvan
+            END DO
+          END IF
           WRITE(*,100) 'Which side: 1=upper, 2=lower '
           ILUP=READILIM_B('@',1,2)
           WRITE(77,111) ILUP,'# side: 1=upper, 2=lower'
@@ -225,6 +230,11 @@ C..............................................................................
           WRITE(*,100) 'EPOWER for pseudofit '
           EPOWER=READF_B('2.0')
           WRITE(77,*) EPOWER,'# EPOWER for pseudofit'
+          IF(EPOWER.EQ.0.0)THEN
+            DO I=1,NF
+              EYF(I)=1.0 !para que las formulas sirvan
+            END DO
+          END IF
           WRITE(*,100) 'Which side: 1=upper, 2=lower '
           ILUP=READILIM_B('@',1,2)
           WRITE(77,111) ILUP,'# side: 1=upper, 2=lower'
