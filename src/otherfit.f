@@ -164,7 +164,7 @@ C ajustes
           WRITE(*,100) 'POWER for pseudofit '
           POWER=READF_B('2.0')
           WRITE(77,*) POWER,'# POWER for pseudofit'
-          WRITE(*,100) 'EPOWER for pseudofit '
+          WRITE(*,100) 'EPOWER for pseudofit (0.0=unweighted) '
           EPOWER=READF_B('0.0')
           WRITE(77,*) EPOWER,'# EPOWER for pseudofit'
           IF(EPOWER.EQ.0.0)THEN
