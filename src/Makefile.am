@@ -64,6 +64,7 @@ linreg.f \
 ludcmp.f \
 lusolv.f \
 merge_knots.f \
+norm_ranges.f \
 onlyone.f \
 ordena1f1i.f \
 ordena1f.f \

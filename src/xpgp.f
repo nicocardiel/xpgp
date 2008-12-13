@@ -279,8 +279,8 @@ C estadistica
         CALL BUTTON(167,' ',3)
         CALL BUTTON(168,' ',0)
         CALL BUTTON(168,' ',3)
-        CALL BUTTON(175,' ',0)
-        CALL BUTTON(175,' ',3)
+        CALL BUTTON(175,'norm.ranges',0)
+        CALL BUTTON(175,'norm.ranges',3)
         CALL BUTTON(176,' ',0)
         CALL BUTTON(176,' ',3)
         CALL BUTTON(183,' ',0)
@@ -422,6 +422,7 @@ C
                   CALL BUTTON(160,'randomize',0)
                   CALL BUTTON(167,'X histogram',0)
                   CALL BUTTON(168,'Y histogram',0)
+                  CALL BUTTON(175,'norm.ranges',0)
                 END IF
                 CALL BUTTON(56,'[U]pdate',-5)
                 CALL BUTTON(55,'[P]ostScript',3)
@@ -494,6 +495,7 @@ C
                   CALL BUTTON(160,'randomize',0)
                   CALL BUTTON(167,'X histogram',0)
                   CALL BUTTON(168,'Y histogram',0)
+                  CALL BUTTON(175,'norm.ranges',0)
                 END IF
                 CALL BUTTON(56,'[U]pdate',-5)
                 CALL BUTTON(55,'[P]ostScript',3)
@@ -567,6 +569,7 @@ C
                 CALL BUTTON(160,'randomize',0)
                 CALL BUTTON(167,'X histogram',0)
                 CALL BUTTON(168,'Y histogram',0)
+                CALL BUTTON(175,'norm.ranges',0)
               END IF
               CALL BUTTON(56,'[U]pdate',-5)
               CALL BUTTON(55,'[P]ostScript',3)
@@ -703,6 +706,7 @@ C
                 CALL BUTTON(160,'randomize',0)
                 CALL BUTTON(167,'X histogram',0)
                 CALL BUTTON(168,'Y histogram',0)
+                CALL BUTTON(175,'norm.ranges',0)
                 LBUFFER=.FALSE.
                 CALL PLOT_SETTINGS
               END IF
@@ -2117,6 +2121,19 @@ C
             END IF
 C
             CALL BUTTON(168,'Y histogram',0)
+C..............................................................................
+          ELSEIF(NB.EQ.175)THEN
+            CALL TOLOG77(NB,'Normalize data ranges')
+            CALL BUTTON(175,'norm.ranges',5)
+C
+            CALL SELBUFFER(NB_)
+            IF(NB_.NE.-1)THEN
+              CALL NORM_RANGES(NB_)
+              CALL BUTTON(55,'[P]ostScript',3)
+              CALL BUTTON(56,'[U]pdate',-5)
+            END IF
+C
+            CALL BUTTON(175,'norm.ranges',0)
 C..............................................................................
           ELSEIF(NB.EQ.200)THEN
             CALL BUTTON(200,'[Q]UIT',5)
