@@ -135,7 +135,7 @@ C------------------------------------------------------------------------------
 C------------------------------------------------------------------------------
 C Miramos si tiene formato REDUCEME
         OPEN(10,FILE=INFILE,STATUS='OLD',FORM='UNFORMATTED')
-        READ(10) REDUCEME_ID
+        READ(10,ERR=6) REDUCEME_ID
         IF(TRUELEN(REDUCEME_ID).EQ.12)THEN
           IF(REDUCEME_ID.EQ.'abcdefghijkl')THEN
             WRITE(*,101) '>>> This file has REDUCEME format!'
@@ -261,6 +261,9 @@ C Miramos si tiene formato REDUCEME
         ELSE
           CLOSE(10)
         END IF
+        GOTO 7
+6       CLOSE(10)
+7       CONTINUE
 C------------------------------------------------------------------------------
 C Miramos si tiene formato FITS
         FITS_ISTATUS=0
