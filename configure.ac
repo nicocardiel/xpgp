@@ -1,7 +1,5 @@
 # Process this file with autoconf to produce a configure script.
 #
-# $Id$
-#
 
 # Prelude
 AC_INIT(xpgp,5.3.1,[cardiel@fis.ucm.es])

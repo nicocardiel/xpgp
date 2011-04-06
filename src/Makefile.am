@@ -1,4 +1,3 @@
-# $Id$
 #
 bin_PROGRAMS = xpgp
 xpgp_SOURCES =  \
