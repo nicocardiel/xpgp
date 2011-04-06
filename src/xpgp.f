@@ -116,6 +116,17 @@ C
         COMMON/BLKMINMAXBUFF/XMINBUFF,XMAXBUFF,YMINBUFF,YMAXBUFF
 C------------------------------------------------------------------------------
 C------------------------------------------------------------------------------
+C Welcome message
+        WRITE(*,203)
+        WRITE(*,101) '                        Welcome to xpgp '//
+     +   '(version '//VERSION(1:TRUELEN(VERSION))//')'
+!       WRITE(*,202)
+!       WRITE(*,100) '   For more information visit:'
+!       WRITE(*,101) ' https://guaix.fis.ucm.es/hg/xpgp'
+        WRITE(*,203)
+        WRITE(*,*)
+C------------------------------------------------------------------------------
+C------------------------------------------------------------------------------
 C Abrimos fichero log de esta sesion
         OPEN(77,FILE='xpgp.log',STATUS='UNKNOWN',FORM='FORMATTED')
         WRITE(77,101) '# xpgp version: '//VERSION
@@ -2187,4 +2198,6 @@ C------------------------------------------------------------------------------
 101     FORMAT(A)
 111     FORMAT(I12,1X,A)
 112     FORMAT(11X,A1,1X,A)
+202     FORMAT(79('-'))
+203     FORMAT(79('*'))
         END
