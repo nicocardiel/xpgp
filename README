@@ -6,3 +6,10 @@ This software is distributed under GPL , either version 3 of the License, or
 
 Maintainer: cardiel@ucm.es
 Webpage: https://github.com/nicocardiel/xpgp
+
+Installation example (Mac OSX):
+
+$ autoreconf -s -i -f
+$ ./configure F77=gfortran-mp-7
+$ make
+$ sudo make install
