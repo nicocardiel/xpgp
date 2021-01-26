@@ -536,7 +536,7 @@ C -> REFINAMOS x e y ----------------------------------------------------------
           WRITE(*,100) 'Initial values X,Y: '
           WRITE(*,*) XX0(1),XX0(2)
           CALL DOWNHILL(2,XX0,DXX0,YFUNK_SPLFIT3,1.0,0.5,2.0,YRMSTOL,
-     +     XX,DXX,NEVAL)
+     +     XX,DXX,NEVAL,NEVALMAX)
           WRITE(*,131) 'knot#',NREF,'> NEVAL: ',NEVAL
           XD(NREF)=XX(1)
           YD(NREF)=XX(2)
@@ -561,7 +561,7 @@ C -> REFINAMOS x --------------------------------------------------------------
           WRITE(*,100) 'Initial value X: '
           WRITE(*,*) XX0(1)
           CALL DOWNHILL(1,XX0,DXX0,YFUNK_SPLFIT1,1.0,0.5,2.0,YRMSTOL,
-     +     XX,DXX,NEVAL)
+     +     XX,DXX,NEVAL,NEVALMAX)
           WRITE(*,131) 'knot#',NREF,'> NEVAL: ',NEVAL
           XD(NREF)=XX(1)
           WRITE(*,130) 'knot#',NREF,'> '
@@ -587,7 +587,7 @@ C -> REFINAMOS y --------------------------------------------------------------
           WRITE(*,100) 'Initial value Y: '
           WRITE(*,*) XX0(1)
           CALL DOWNHILL(1,XX0,DXX0,YFUNK_SPLFIT2,1.0,0.5,2.0,YRMSTOL,
-     +     XX,DXX,NEVAL)
+     +     XX,DXX,NEVAL,NEVALMAX)
           WRITE(*,131) 'knot#',NREF,'> NEVAL: ',NEVAL
           YD(NREF)=XX(1)
           WRITE(*,130) 'knot#',NREF,'> '
@@ -627,7 +627,7 @@ C -> refinamos todos los nodos-------------------------------------------------
               WRITE(*,100) 'Initial value Y: '
               WRITE(*,*) XX0(1)
               CALL DOWNHILL(1,XX0,DXX0,YFUNK_SPLFIT2,1.0,0.5,2.0,
-     +         YRMSTOL,XX,DXX,NEVAL)
+     +         YRMSTOL,XX,DXX,NEVAL,NEVALMAX)
               WRITE(*,131) 'knot#',NREF,'> NEVAL: ',NEVAL
               YD(NREF)=XX(1)
               WRITE(*,130) 'knot#',NREF,'> '
@@ -653,7 +653,7 @@ C -> refinamos todos los nodos-------------------------------------------------
               WRITE(*,100) 'Initial values X,Y: '
               WRITE(*,*) XX0(1),XX0(2)
               CALL DOWNHILL(2,XX0,DXX0,YFUNK_SPLFIT3,1.0,0.5,2.0,
-     +         YRMSTOL,XX,DXX,NEVAL)
+     +         YRMSTOL,XX,DXX,NEVAL,NEVALMAX)
               WRITE(*,131) 'knot#',NREF,'> NEVAL: ',NEVAL
               XD(NREF)=XX(1)
               YD(NREF)=XX(2)
