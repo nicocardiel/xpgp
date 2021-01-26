@@ -59,6 +59,7 @@ C
         REAL RMARGIN,XCH,YCH,DYCH,XBOX(4),YBOX(4)
         REAL XKEY,YKEY,DXKEY,DYKEY,DXKEYLINE,DHKEY
         REAL DATAKEYCH,DATAKEYCHSYMB
+        REAL XX0(1),YY0(1)
         CHARACTER*20 XYNAME(NDATAMAX,NBUFFMAX)
         CHARACTER*20 XOPT,YOPT
         CHARACTER*50 CDUMMY
@@ -383,8 +384,12 @@ C
               ELSEIF(NSYMBBUFF(NB).EQ.200)THEN
                 CALL PGPTEXT(XKEY+0.5*DXKEYLINE,YKEY,0.,.5,'name')
               ELSE
-                CALL PGPOINT(1,XKEY+0.5*DXKEYLINE,YKEY+DHKEY,
-     >           NSYMBBUFF(NB))
+                !usamos un array unidimensional porque el compilador
+                !gfortran-mp-10 da error al usar un escalar en lugar
+                !de una matriz
+                XX0(1)=XKEY+0.5*DXKEYLINE
+                YY0(1)=YKEY+DHKEY
+                CALL PGPOINT(1,XX0,YY0,NSYMBBUFF(NB))
               END IF
               IF(LPOSTSCRIPT)THEN
                 CALL PGSCH(DATAKEYCH*FACTORCH)
